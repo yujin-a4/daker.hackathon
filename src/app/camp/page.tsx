@@ -12,6 +12,7 @@ import type { Team } from '@/types';
 import TeamFilters from '@/components/camp/TeamFilters';
 import TeamCard from '@/components/camp/TeamCard';
 import CreateTeamModal from '@/components/camp/CreateTeamModal';
+import TeamDetailModal from '@/components/camp/TeamDetailModal';
 import EmptyState from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/button';
 
@@ -38,18 +39,19 @@ function CampContent() {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+
   
   useEffect(() => {
-    if (searchParams.get('create') === 'true') {
+    const createParam = searchParams.get('create');
+    if (createParam === 'true') {
       setIsModalOpen(true);
+      // Avoid re-opening modal on router changes
+      router.replace('/camp', undefined);
     }
-  }, [searchParams]);
-
-  const allTags = useMemo(() => {
-    const tags = new Set<string>();
-    hackathons.forEach(h => h.tags.forEach(tag => tags.add(tag)));
-    return Array.from(tags).sort();
-  }, [hackathons]);
+  }, [searchParams, router]);
   
   const handleCreateNew = () => {
     setEditingTeam(null);
@@ -59,6 +61,11 @@ function CampContent() {
   const handleEdit = (team: Team) => {
     setEditingTeam(team);
     setIsModalOpen(true);
+  };
+
+  const handleCardClick = (team: Team) => {
+    setSelectedTeam(team);
+    setIsDetailModalOpen(true);
   };
   
   const filteredTeams = useMemo(() => {
@@ -76,7 +83,7 @@ function CampContent() {
     <div className="container mx-auto py-8">
       <header className="mb-8">
         <h1 className="text-3xl font-bold font-headline">팀원 모집</h1>
-        <p className="mt-2 text-slate-500">함께 할 팀원을 찾거나, 새로운 팀을 만들어보세요.</p>
+        <p className="mt-2 text-muted-foreground">함께 할 팀원을 찾거나, 새로운 팀을 만들어보세요.</p>
       </header>
 
       <div className="space-y-6">
@@ -90,12 +97,12 @@ function CampContent() {
             setSearchQuery={setSearchQuery}
             hackathons={hackathons}
           />
-          <Button onClick={handleCreateNew} className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700">
-            <Plus className="mr-2" /> 새 모집글 작성하기
+          <Button onClick={handleCreateNew} className="w-full md:w-auto">
+            <Plus /> 새 모집글 작성하기
           </Button>
         </div>
 
-        <div className="text-sm text-slate-500 font-medium">
+        <div className="text-sm text-muted-foreground font-medium">
           총 {filteredTeams.length}개 팀
         </div>
 
@@ -107,7 +114,7 @@ function CampContent() {
             animate="visible"
           >
             {filteredTeams.map((team) => (
-              <TeamCard key={team.teamCode} team={team} onEdit={handleEdit} />
+              <TeamCard key={team.teamCode} team={team} onEdit={handleEdit} onCardClick={handleCardClick} />
             ))}
           </motion.div>
         ) : (
@@ -128,6 +135,13 @@ function CampContent() {
         onOpenChange={setIsModalOpen}
         editingTeam={editingTeam}
         defaultHackathonSlug={searchParams.get('hackathon') || undefined}
+      />
+
+      <TeamDetailModal
+        isOpen={isDetailModalOpen}
+        onOpenChange={setIsDetailModalOpen}
+        team={selectedTeam}
+        onEdit={handleEdit}
       />
     </div>
   );
