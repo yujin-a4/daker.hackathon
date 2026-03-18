@@ -1,3 +1,22 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "aimers8",
+      "description": "Abstract technology background for a model compression hackathon.",
+      "imageUrl": "https://picsum.photos/seed/aimers8/600/400",
+      "imageHint": "technology abstract"
+    },
+    {
+      "id": "vibe202602",
+      "description": "Lightbulb representing an idea for an AI idea competition.",
+      "imageUrl": "https://picsum.photos/seed/vibe202602/600/400",
+      "imageHint": "idea lightbulb"
+    },
+    {
+      "id": "daker-handover",
+      "description": "Code on a browser screen for a web development hackathon.",
+      "imageUrl": "https://picsum.photos/seed/dakerhandover/600/400",
+      "imageHint": "code browser"
+    }
+  ]
 }
