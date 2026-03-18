@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { Trophy, Users, Edit, LogOut, MessageSquare } from 'lucide-react';
 import type { Team } from '@/types';
 import { useHackathonStore } from '@/store/useHackathonStore';
@@ -40,18 +41,18 @@ export default function TeamCard({ team, onEdit }: TeamCardProps) {
   };
   
   return (
-    <Card className={cn("flex flex-col h-full rounded-2xl overflow-hidden shadow-sm border bg-white", !team.isOpen && "bg-slate-50 opacity-70")}>
+    <Card className={cn("flex flex-col h-full rounded-2xl overflow-hidden shadow-sm border bg-card", !team.isOpen && "opacity-70")}>
       <CardHeader>
         <div className="flex justify-between items-start gap-2">
           <CardTitle className="text-lg">{team.name}</CardTitle>
           <div className="flex items-center gap-2 flex-shrink-0">
-            {isMyTeam && <Badge className="bg-indigo-100 text-indigo-700">내 팀</Badge>}
-            <Badge className={cn(team.isOpen ? "bg-green-100 text-green-700" : "bg-slate-200 text-slate-500", "font-medium")}>
+            {isMyTeam && <Badge className="bg-primary/10 text-primary">내 팀</Badge>}
+            <Badge className={cn(team.isOpen ? "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300" : "bg-muted text-muted-foreground", "font-medium")}>
               {team.isOpen ? '모집중' : '모집마감'}
             </Badge>
           </div>
         </div>
-        <div className="flex justify-between items-center text-sm text-slate-500 pt-1">
+        <div className="flex justify-between items-center text-sm text-muted-foreground pt-1">
           <div className="flex items-center gap-1.5">
             <Users className="w-4 h-4" />
             <span>{team.memberCount}/{team.maxTeamSize}</span>
@@ -61,32 +62,32 @@ export default function TeamCard({ team, onEdit }: TeamCardProps) {
       
       <CardContent className="flex-grow flex flex-col">
         {hackathon ? (
-          <Link href={`/hackathons/${hackathon.slug}`} className="text-sm text-indigo-600 hover:underline flex items-center gap-1.5 mb-3 group">
-            <Trophy className="w-4 h-4 text-indigo-400" />
+          <Link href={`/hackathons/${hackathon.slug}`} className="text-sm text-primary hover:underline flex items-center gap-1.5 mb-3 group">
+            <Trophy className="w-4 h-4 text-primary/70" />
             <span className="font-medium">{hackathon.title}</span>
           </Link>
         ) : (
-          <div className="text-sm text-slate-400 flex items-center gap-1.5 mb-3">
+          <div className="text-sm text-muted-foreground flex items-center gap-1.5 mb-3">
             <MessageSquare className="w-4 h-4" />
             <span className="font-medium">자유 모집 (해커톤 무관)</span>
           </div>
         )}
         
-        <p className="text-sm text-slate-600 line-clamp-3 flex-grow">{team.intro}</p>
+        <p className="text-sm text-secondary-foreground/80 line-clamp-3 flex-grow">{team.intro}</p>
 
         {team.isOpen && team.lookingFor.length > 0 && (
           <div className="mt-4">
-            <h5 className="text-xs font-semibold text-slate-400 mb-2">찾는 포지션</h5>
+            <h5 className="text-xs font-semibold text-muted-foreground mb-2">찾는 포지션</h5>
             <div className="flex flex-wrap items-center gap-1.5">
               {team.lookingFor.map(pos => (
-                <Badge key={pos} className="bg-indigo-50 text-indigo-700 text-xs font-normal px-2 py-0.5">{pos}</Badge>
+                <Badge key={pos} variant="secondary" className="bg-primary/5 text-primary/80 text-xs font-normal px-2 py-0.5">{pos}</Badge>
               ))}
             </div>
           </div>
         )}
 
         <div className="border-t mt-4 pt-4 flex justify-between items-center">
-           <span className="text-xs text-slate-400">{formatDate(team.createdAt)} 생성</span>
+           <span className="text-xs text-muted-foreground">{formatDate(team.createdAt)} 생성</span>
            
            <div className="flex gap-2">
             {isMyTeam ? (
@@ -113,7 +114,7 @@ export default function TeamCard({ team, onEdit }: TeamCardProps) {
             ) : (
               team.isOpen && (
                 <a href={team.contact.url} target="_blank" rel="noopener noreferrer">
-                    <Button size="sm" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100">
+                    <Button size="sm" variant="secondary">
                         연락하기
                     </Button>
                 </a>

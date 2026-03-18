@@ -1,7 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { X, Heart } from 'lucide-react';
 
 type HackathonFiltersProps = {
   status: string;
@@ -9,6 +10,8 @@ type HackathonFiltersProps = {
   selectedTags: string[];
   onSelectedTagsChange: (tags: string[]) => void;
   allTags: string[];
+  showBookmarkedOnly: boolean;
+  onShowBookmarkedOnlyChange: (show: boolean) => void;
 };
 
 const statusOptions = ['전체', '진행중', '예정', '종료'];
@@ -18,7 +21,9 @@ export default function HackathonFilters({
   onStatusChange, 
   selectedTags, 
   onSelectedTagsChange, 
-  allTags
+  allTags,
+  showBookmarkedOnly,
+  onShowBookmarkedOnlyChange
 }: HackathonFiltersProps) {
   
   const handleTagClick = (tag: string) => {
@@ -35,16 +40,21 @@ export default function HackathonFilters({
           <Button
             key={option}
             onClick={() => onStatusChange(option)}
-            className={`rounded-lg transition-colors font-medium ${
-              status === option
-                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
+            variant={status === option ? 'default' : 'secondary'}
             size="sm"
           >
             {option}
           </Button>
         ))}
+        <Button
+            onClick={() => onShowBookmarkedOnlyChange(!showBookmarkedOnly)}
+            variant={showBookmarkedOnly ? 'outline' : 'secondary'}
+            size="sm"
+            className={cn(showBookmarkedOnly && 'text-red-500 border-red-500/50 hover:bg-red-500/10 hover:text-red-500')}
+        >
+            <Heart className="w-4 h-4 mr-1.5" />
+            <span>북마크만</span>
+        </Button>
       </div>
       
       <div className="flex items-center gap-2 flex-wrap">
@@ -54,19 +64,19 @@ export default function HackathonFilters({
             onClick={() => handleTagClick(tag)}
             className={`px-3 py-1 text-sm rounded-full transition-all duration-200 ${
               selectedTags.includes(tag)
-                ? 'bg-indigo-100 text-indigo-700 ring-1 ring-indigo-300 font-medium'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-primary/10 text-primary ring-1 ring-primary/30 font-medium'
+                : 'bg-muted text-muted-foreground hover:bg-accent'
             }`}
           >
             {tag}
           </button>
         ))}
-        {selectedTags.length > 0 && (
+        {(selectedTags.length > 0) && (
           <Button
             variant="link"
             size="sm"
             onClick={() => onSelectedTagsChange([])}
-            className="text-slate-500 hover:text-slate-700 px-2"
+            className="text-muted-foreground hover:text-foreground px-2"
           >
             <X className="w-3 h-3 mr-1" />
             초기화

@@ -125,4 +125,5 @@ export interface CurrentUser {
   email: string;
   teamCodes: string[];
   joinedAt: string;
+  bookmarkedSlugs?: string[];
 }

@@ -76,7 +76,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
         contact: '',
       });
     }
-  }, [editingTeam, defaultHackathonSlug, form]);
+  }, [editingTeam, defaultHackathonSlug, form, isOpen]);
 
   const selectedHackathonSlug = form.watch('hackathonSlug');
   const selectedHackathon = hackathons.find(h => h.slug === selectedHackathonSlug);
@@ -140,7 +140,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
                 <FormItem>
                   <FormLabel>소개 *</FormLabel>
                   <FormControl><Textarea placeholder="팀과 프로젝트에 대해 소개해주세요" {...field} rows={4} maxLength={500} /></FormControl>
-                   <div className="text-right text-xs text-slate-400">{introLength} / 500</div>
+                   <div className="text-right text-xs text-muted-foreground">{introLength} / 500</div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -151,7 +151,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>연결 해커톤</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value || ''}>
+                  <Select onValueChange={field.onChange} value={field.value || ''}>
                     <FormControl>
                       <SelectTrigger><SelectValue placeholder="해커톤을 선택하세요 (선택사항)" /></SelectTrigger>
                     </FormControl>
@@ -203,8 +203,8 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
                                 }}
                                 className={`px-3 py-1 text-sm rounded-full transition-colors duration-200 ${
                                     isSelected
-                                    ? 'bg-indigo-600 text-white font-medium'
-                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                    ? 'bg-primary text-primary-foreground font-medium'
+                                    : 'bg-muted text-muted-foreground hover:bg-accent'
                                 }`}
                             >
                                 {pos}
@@ -229,7 +229,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
             />
             <DialogFooter className="pt-4">
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>취소</Button>
-              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700">{editingTeam ? '수정하기' : '모집글 등록하기'}</Button>
+              <Button type="submit">{editingTeam ? '수정하기' : '모집글 등록하기'}</Button>
             </DialogFooter>
           </form>
         </Form>

@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 import { useHackathonStore } from '@/store/useHackathonStore';
+import { useUserStore } from '@/store/useUserStore';
 import HackathonCard from '@/components/hackathon/HackathonCard';
 import HackathonFilters from '@/components/hackathon/HackathonFilters';
 import EmptyState from '@/components/shared/EmptyState';
@@ -36,9 +37,11 @@ const itemVariants = {
 
 export default function HackathonsPage() {
   const { hackathons } = useHackathonStore();
+  const { currentUser } = useUserStore();
   
   const [statusFilter, setStatusFilter] = useState('전체');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
@@ -52,20 +55,22 @@ export default function HackathonsPage() {
       .filter((hackathon) => {
         const statusMatch = !statusMap[statusFilter] || hackathon.status === statusMap[statusFilter];
         const tagsMatch = selectedTags.length === 0 || selectedTags.every((tag) => hackathon.tags.includes(tag));
-        return statusMatch && tagsMatch;
+        const bookmarkMatch = !showBookmarkedOnly || (currentUser?.bookmarkedSlugs?.includes(hackathon.slug));
+        return statusMatch && tagsMatch && bookmarkMatch;
     });
-  }, [hackathons, statusFilter, selectedTags]);
+  }, [hackathons, statusFilter, selectedTags, showBookmarkedOnly, currentUser]);
   
   const resetFilters = () => {
     setStatusFilter('전체');
     setSelectedTags([]);
+    setShowBookmarkedOnly(false);
   };
 
   return (
     <div className="container mx-auto py-8">
       <header className="mb-8">
         <h1 className="text-3xl font-bold font-headline">해커톤</h1>
-        <p className="mt-2 text-slate-500">다양한 해커톤에 참가하고 실력을 증명하세요.</p>
+        <p className="mt-2 text-muted-foreground">다양한 해커톤에 참가하고 실력을 증명하세요.</p>
       </header>
       
       <div className="space-y-6">
@@ -75,9 +80,11 @@ export default function HackathonsPage() {
           selectedTags={selectedTags}
           onSelectedTagsChange={setSelectedTags}
           allTags={allTags}
+          showBookmarkedOnly={showBookmarkedOnly}
+          onShowBookmarkedOnlyChange={setShowBookmarkedOnly}
         />
 
-        <div className="text-sm text-slate-500 font-medium">
+        <div className="text-sm text-muted-foreground font-medium">
           총 {filteredHackathons.length}개
         </div>
 

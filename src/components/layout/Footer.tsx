@@ -1,5 +1,6 @@
 'use client';
 
+import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,23 +16,25 @@ import { Button } from "@/components/ui/button"
 import { initializeStore } from "@/store/initializer";
 
 export default function Footer() {
+  const { toast } = useToast();
 
   const handleResetData = () => {
     localStorage.clear();
     initializeStore();
     window.location.reload();
+    toast({ title: "데이터가 초기화되었습니다." });
   };
   
   return (
-    <footer className="border-t bg-white">
+    <footer className="border-t bg-background">
       <div className="container flex flex-col items-center justify-center py-8 text-center">
-        <p className="text-sm text-slate-500">DAKER 해커톤 플랫폼</p>
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="text-sm text-muted-foreground">DAKER 해커톤 플랫폼</p>
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
           © 2026 DAKER. 이 서비스는 해커톤 과제로 제작된 데모입니다.
         </p>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="link" className="mt-4 text-xs text-slate-400 hover:text-slate-600">데이터 초기화</Button>
+            <Button variant="link" className="mt-4 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">데이터 초기화</Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -42,7 +45,7 @@ export default function Footer() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>취소</AlertDialogCancel>
-              <AlertDialogAction onClick={handleResetData} className="bg-indigo-600 hover:bg-indigo-700">초기화</AlertDialogAction>
+              <AlertDialogAction onClick={handleResetData}>초기화</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

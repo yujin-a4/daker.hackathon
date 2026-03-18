@@ -417,5 +417,6 @@ export const currentUser: CurrentUser = {
   "nickname": "alpha_dev",
   "email": "alpha@example.com",
   "teamCodes": ["T-ALPHA", "T-HANDOVER-01"],
-  "joinedAt": "2025-06-15T09:00:00+09:00"
+  "joinedAt": "2025-06-15T09:00:00+09:00",
+  "bookmarkedSlugs": ["daker-handover-2026-03"]
 };

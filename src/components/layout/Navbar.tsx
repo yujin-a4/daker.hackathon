@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Dna } from 'lucide-react';
+import { Menu, X, Dna, Sun, Moon } from 'lucide-react';
 
 import { useUserStore } from '@/store/useUserStore';
+import { useThemeStore } from '@/store/useThemeStore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -20,19 +21,27 @@ const navLinks = [
 export default function Navbar() {
   const pathname = usePathname();
   const { currentUser } = useUserStore();
+  const { theme, setTheme } = useThemeStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const getInitials = (name: string) => {
     return name ? name.charAt(0).toUpperCase() : '?';
   };
+  
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 max-w-7xl items-center">
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <Dna className="h-6 w-6 text-indigo-500" />
-            <span className="font-bold text-xl text-indigo-500">DAKER</span>
+            <Dna className="h-6 w-6 text-primary" />
+            <span className="font-bold text-xl text-primary">DAKER</span>
           </Link>
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             {navLinks.map((link) => (
@@ -40,27 +49,33 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  'relative text-slate-600 transition-colors hover:text-indigo-500',
-                  pathname.startsWith(link.href) && 'text-indigo-500'
+                  'relative text-muted-foreground transition-colors hover:text-primary',
+                  pathname.startsWith(link.href) && 'text-primary'
                 )}
               >
                 {link.label}
                 {pathname.startsWith(link.href) && (
-                  <span className="absolute bottom-[-19px] left-0 w-full h-0.5 bg-indigo-500"></span>
+                  <span className="absolute bottom-[-19px] left-0 w-full h-0.5 bg-primary"></span>
                 )}
               </Link>
             ))}
           </nav>
-          <div className="flex flex-1 items-center justify-end space-x-4">
+          <div className="flex flex-1 items-center justify-end space-x-2">
+             {mounted && (
+                <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+                  <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                  <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                </Button>
+              )}
             {currentUser ? (
               <div className="flex items-center space-x-2">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={undefined} />
-                  <AvatarFallback className="bg-indigo-500 text-white font-semibold">
+                  <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
                     {getInitials(currentUser.nickname)}
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden sm:inline text-sm font-medium text-slate-700">
+                <span className="hidden sm:inline text-sm font-medium text-foreground">
                   {currentUser.nickname}
                 </span>
               </div>
@@ -94,13 +109,13 @@ export default function Navbar() {
               animate={{ y: '0%' }}
               exit={{ y: '-100%' }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="absolute top-0 left-0 w-full bg-white p-4 shadow-lg"
+              className="absolute top-0 left-0 w-full bg-background p-4 shadow-lg"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-8">
                 <Link href="/" className="flex items-center space-x-2" onClick={() => setIsMenuOpen(false)}>
-                    <Dna className="h-6 w-6 text-indigo-500" />
-                    <span className="font-bold text-xl text-indigo-500">DAKER</span>
+                    <Dna className="h-6 w-6 text-primary" />
+                    <span className="font-bold text-xl text-primary">DAKER</span>
                 </Link>
                 <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)}>
                   <X className="h-6 w-6" />
@@ -114,8 +129,8 @@ export default function Navbar() {
                     href={link.href}
                     onClick={() => setIsMenuOpen(false)}
                     className={cn(
-                      'text-lg font-medium text-slate-700',
-                      pathname.startsWith(link.href) && 'text-indigo-500'
+                      'text-lg font-medium text-foreground',
+                      pathname.startsWith(link.href) && 'text-primary'
                     )}
                   >
                     {link.label}

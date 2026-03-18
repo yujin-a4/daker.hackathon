@@ -41,10 +41,10 @@ export default function TeamFilters({
       </Select>
       <div className="flex items-center space-x-2">
         <Checkbox id="open-only" checked={showOpenOnly} onCheckedChange={(checked) => setShowOpenOnly(Boolean(checked))} />
-        <Label htmlFor="open-only" className="text-sm font-medium text-slate-600 cursor-pointer">모집중만 보기</Label>
+        <Label htmlFor="open-only" className="text-sm font-medium text-muted-foreground cursor-pointer">모집중만 보기</Label>
       </div>
       <div className="relative flex-grow w-full">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           type="text"
           placeholder="팀명 또는 소개 검색"
@@ -54,7 +54,7 @@ export default function TeamFilters({
         />
         {searchQuery && (
           <X 
-            className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 cursor-pointer hover:text-slate-600"
+            className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground"
             onClick={() => setSearchQuery('')}
           />
         )}

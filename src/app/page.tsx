@@ -11,9 +11,9 @@ import EmptyState from '@/components/shared/EmptyState';
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-white/80 backdrop-blur rounded-xl p-6 border border-slate-100/80 shadow-sm">
-      <p className="text-sm text-slate-500">{label}</p>
-      <p className="text-3xl font-bold text-indigo-600 mt-1">{value}</p>
+    <div className="bg-card/80 dark:bg-card/50 backdrop-blur rounded-xl p-6 border shadow-sm">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="text-3xl font-bold text-primary mt-1">{value}</p>
     </div>
   );
 }
@@ -21,9 +21,9 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 function QuickAccessCard({ icon: Icon, title, description, link, linkText }: { icon: React.ElementType, title: string, description: string, link: string, linkText: string }) {
   return (
     <Link href={link} className="block group">
-      <Card className="h-full bg-white rounded-2xl p-8 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-indigo-100 transition-all duration-200">
+      <Card className="h-full bg-card rounded-2xl p-8 border shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:border-primary/20 transition-all duration-200">
         <CardHeader className="p-0 items-start">
-          <div className="bg-indigo-500 text-white rounded-full p-3 mb-4">
+          <div className="bg-primary/10 text-primary rounded-full p-3 mb-4">
             <Icon className="w-6 h-6" />
           </div>
           <CardTitle className="text-xl font-bold">{title}</CardTitle>
@@ -32,7 +32,7 @@ function QuickAccessCard({ icon: Icon, title, description, link, linkText }: { i
           <CardDescription>{description}</CardDescription>
         </CardContent>
         <CardFooter className="p-0 mt-6">
-          <span className="text-sm font-semibold text-indigo-600 group-hover:underline flex items-center gap-1">
+          <span className="text-sm font-semibold text-primary group-hover:underline flex items-center gap-1">
             {linkText} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </span>
         </CardFooter>
@@ -53,22 +53,22 @@ export default function Home() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-white overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-violet-100/50 opacity-50"></div>
+      <section className="relative bg-background overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-violet-100/50 dark:from-indigo-950/50 dark:to-violet-950/50 opacity-50"></div>
         <div
-            className="absolute inset-0 opacity-[0.03]"
+            className="absolute inset-0 opacity-[0.03] dark:opacity-[0.02]"
             style={{
                 backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'
             }}
         />
         <div className="relative container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tighter">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground tracking-tighter">
             함께 도전하고, 함께 성장하세요
           </h1>
-          <p className="mt-4 max-w-2xl mx-auto text-lg text-slate-600">
+          <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
             해커톤 참여부터 팀 빌딩, 순위 확인까지 한곳에서.
           </p>
-          <Button asChild size="lg" className="mt-8 bg-indigo-600 hover:bg-indigo-700">
+          <Button asChild size="lg" className="mt-8">
             <Link href="/hackathons">
               해커톤 둘러보기 <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
@@ -82,10 +82,10 @@ export default function Home() {
       </section>
 
       {/* Quick Access Section */}
-      <section className="py-16 lg:py-24 bg-slate-50">
+      <section className="py-16 lg:py-24 bg-muted/20">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-left mb-12">
-            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">빠른 시작</h2>
+            <h2 className="text-3xl font-bold text-foreground tracking-tight">빠른 시작</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <QuickAccessCard
@@ -114,11 +114,11 @@ export default function Home() {
       </section>
       
       {/* Ongoing Hackathons Section */}
-      <section className="py-16 lg:py-24 bg-white">
+      <section className="py-16 lg:py-24 bg-background">
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-12">
-            <h2 className="text-3xl font-bold text-slate-900 tracking-tight">진행 중인 해커톤</h2>
-            <Button asChild variant="link" className="text-indigo-600">
+            <h2 className="text-3xl font-bold text-foreground tracking-tight">진행 중인 해커톤</h2>
+            <Button asChild variant="link">
                 <Link href="/hackathons">
                     모든 해커톤 보기 <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>

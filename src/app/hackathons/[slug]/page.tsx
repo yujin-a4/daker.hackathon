@@ -2,7 +2,9 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { useHackathonStore } from '@/store/useHackathonStore';
+import { useUserStore } from '@/store/useUserStore';
 import {
   ArrowLeft,
   BookOpen,
@@ -15,10 +17,12 @@ import {
   Medal,
   FileText,
   HelpCircle,
+  Heart
 } from 'lucide-react';
 
 import { useScrollSpy } from '@/hooks/useScrollSpy';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useToast } from '@/hooks/use-toast';
 import { formatDate } from '@/lib/date';
 import { getStatusColor, cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -50,12 +54,16 @@ const sections = [
 export default function HackathonDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const { toast } = useToast();
   const slug = params.slug as string;
 
   const { hackathonDetails, hackathons, leaderboards } = useHackathonStore();
+  const { currentUser, toggleBookmark } = useUserStore();
+
   const hackathon = hackathons.find((h) => h.slug === slug);
   const details = hackathonDetails[slug];
   const leaderboard = leaderboards[slug];
+  const isBookmarked = currentUser?.bookmarkedSlugs?.includes(slug);
 
   const activeSection = useScrollSpy(
     sections.map((s) => `#${s.id}`),
@@ -64,11 +72,23 @@ export default function HackathonDetailPage() {
   
   const isMobile = useIsMobile();
 
+  const handleBookmarkClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleBookmark(slug);
+    toast({
+      title: isBookmarked ? "북마크를 제거했습니다." : "북마크에 추가했습니다.",
+    });
+  };
+
   if (!slug) return <LoadingState variant="detail" />;
   if (!hackathon || !details) {
     return (
       <div className="container mx-auto py-8">
-        <ErrorState description="해커톤 정보를 찾을 수 없습니다." />
+        <ErrorState 
+          description="해커톤 정보를 찾을 수 없습니다." 
+          actionLabel="목록으로 돌아가기"
+          onAction={() => router.push('/hackathons')}
+        />
       </div>
     );
   }
@@ -93,29 +113,34 @@ export default function HackathonDetailPage() {
         
         <div className="flex-1 min-w-0">
           <header className="mb-8 md:mb-12">
-            <Button variant="link" onClick={() => router.back()} className="p-0 h-auto mb-4 text-slate-500 hover:text-slate-700">
+            <Button variant="link" onClick={() => router.back()} className="p-0 h-auto mb-4 text-muted-foreground hover:text-foreground">
               <ArrowLeft className="mr-1 h-4 w-4" />
               목록으로
             </Button>
             <div className="flex items-center gap-3 mb-3">
               <Badge className={cn('font-semibold', getStatusColor(hackathon.status))}>{statusText}</Badge>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight mb-4">{details.title}</h1>
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold tracking-tight">{details.title}</h1>
+              <motion.button whileTap={{ scale: 1.2 }} onClick={handleBookmarkClick} aria-label="Bookmark hackathon">
+                <Heart className={cn("w-6 h-6 text-slate-300 dark:text-slate-600 transition-colors", isBookmarked && "fill-red-500 text-red-500")} />
+              </motion.button>
+            </div>
+            <div className="flex flex-wrap gap-2 my-4">
               {hackathon.tags.map((tag) => <Badge key={tag} variant="secondary">{tag}</Badge>)}
             </div>
-            <div className="text-slate-500 text-sm flex items-center gap-2 mb-5">
+            <div className="text-muted-foreground text-sm flex items-center gap-2 mb-5">
               <CalendarIcon className="w-4 h-4" />
               <span>{formatDate(firstMilestone.at)} ~ {formatDate(lastMilestone.at)}</span>
-              <span className="text-slate-400">({schedule.timezone})</span>
+              <span className="text-slate-400 dark:text-slate-500">({schedule.timezone})</span>
             </div>
             <div className="flex gap-2">
-              <Button asChild variant="outline" size="sm" className="bg-white">
+              <Button asChild variant="outline" size="sm">
                 <Link href={details.sections.info.links.rules} target="_blank" rel="noopener noreferrer">
                   <FileText className="mr-1.5" /> 규정
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="sm" className="bg-white">
+              <Button asChild variant="outline" size="sm">
                 <Link href={details.sections.info.links.faq} target="_blank" rel="noopener noreferrer">
                   <HelpCircle className="mr-1.5" /> FAQ
                 </Link>
