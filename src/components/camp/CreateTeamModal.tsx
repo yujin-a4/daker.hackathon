@@ -49,7 +49,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
     defaultValues: {
       name: '',
       intro: '',
-      hackathonSlug: defaultHackathonSlug || '',
+      hackathonSlug: defaultHackathonSlug || 'none',
       maxTeamSize: 5,
       lookingFor: [],
       contact: '',
@@ -61,7 +61,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
       form.reset({
         name: editingTeam.name,
         intro: editingTeam.intro,
-        hackathonSlug: editingTeam.hackathonSlug || '',
+        hackathonSlug: editingTeam.hackathonSlug || 'none',
         maxTeamSize: editingTeam.maxTeamSize,
         lookingFor: editingTeam.lookingFor || [],
         contact: editingTeam.contact.url,
@@ -70,7 +70,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
       form.reset({
         name: '',
         intro: '',
-        hackathonSlug: defaultHackathonSlug || '',
+        hackathonSlug: defaultHackathonSlug || 'none',
         maxTeamSize: 5,
         lookingFor: [],
         contact: '',
@@ -84,10 +84,11 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
 
   const onSubmit = (data: FormData) => {
     try {
+      const finalHackathonSlug = data.hackathonSlug === 'none' ? null : data.hackathonSlug;
       if (editingTeam) {
         updateTeam(editingTeam.teamCode, {
           ...data,
-          hackathonSlug: data.hackathonSlug || null,
+          hackathonSlug: finalHackathonSlug,
           contact: { type: 'link', url: data.contact },
           lookingFor: data.lookingFor || [],
         });
@@ -96,7 +97,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
         const newTeam = addTeam({
           ...data,
           lookingFor: data.lookingFor || [],
-          hackathonSlug: data.hackathonSlug || null,
+          hackathonSlug: finalHackathonSlug,
           contact: { type: 'link', url: data.contact },
           isOpen: true,
           memberCount: 1,
@@ -153,12 +154,12 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>연결 해커톤</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                  <Select onValueChange={field.onChange} value={field.value || 'none'}>
                     <FormControl>
                       <SelectTrigger><SelectValue placeholder="해커톤을 선택하세요 (선택사항)" /></SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">선택 안 함</SelectItem>
+                      <SelectItem value="none">선택 안 함</SelectItem>
                       {hackathons.map(h => <SelectItem key={h.slug} value={h.slug}>{h.title}</SelectItem>)}
                     </SelectContent>
                   </Select>
