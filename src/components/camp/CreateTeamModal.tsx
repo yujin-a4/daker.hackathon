@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useEffect } from 'react';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { useToast } from '@/hooks/use-toast';
 import { useTeamStore } from '@/store/useTeamStore';
@@ -25,7 +26,10 @@ const FormSchema = z.object({
   intro: z.string().min(10, '소개는 10자 이상이어야 합니다.').max(500, '소개는 500자를 초과할 수 없습니다.'),
   hackathonSlug: z.string().optional(),
   maxTeamSize: z.number().min(2).max(5),
-  lookingFor: z.array(z.string()).optional(),
+  lookingFor: z.array(z.object({
+    position: z.string(),
+    description: z.string(),
+  })).optional(),
   contact: z.string().url('유효한 URL을 입력해주세요. (https://...)'),
 });
 
@@ -56,25 +60,32 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
     },
   });
 
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'lookingFor',
+  });
+
   useEffect(() => {
-    if (editingTeam) {
-      form.reset({
-        name: editingTeam.name,
-        intro: editingTeam.intro,
-        hackathonSlug: editingTeam.hackathonSlug || 'none',
-        maxTeamSize: editingTeam.maxTeamSize,
-        lookingFor: editingTeam.lookingFor || [],
-        contact: editingTeam.contact.url,
-      });
-    } else {
-      form.reset({
-        name: '',
-        intro: '',
-        hackathonSlug: defaultHackathonSlug || 'none',
-        maxTeamSize: 5,
-        lookingFor: [],
-        contact: '',
-      });
+    if (isOpen) {
+      if (editingTeam) {
+        form.reset({
+          name: editingTeam.name,
+          intro: editingTeam.intro,
+          hackathonSlug: editingTeam.hackathonSlug || 'none',
+          maxTeamSize: editingTeam.maxTeamSize,
+          lookingFor: editingTeam.lookingFor || [],
+          contact: editingTeam.contact.url,
+        });
+      } else {
+        form.reset({
+          name: '',
+          intro: '',
+          hackathonSlug: defaultHackathonSlug || 'none',
+          maxTeamSize: 5,
+          lookingFor: [],
+          contact: '',
+        });
+      }
     }
   }, [editingTeam, defaultHackathonSlug, form, isOpen]);
 
@@ -84,21 +95,20 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
 
   const onSubmit = (data: FormData) => {
     try {
-      const finalHackathonSlug = data.hackathonSlug === 'none' ? null : data.hackathonSlug;
+      const finalHackathonSlug = data.hackathonSlug === 'none' ? undefined : data.hackathonSlug;
+      const teamData = {
+        ...data,
+        hackathonSlug: finalHackathonSlug,
+        lookingFor: data.lookingFor || [],
+        contact: { type: 'link', url: data.contact },
+      };
+
       if (editingTeam) {
-        updateTeam(editingTeam.teamCode, {
-          ...data,
-          hackathonSlug: finalHackathonSlug,
-          contact: { type: 'link', url: data.contact },
-          lookingFor: data.lookingFor || [],
-        });
+        updateTeam(editingTeam.teamCode, teamData);
         toast({ title: '팀 정보가 수정되었습니다.' });
       } else {
         const newTeam = addTeam({
-          ...data,
-          lookingFor: data.lookingFor || [],
-          hackathonSlug: finalHackathonSlug,
-          contact: { type: 'link', url: data.contact },
+          ...teamData,
           isOpen: true,
           memberCount: 1,
         });
@@ -113,6 +123,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
   };
   
   const introLength = form.watch('intro')?.length || 0;
+  const lookingForValue = form.watch('lookingFor') || [];
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -188,34 +199,64 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
             <FormField
               control={form.control}
               name="lookingFor"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
                   <FormLabel>모집 포지션</FormLabel>
-                  <div className="flex flex-wrap gap-2">
+                   <div className="flex flex-wrap gap-2">
                     {positions.map(pos => {
-                        const isSelected = field.value?.includes(pos);
-                        return (
-                            <button
-                                type="button"
-                                key={pos}
-                                onClick={() => {
-                                    const newValue = isSelected
-                                        ? field.value?.filter(p => p !== pos)
-                                        : [...(field.value || []), pos];
-                                    field.onChange(newValue);
-                                }}
-                                className={`px-3 py-1 text-sm rounded-full transition-colors duration-200 ${
-                                    isSelected
-                                    ? 'bg-primary text-primary-foreground font-medium'
-                                    : 'bg-muted text-muted-foreground hover:bg-accent'
-                                }`}
-                            >
-                                {pos}
-                            </button>
-                        );
+                      const fieldIndex = fields.findIndex(f => f.position === pos);
+                      const isSelected = fieldIndex !== -1;
+                      return (
+                        <button
+                          type="button"
+                          key={pos}
+                          onClick={() => {
+                            if (isSelected) {
+                              remove(fieldIndex);
+                            } else {
+                              append({ position: pos, description: '' });
+                            }
+                          }}
+                          className={`px-3 py-1 text-sm rounded-full transition-colors duration-200 ${
+                            isSelected
+                              ? 'bg-primary text-primary-foreground font-medium'
+                              : 'bg-muted text-muted-foreground hover:bg-accent'
+                          }`}
+                        >
+                          {pos}
+                        </button>
+                      );
                     })}
                   </div>
-                  <FormMessage />
+                  
+                  <div className="space-y-3 pt-2">
+                    <AnimatePresence>
+                      {fields.map((field, index) => (
+                        <motion.div
+                          key={field.id}
+                          layout
+                          initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                          animate={{ opacity: 1, height: 'auto', marginTop: '12px' }}
+                          exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <FormField
+                            control={form.control}
+                            name={`lookingFor.${index}.description`}
+                            render={({ field: descField }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium text-muted-foreground">{field.position} 상세 설명 (선택)</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="이 포지션에서 기대하는 역할을 간단히 적어주세요" {...descField} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
                 </FormItem>
               )}
             />

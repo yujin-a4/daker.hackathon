@@ -74,7 +74,11 @@ function CampContent() {
       const openMatch = !showOpenOnly || team.isOpen;
       const searchMatch = searchQuery === '' || 
                           team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          team.intro.toLowerCase().includes(searchQuery.toLowerCase());
+                          team.intro.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (team.lookingFor && team.lookingFor.some(lf =>
+                            lf.position.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            (lf.description && lf.description.toLowerCase().includes(searchQuery.toLowerCase()))
+                          ));
       return hackathonMatch && openMatch && searchMatch;
     }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [teams, hackathonFilter, showOpenOnly, searchQuery]);

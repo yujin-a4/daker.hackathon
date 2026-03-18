@@ -83,7 +83,7 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4 space-y-6">
+        <div className="py-4 space-y-6 max-h-[60vh] overflow-y-auto pr-2">
           {hackathon ? (
             <button onClick={handleHackathonLinkClick} className="text-sm text-primary hover:underline flex items-center gap-1.5 group">
               <Trophy className="w-4 h-4 text-primary/70" />
@@ -101,9 +101,17 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
           {team.isOpen && team.lookingFor && team.lookingFor.length > 0 && (
             <div>
               <h4 className="text-sm text-muted-foreground font-medium mb-2">찾는 포지션</h4>
-              <div className="flex flex-wrap gap-2">
-                {team.lookingFor.map(pos => (
-                  <Badge key={pos} variant="secondary" className="bg-primary/5 text-primary/80 dark:bg-primary/10 dark:text-primary/90 text-sm font-normal px-2 py-1">{pos}</Badge>
+              <div className="space-y-2">
+                {team.lookingFor.map(lf => (
+                  <div key={lf.position} className="bg-muted/50 rounded-lg p-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-primary/50"></span>
+                      <h5 className="font-medium text-primary">{lf.position}</h5>
+                    </div>
+                    {lf.description && (
+                      <p className="mt-1 ml-4 text-sm text-muted-foreground">{lf.description}</p>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>

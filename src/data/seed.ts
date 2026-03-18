@@ -303,7 +303,10 @@ export const teams: Team[] = [
     "isOpen": true,
     "memberCount": 3,
     "maxTeamSize": 5,
-    "lookingFor": ["Backend", "ML Engineer"],
+    "lookingFor": [
+      { "position": "Backend", "description": "API 설계 및 추론 서버 최적화 경험자" },
+      { "position": "ML Engineer", "description": "모델 경량화(Quantization, Pruning) 실험 경험자" }
+    ],
     "intro": "추론 최적화/경량화 실험을 함께 진행할 팀원을 찾습니다.",
     "contact": { "type": "link", "url": "https://open.kakao.com/o/example1" },
     "createdAt": "2026-02-20T11:00:00+09:00"
@@ -315,7 +318,10 @@ export const teams: Team[] = [
     "isOpen": true,
     "memberCount": 1,
     "maxTeamSize": 3,
-    "lookingFor": ["Frontend", "Designer"],
+    "lookingFor": [
+      { "position": "Frontend", "description": "React 기반 대시보드 UI 구현 가능하신 분" },
+      { "position": "Designer", "description": "데이터 시각화 UX 설계 경험 있으신 분" }
+    ],
     "intro": "프롬프트 품질 점수화 + 개선 가이드 UX를 기획합니다.",
     "contact": { "type": "link", "url": "https://forms.gle/example2" },
     "createdAt": "2026-02-18T18:30:00+09:00"
@@ -327,7 +333,10 @@ export const teams: Team[] = [
     "isOpen": true,
     "memberCount": 3,
     "maxTeamSize": 5,
-    "lookingFor": ["Frontend", "Designer"],
+    "lookingFor": [
+      { "position": "Frontend", "description": "Next.js로 해커톤 플랫폼 UI 구현, 반응형 필수" },
+      { "position": "Designer", "description": "깔끔한 SaaS 스타일 웹 디자인 가능하신 분" }
+    ],
     "intro": "명세서 기반으로 기본 기능을 빠르게 완성하고 UX 확장을 노립니다.",
     "contact": { "type": "link", "url": "https://open.kakao.com/o/example3" },
     "createdAt": "2026-03-04T11:00:00+09:00"
@@ -351,7 +360,11 @@ export const teams: Team[] = [
     "isOpen": true,
     "memberCount": 2,
     "maxTeamSize": 5,
-    "lookingFor": ["Backend", "Frontend", "PM"],
+    "lookingFor": [
+      { "position": "Backend", "description": "localStorage 기반 데이터 로직 설계" },
+      { "position": "Frontend", "description": "컴포넌트 구조 설계 및 상태관리 경험자" },
+      { "position": "PM", "description": "기획서 작성 및 일정 관리 담당" }
+    ],
     "intro": "풀스택 도전! 명세서 완벽 구현 + 실시간 알림 확장을 목표로 합니다.",
     "contact": { "type": "link", "url": "https://open.kakao.com/o/example5" },
     "createdAt": "2026-03-06T14:00:00+09:00"
@@ -363,7 +376,11 @@ export const teams: Team[] = [
     "isOpen": true,
     "memberCount": 1,
     "maxTeamSize": 4,
-    "lookingFor": ["Frontend", "Backend", "Designer"],
+    "lookingFor": [
+      { "position": "Frontend", "description": "React/Vue 등 프레임워크 자유, 사이드 프로젝트 경험자" },
+      { "position": "Backend", "description": "Node.js 또는 Python 백엔드 가능하신 분" },
+      { "position": "Designer", "description": "간단한 로고/UI 디자인 도움 가능하신 분" }
+    ],
     "intro": "해커톤과 무관하게 사이드 프로젝트 함께 하실 분!",
     "contact": { "type": "link", "url": "https://open.kakao.com/o/example6" },
     "createdAt": "2026-03-10T09:00:00+09:00"

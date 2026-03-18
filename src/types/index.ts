@@ -88,7 +88,7 @@ export interface Team {
   isOpen: boolean;
   memberCount: number;
   maxTeamSize: number;
-  lookingFor: string[];
+  lookingFor: { position: string; description: string }[];
   intro: string;
   contact: { type: string; url: string };
   createdAt: string;

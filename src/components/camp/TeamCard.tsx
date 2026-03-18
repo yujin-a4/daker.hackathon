@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 interface TeamCardProps {
   team: Team;
@@ -96,11 +97,18 @@ export default function TeamCard({ team, onEdit, onCardClick }: TeamCardProps) {
         {team.isOpen && team.lookingFor && team.lookingFor.length > 0 && (
           <div className="mt-4">
             <h5 className="text-xs font-semibold text-muted-foreground mb-2">찾는 포지션</h5>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {team.lookingFor.map(pos => (
-                <Badge key={pos} variant="secondary" className="bg-primary/5 text-primary/80 dark:bg-primary/10 dark:text-primary/90 text-xs font-normal px-2 py-0.5">{pos}</Badge>
-              ))}
-            </div>
+            <TooltipProvider>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {team.lookingFor.map(lf => (
+                  <Tooltip key={lf.position}>
+                    <TooltipTrigger asChild>
+                      <Badge variant="secondary" className="bg-primary/5 text-primary/80 dark:bg-primary/10 dark:text-primary/90 text-xs font-normal px-2 py-0.5">{lf.position}</Badge>
+                    </TooltipTrigger>
+                    {lf.description && <TooltipContent><p>{lf.description}</p></TooltipContent>}
+                  </Tooltip>
+                ))}
+              </div>
+            </TooltipProvider>
           </div>
         )}
 
