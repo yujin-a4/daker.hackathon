@@ -4,6 +4,7 @@ import {
   isPast,
   intervalToDuration,
 } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
 export function formatDate(isoString: string): string {
   return format(new Date(isoString), 'yyyy.MM.dd');
@@ -11,6 +12,14 @@ export function formatDate(isoString: string): string {
 
 export function formatDateTime(isoString: string): string {
   return format(new Date(isoString), 'yyyy.MM.dd HH:mm');
+}
+
+export function formatDateTimeWithDay(isoString: string): string {
+  try {
+    return format(new Date(isoString), 'yyyy.MM.dd (eee) HH:mm', { locale: ko });
+  } catch (e) {
+    return '유효하지 않은 날짜';
+  }
 }
 
 export function getDday(targetDate: string): string {
