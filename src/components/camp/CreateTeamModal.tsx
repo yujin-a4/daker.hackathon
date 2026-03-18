@@ -42,7 +42,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
   const { toast } = useToast();
   const { addTeam, updateTeam } = useTeamStore();
   const { addTeamCode } = useUserStore();
-  const { hackathons } = useHackathonStore();
+  const { hackathons, hackathonDetails } = useHackathonStore();
 
   const form = useForm<FormData>({
     resolver: zodResolver(FormSchema),
@@ -63,7 +63,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
         intro: editingTeam.intro,
         hackathonSlug: editingTeam.hackathonSlug || '',
         maxTeamSize: editingTeam.maxTeamSize,
-        lookingFor: editingTeam.lookingFor,
+        lookingFor: editingTeam.lookingFor || [],
         contact: editingTeam.contact.url,
       });
     } else {
@@ -79,8 +79,8 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
   }, [editingTeam, defaultHackathonSlug, form, isOpen]);
 
   const selectedHackathonSlug = form.watch('hackathonSlug');
-  const selectedHackathon = hackathons.find(h => h.slug === selectedHackathonSlug);
-  const maxTeamSizeForHackathon = selectedHackathon?.sections.overview.teamPolicy.maxTeamSize || 5;
+  const selectedHackathonDetail = selectedHackathonSlug ? hackathonDetails[selectedHackathonSlug] : null;
+  const maxTeamSizeForHackathon = selectedHackathonDetail?.sections.overview.teamPolicy.maxTeamSize || 5;
 
   const onSubmit = (data: FormData) => {
     try {
@@ -89,6 +89,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
           ...data,
           hackathonSlug: data.hackathonSlug || null,
           contact: { type: 'link', url: data.contact },
+          lookingFor: data.lookingFor || [],
         });
         toast({ title: '팀 정보가 수정되었습니다.' });
       } else {
