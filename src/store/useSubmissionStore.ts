@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Submission, LeaderboardEntry } from '@/types';
+import type { Submission } from '@/types';
 import { generateId } from '@/lib/utils';
 import { useHackathonStore } from './useHackathonStore';
 
@@ -25,18 +25,25 @@ export const useSubmissionStore = create<SubmissionState>()(
         }));
 
         if (newSubmission.status === 'submitted' && newSubmission.submittedAt) {
-          const newLeaderboardEntry: LeaderboardEntry = {
-            rank: null,
-            teamName: newSubmission.teamName,
-            score: null,
-            submittedAt: newSubmission.submittedAt,
-          };
-          useHackathonStore.getState().addLeaderboardEntry(newSubmission.hackathonSlug, newLeaderboardEntry);
+           useHackathonStore.getState().updateLeaderboardEntryTimestamp(newSubmission.hackathonSlug, newSubmission.teamName, newSubmission.submittedAt);
         }
 
         return newSubmission;
       },
       updateSubmission: (id, submissionUpdate) => {
+        const submission = get().submissions.find(s => s.id === id);
+        if (submission) {
+            const updatedSubmission = { ...submission, ...submissionUpdate };
+            const newSubmittedAt = updatedSubmission.submittedAt;
+
+            // If artifacts are being removed and the list becomes empty
+            if ('artifacts' in submissionUpdate && submissionUpdate.artifacts?.length === 0) {
+                 useHackathonStore.getState().updateLeaderboardEntryTimestamp(submission.hackathonSlug, submission.teamName, null);
+            } else if (newSubmittedAt) {
+                 useHackathonStore.getState().updateLeaderboardEntryTimestamp(submission.hackathonSlug, submission.teamName, newSubmittedAt);
+            }
+        }
+        
         set((state) => ({
           submissions: state.submissions.map((s) =>
             s.id === id ? { ...s, ...submissionUpdate } : s
@@ -44,6 +51,10 @@ export const useSubmissionStore = create<SubmissionState>()(
         }));
       },
       deleteSubmission: (id) => {
+         const submission = get().submissions.find(s => s.id === id);
+         if (submission) {
+            useHackathonStore.getState().updateLeaderboardEntryTimestamp(submission.hackathonSlug, submission.teamName, null);
+         }
         set((state) => ({
           submissions: state.submissions.filter((s) => s.id !== id),
         }));

@@ -11,10 +11,10 @@ import {
   Calendar as CalendarIcon,
   Trophy,
   Users,
+  Upload,
+  Medal,
   FileText,
   HelpCircle,
-  ClipboardList,
-  GitMerge,
 } from 'lucide-react';
 
 import { useScrollSpy } from '@/hooks/useScrollSpy';
@@ -32,6 +32,9 @@ import InfoSection from '@/components/hackathon/InfoSection';
 import EvalSection from '@/components/hackathon/EvalSection';
 import ScheduleSection from '@/components/hackathon/ScheduleSection';
 import PrizeSection from '@/components/hackathon/PrizeSection';
+import TeamsSection from '@/components/hackathon/TeamsSection';
+import SubmitSection from '@/components/hackathon/SubmitSection';
+import LeaderboardSection from '@/components/hackathon/LeaderboardSection';
 
 const sections = [
   { id: 'overview', label: '개요', icon: BookOpen },
@@ -40,8 +43,8 @@ const sections = [
   { id: 'schedule', label: '일정', icon: CalendarIcon },
   { id: 'prize', label: '상금', icon: Trophy },
   { id: 'teams', label: '팀', icon: Users },
-  { id: 'submit', label: '제출', icon: ClipboardList },
-  { id: 'leaderboard', label: '리더보드', icon: GitMerge },
+  { id: 'submit', label: '제출', icon: Upload },
+  { id: 'leaderboard', label: '리더보드', icon: Medal },
 ];
 
 export default function HackathonDetailPage() {
@@ -49,9 +52,10 @@ export default function HackathonDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
 
-  const { hackathonDetails, hackathons } = useHackathonStore();
+  const { hackathonDetails, hackathons, leaderboards } = useHackathonStore();
   const hackathon = hackathons.find((h) => h.slug === slug);
   const details = hackathonDetails[slug];
+  const leaderboard = leaderboards[slug];
 
   const activeSection = useScrollSpy(
     sections.map((s) => `#${s.id}`),
@@ -141,15 +145,15 @@ export default function HackathonDetailPage() {
             </SectionWrapper>
 
             <SectionWrapper id="teams" title="팀" icon={Users}>
-              <p className="text-muted-foreground text-center py-8">팀 섹션 준비 중</p>
+              <TeamsSection hackathonSlug={slug} teamPolicy={details.sections.overview.teamPolicy} />
             </SectionWrapper>
             
-            <SectionWrapper id="submit" title="제출" icon={ClipboardList}>
-               <p className="text-muted-foreground text-center py-8">제출 섹션 준비 중</p>
+            <SectionWrapper id="submit" title="제출" icon={Upload}>
+               <SubmitSection hackathonSlug={slug} hackathonDetail={details} />
             </SectionWrapper>
 
-            <SectionWrapper id="leaderboard" title="리더보드" icon={GitMerge}>
-              <p className="text-muted-foreground text-center py-8">리더보드 준비 중</p>
+            <SectionWrapper id="leaderboard" title="리더보드" icon={Medal}>
+              <LeaderboardSection leaderboard={leaderboard} hackathonDetail={details} />
             </SectionWrapper>
           </main>
         </div>
