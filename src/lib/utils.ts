@@ -16,13 +16,13 @@ export function generateId(prefix: string = 'id'): string {
 export function getStatusColor(status: "ongoing" | "upcoming" | "ended"): string {
   switch (status) {
     case "ongoing":
-      return "bg-green-500";
+      return "bg-green-100 text-green-700";
     case "upcoming":
-      return "bg-blue-500";
+      return "bg-blue-100 text-blue-700";
     case "ended":
-      return "bg-gray-500";
+      return "bg-slate-100 text-slate-500";
     default:
-      return "bg-gray-500";
+      return "bg-slate-100 text-slate-500";
   }
 }
 

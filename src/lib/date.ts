@@ -22,6 +22,7 @@ export function getDday(targetDate: string): string {
   }
 
   const diff = differenceInDays(target, now);
+  if (diff === 0) return 'D-Day';
   return `D-${diff}`;
 }
 
