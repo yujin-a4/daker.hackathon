@@ -94,6 +94,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
       } else {
         const newTeam = addTeam({
           ...data,
+          lookingFor: data.lookingFor || [],
           hackathonSlug: data.hackathonSlug || null,
           contact: { type: 'link', url: data.contact },
           isOpen: true,
