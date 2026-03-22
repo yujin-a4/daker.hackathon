@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Dna, Sun, Moon } from 'lucide-react';
+import { Menu, X, Dna, Sun, Moon, User } from 'lucide-react';
 
 import { useUserStore } from '@/store/useUserStore';
 import { useThemeStore } from '@/store/useThemeStore';
@@ -16,6 +16,7 @@ const navLinks = [
   { href: '/hackathons', label: '해커톤' },
   { href: '/camp', label: '팀 찾기' },
   { href: '/rankings', label: '랭킹' },
+  { href: '/mypage', label: '마이페이지' },
 ];
 
 export default function Navbar() {
@@ -30,7 +31,7 @@ export default function Navbar() {
   const getInitials = (name: string) => {
     return name ? name.charAt(0).toUpperCase() : '?';
   };
-  
+
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
@@ -50,7 +51,7 @@ export default function Navbar() {
                 href={link.href}
                 className={cn(
                   'relative text-muted-foreground transition-colors hover:text-primary',
-                  pathname.startsWith(link.href) && 'text-primary'
+                  pathname.startsWith(link.href) && 'text-primary',
                 )}
               >
                 {link.label}
@@ -61,26 +62,29 @@ export default function Navbar() {
             ))}
           </nav>
           <div className="flex flex-1 items-center justify-end space-x-2">
-             {mounted && (
-                <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
-                  <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                  <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                </Button>
-              )}
-            {currentUser ? (
-              <div className="flex items-center space-x-2">
+            {mounted && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+              >
+                <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              </Button>
+            )}
+            {currentUser && (
+              <div className="hidden sm:flex items-center space-x-2">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={undefined} />
                   <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
                     {getInitials(currentUser.nickname)}
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden sm:inline text-sm font-medium text-foreground">
+                <span className="text-sm font-medium text-foreground">
                   {currentUser.nickname}
                 </span>
               </div>
-            ) : (
-                <Button variant="outline" size="sm">로그인</Button>
             )}
             <Button
               variant="ghost"
@@ -108,16 +112,24 @@ export default function Navbar() {
               initial={{ y: '-100%' }}
               animate={{ y: '0%' }}
               exit={{ y: '-100%' }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
               className="absolute top-0 left-0 w-full bg-background p-4 shadow-lg"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-8">
-                <Link href="/" className="flex items-center space-x-2" onClick={() => setIsMenuOpen(false)}>
-                    <Dna className="h-6 w-6 text-primary" />
-                    <span className="font-bold text-xl text-primary">DAKER</span>
+                <Link
+                  href="/"
+                  className="flex items-center space-x-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Dna className="h-6 w-6 text-primary" />
+                  <span className="font-bold text-xl text-primary">DAKER</span>
                 </Link>
-                <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsMenuOpen(false)}
+                >
                   <X className="h-6 w-6" />
                   <span className="sr-only">Close menu</span>
                 </Button>
@@ -130,7 +142,7 @@ export default function Navbar() {
                     onClick={() => setIsMenuOpen(false)}
                     className={cn(
                       'text-lg font-medium text-foreground',
-                      pathname.startsWith(link.href) && 'text-primary'
+                      pathname.startsWith(link.href) && 'text-primary',
                     )}
                   >
                     {link.label}
