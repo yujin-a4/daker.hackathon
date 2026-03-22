@@ -24,7 +24,7 @@ export default function Footer() {
     window.location.reload();
     toast({ title: "데이터가 초기화되었습니다." });
   };
-  
+
   return (
     <footer className="border-t bg-background">
       <div className="container flex flex-col items-center justify-center py-8 text-center">

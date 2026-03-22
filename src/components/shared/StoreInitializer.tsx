@@ -1,19 +1,17 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { initializeStore } from '@/store/initializer';
+import { initializeIfNeeded } from '@/store/initializer';
 
-function StoreInitializer() {
+export default function StoreInitializer() {
   const initialized = useRef(false);
 
   useEffect(() => {
     if (!initialized.current) {
-      initializeStore();
       initialized.current = true;
+      initializeIfNeeded();
     }
   }, []);
 
   return null;
 }
-
-export default StoreInitializer;

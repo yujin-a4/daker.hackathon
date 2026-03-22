@@ -1,15 +1,17 @@
 export interface Hackathon {
   slug: string;
   title: string;
-  status: "ongoing" | "upcoming" | "ended";
+  status: 'ongoing' | 'upcoming' | 'ended';
+  type: string;
   tags: string[];
   thumbnailUrl: string;
   period: {
     timezone: string;
-    submissionDeadlineAt: string; // ISO 8601
+    submissionDeadlineAt: string;
     endAt: string;
   };
   participantCount: number;
+  prizeTotal: string;
   links: {
     detail: string;
     rules: string;
@@ -32,7 +34,7 @@ export interface HackathonDetail {
     eval: {
       metricName: string;
       description: string;
-      scoreSource?: "vote" | "auto";
+      scoreSource?: 'vote' | 'auto';
       limits?: { maxRuntimeSec?: number; maxSubmissionsPerDay?: number };
       scoreDisplay?: {
         label: string;
@@ -98,8 +100,10 @@ export interface RankingUser {
   rank: number;
   nickname: string;
   points: number;
+  basePoints: number;
   hackathonsJoined: number;
   winsCount: number;
+  lastActiveAt: string;
 }
 
 export interface Submission {
@@ -107,7 +111,7 @@ export interface Submission {
   hackathonSlug: string;
   teamCode: string;
   teamName: string;
-  status: "draft" | "submitted";
+  status: 'draft' | 'submitted';
   artifacts: {
     type: string;
     key?: string;
@@ -126,4 +130,7 @@ export interface CurrentUser {
   teamCodes: string[];
   joinedAt: string;
   bookmarkedSlugs?: string[];
+  role?: string;
+  preferredTypes?: string[];
+  skills?: string[];
 }

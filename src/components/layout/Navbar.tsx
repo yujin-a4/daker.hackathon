@@ -4,13 +4,15 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Dna, Sun, Moon, User } from 'lucide-react';
+import { Menu, X, Dna, Sun, Moon, LogIn } from 'lucide-react';
 
 import { useUserStore } from '@/store/useUserStore';
 import { useThemeStore } from '@/store/useThemeStore';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+
+import AuthModal from '@/components/auth/AuthModal';
+import UserDropdown from '@/components/auth/UserDropdown';
 
 const navLinks = [
   { href: '/hackathons', label: '해커톤' },
@@ -24,13 +26,10 @@ export default function Navbar() {
   const { currentUser } = useUserStore();
   const { theme, setTheme } = useThemeStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
-
-  const getInitials = (name: string) => {
-    return name ? name.charAt(0).toUpperCase() : '?';
-  };
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -40,10 +39,13 @@ export default function Navbar() {
     <>
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 max-w-7xl items-center">
+          {/* 로고 */}
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Dna className="h-6 w-6 text-primary" />
             <span className="font-bold text-xl text-primary">DAKER</span>
           </Link>
+
+          {/* 데스크탑 내비게이션 */}
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             {navLinks.map((link) => (
               <Link
@@ -51,41 +53,45 @@ export default function Navbar() {
                 href={link.href}
                 className={cn(
                   'relative text-muted-foreground transition-colors hover:text-primary',
-                  pathname.startsWith(link.href) && 'text-primary',
+                  pathname.startsWith(link.href) && 'text-primary'
                 )}
               >
                 {link.label}
                 {pathname.startsWith(link.href) && (
-                  <span className="absolute bottom-[-19px] left-0 w-full h-0.5 bg-primary"></span>
+                  <span className="absolute bottom-[-19px] left-0 w-full h-0.5 bg-primary" />
                 )}
               </Link>
             ))}
           </nav>
+
+          {/* 우측 영역 */}
           <div className="flex flex-1 items-center justify-end space-x-2">
+            {/* 다크모드 토글 */}
             {mounted && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleTheme}
-                aria-label="Toggle theme"
-              >
+              <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
                 <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                 <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               </Button>
             )}
-            {currentUser && (
-              <div className="hidden sm:flex items-center space-x-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={undefined} />
-                  <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                    {getInitials(currentUser.nickname)}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm font-medium text-foreground">
-                  {currentUser.nickname}
-                </span>
-              </div>
+
+            {/* 로그인 상태에 따라 분기 */}
+            {mounted && (
+              currentUser ? (
+                <UserDropdown />
+              ) : (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setIsAuthOpen(true)}
+                  className="hidden sm:inline-flex"
+                >
+                  <LogIn className="w-4 h-4 mr-1.5" />
+                  로그인
+                </Button>
+              )
             )}
+
+            {/* 모바일 메뉴 버튼 */}
             <Button
               variant="ghost"
               size="icon"
@@ -98,6 +104,8 @@ export default function Navbar() {
           </div>
         </div>
       </header>
+
+      {/* 모바일 사이드 메뉴 */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
@@ -125,15 +133,12 @@ export default function Navbar() {
                   <Dna className="h-6 w-6 text-primary" />
                   <span className="font-bold text-xl text-primary">DAKER</span>
                 </Link>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsMenuOpen(false)}
-                >
+                <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)}>
                   <X className="h-6 w-6" />
                   <span className="sr-only">Close menu</span>
                 </Button>
               </div>
+
               <nav className="flex flex-col space-y-6">
                 {navLinks.map((link) => (
                   <Link
@@ -142,17 +147,56 @@ export default function Navbar() {
                     onClick={() => setIsMenuOpen(false)}
                     className={cn(
                       'text-lg font-medium text-foreground',
-                      pathname.startsWith(link.href) && 'text-primary',
+                      pathname.startsWith(link.href) && 'text-primary'
                     )}
                   >
                     {link.label}
                   </Link>
                 ))}
               </nav>
+
+              {/* 모바일 로그인/유저 영역 */}
+              <div className="mt-8 pt-6 border-t">
+                {currentUser ? (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium">{currentUser.nickname}</p>
+                      {currentUser.email && (
+                        <p className="text-xs text-muted-foreground">{currentUser.email}</p>
+                      )}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        useUserStore.getState().logout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="text-red-500 border-red-500/30"
+                    >
+                      로그아웃
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    className="w-full"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      setIsAuthOpen(true);
+                    }}
+                  >
+                    <LogIn className="w-4 h-4 mr-2" />
+                    로그인 / 회원가입
+                  </Button>
+                )}
+              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 인증 모달 */}
+      <AuthModal open={isAuthOpen} onOpenChange={setIsAuthOpen} />
     </>
   );
 }

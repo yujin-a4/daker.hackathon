@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -69,58 +69,72 @@ export default function HackathonDetailPage() {
 
   // ── Scroll Spy ──
   const [activeSection, setActiveSection] = useState('overview');
-  const isClickScrollingRef = useRef(false);
+  const isClickScrolling = useRef(false);
+  const rafId = useRef<number>(0);
+
+  // getBoundingClientRect 기반 — offsetTop 부모 기준 문제 완전 회피
+  const updateActiveSection = useCallback(() => {
+    if (isClickScrolling.current) return;
+
+    const TRIGGER_LINE = 120; // 뷰포트 상단에서 120px 아래를 기준선으로 사용
+
+    // 페이지 맨 아래 도달 시 마지막 섹션
+    const scrollBottom = window.scrollY + window.innerHeight;
+    const docHeight = document.documentElement.scrollHeight;
+    if (scrollBottom >= docHeight - 20) {
+      setActiveSection(sections[sections.length - 1].id);
+      return;
+    }
+
+    // 각 섹션의 뷰포트 기준 top을 계산
+    let current = sections[0].id;
+    for (let i = sections.length - 1; i >= 0; i--) {
+      const el = document.getElementById(sections[i].id);
+      if (!el) continue;
+      const rect = el.getBoundingClientRect();
+      if (rect.top <= TRIGGER_LINE) {
+        current = sections[i].id;
+        break;
+      }
+    }
+
+    setActiveSection(current);
+  }, []);
 
   useEffect(() => {
-    // DOM이 완전히 렌더링된 후 Observer 연결
-    const timer = setTimeout(() => {
-      const sectionEls = sections
-        .map((s) => document.getElementById(s.id))
-        .filter(Boolean) as HTMLElement[];
-
-      if (sectionEls.length === 0) return;
-
-      const observer = new IntersectionObserver(
-        (entries) => {
-          // 클릭 스크롤 중이면 무시
-          if (isClickScrollingRef.current) return;
-
-          // 현재 보이는 섹션들 중 화면 상단에 가장 가까운 것 선택
-          const visible = entries
-            .filter((e) => e.isIntersecting)
-            .sort(
-              (a, b) =>
-                Math.abs(a.boundingClientRect.top) -
-                Math.abs(b.boundingClientRect.top),
-            );
-
-          if (visible.length > 0) {
-            setActiveSection(visible[0].target.id);
-          }
-        },
-        {
-          // 상단 80px(네비바) 제외, 하단 50% 제외 → 화면 상단~중앙 영역만 감지
-          rootMargin: '-80px 0px -50% 0px',
-          threshold: [0, 0.1, 0.25, 0.5],
-        },
-      );
-
-      sectionEls.forEach((el) => observer.observe(el));
-
-      // cleanup 함수를 timer 내부에서 반환할 수 없으므로, 
-      // observer를 외부 변수에 저장
-      (window as any).__sectionObserver = observer;
-    }, 300);
-
-    return () => {
-      clearTimeout(timer);
-      const obs = (window as any).__sectionObserver;
-      if (obs) {
-        obs.disconnect();
-        delete (window as any).__sectionObserver;
-      }
+    const handleScroll = () => {
+      cancelAnimationFrame(rafId.current);
+      rafId.current = requestAnimationFrame(updateActiveSection);
     };
-  }, [slug, details]);
+
+    // 초기 상태 설정 (DOM 렌더 후)
+    const initTimer = setTimeout(updateActiveSection, 300);
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      cancelAnimationFrame(rafId.current);
+      clearTimeout(initTimer);
+    };
+  }, [updateActiveSection, slug, details]);
+
+  // ── Nav 클릭 시 스크롤 ──
+  const handleNavClick = useCallback((id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    isClickScrolling.current = true;
+    setActiveSection(id);
+
+    // scroll-mt-20 = 80px이므로 약간의 여유를 두고 스크롤
+    const rect = el.getBoundingClientRect();
+    const scrollTo = window.scrollY + rect.top - 90;
+    window.scrollTo({ top: scrollTo, behavior: 'smooth' });
+
+    setTimeout(() => {
+      isClickScrolling.current = false;
+    }, 800);
+  }, []);
 
   // ── Bookmark ──
   const handleBookmarkClick = (e: React.MouseEvent) => {
@@ -171,7 +185,7 @@ export default function HackathonDetailPage() {
         <SectionNav
           sections={sections}
           activeSection={activeSection}
-          isClickScrollingRef={isClickScrollingRef}
+          onNavClick={handleNavClick}
         />
       )}
 
@@ -180,7 +194,7 @@ export default function HackathonDetailPage() {
           <SectionNav
             sections={sections}
             activeSection={activeSection}
-            isClickScrollingRef={isClickScrollingRef}
+            onNavClick={handleNavClick}
           />
         )}
 
@@ -292,6 +306,7 @@ export default function HackathonDetailPage() {
               <LeaderboardSection
                 leaderboard={leaderboard}
                 hackathonDetail={details}
+                status={hackathon.status}
               />
             </SectionWrapper>
           </main>
