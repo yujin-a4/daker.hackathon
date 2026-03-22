@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -17,10 +18,9 @@ import {
   Medal,
   FileText,
   HelpCircle,
-  Heart
+  Heart,
 } from 'lucide-react';
 
-import { useScrollSpy } from '@/hooks/useScrollSpy';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
 import { formatDate } from '@/lib/date';
@@ -65,83 +65,191 @@ export default function HackathonDetailPage() {
   const leaderboard = leaderboards[slug];
   const isBookmarked = currentUser?.bookmarkedSlugs?.includes(slug);
 
-  const activeSection = useScrollSpy(
-    sections.map((s) => `#${s.id}`),
-    { rootMargin: '-20% 0px -75% 0px' }
-  );
-  
   const isMobile = useIsMobile();
 
+  // ── Scroll Spy ──
+  const [activeSection, setActiveSection] = useState('overview');
+  const isClickScrollingRef = useRef(false);
+
+  useEffect(() => {
+    // DOM이 완전히 렌더링된 후 Observer 연결
+    const timer = setTimeout(() => {
+      const sectionEls = sections
+        .map((s) => document.getElementById(s.id))
+        .filter(Boolean) as HTMLElement[];
+
+      if (sectionEls.length === 0) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          // 클릭 스크롤 중이면 무시
+          if (isClickScrollingRef.current) return;
+
+          // 현재 보이는 섹션들 중 화면 상단에 가장 가까운 것 선택
+          const visible = entries
+            .filter((e) => e.isIntersecting)
+            .sort(
+              (a, b) =>
+                Math.abs(a.boundingClientRect.top) -
+                Math.abs(b.boundingClientRect.top),
+            );
+
+          if (visible.length > 0) {
+            setActiveSection(visible[0].target.id);
+          }
+        },
+        {
+          // 상단 80px(네비바) 제외, 하단 50% 제외 → 화면 상단~중앙 영역만 감지
+          rootMargin: '-80px 0px -50% 0px',
+          threshold: [0, 0.1, 0.25, 0.5],
+        },
+      );
+
+      sectionEls.forEach((el) => observer.observe(el));
+
+      // cleanup 함수를 timer 내부에서 반환할 수 없으므로, 
+      // observer를 외부 변수에 저장
+      (window as any).__sectionObserver = observer;
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      const obs = (window as any).__sectionObserver;
+      if (obs) {
+        obs.disconnect();
+        delete (window as any).__sectionObserver;
+      }
+    };
+  }, [slug, details]);
+
+  // ── Bookmark ──
   const handleBookmarkClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggleBookmark(slug);
     toast({
-      title: isBookmarked ? "북마크를 제거했습니다." : "북마크에 추가했습니다.",
+      title: isBookmarked ? '북마크를 제거했습니다.' : '북마크에 추가했습니다.',
     });
   };
 
+  // ── Loading / Error ──
   if (!slug) return <LoadingState variant="detail" />;
   if (!hackathon || !details) {
     return (
-      <div className="container mx-auto py-8">
-        <ErrorState 
-          description="해커톤 정보를 찾을 수 없습니다." 
-          actionLabel="목록으로 돌아가기"
-          onAction={() => router.push('/hackathons')}
-        />
+      <div className="container mx-auto py-8 text-center">
+        <ErrorState description="해커톤 정보를 찾을 수 없습니다." />
+        <Button
+          variant="outline"
+          className="mt-4"
+          onClick={() => router.push('/hackathons')}
+        >
+          목록으로 돌아가기
+        </Button>
       </div>
     );
   }
 
   let statusText = '';
   switch (hackathon.status) {
-    case 'ongoing': statusText = '진행중'; break;
-    case 'upcoming': statusText = '예정'; break;
-    case 'ended': statusText = '종료'; break;
+    case 'ongoing':
+      statusText = '진행중';
+      break;
+    case 'upcoming':
+      statusText = '예정';
+      break;
+    case 'ended':
+      statusText = '종료';
+      break;
   }
-  
+
   const schedule = details.sections.schedule;
   const firstMilestone = schedule.milestones[0];
   const lastMilestone = schedule.milestones[schedule.milestones.length - 1];
 
   return (
     <div className="container mx-auto py-8">
-      {isMobile && <SectionNav sections={sections} activeSection={activeSection} />}
+      {isMobile && (
+        <SectionNav
+          sections={sections}
+          activeSection={activeSection}
+          isClickScrollingRef={isClickScrollingRef}
+        />
+      )}
 
       <div className="flex flex-col md:flex-row md:gap-12 lg:gap-16">
-        {!isMobile && <SectionNav sections={sections} activeSection={activeSection} />}
-        
+        {!isMobile && (
+          <SectionNav
+            sections={sections}
+            activeSection={activeSection}
+            isClickScrollingRef={isClickScrollingRef}
+          />
+        )}
+
         <div className="flex-1 min-w-0">
           <header className="mb-8 md:mb-12">
-            <Button variant="link" onClick={() => router.back()} className="p-0 h-auto mb-4 text-muted-foreground hover:text-foreground">
+            <Button
+              variant="link"
+              onClick={() => router.back()}
+              className="p-0 h-auto mb-4 text-muted-foreground hover:text-foreground"
+            >
               <ArrowLeft className="mr-1 h-4 w-4" />
               목록으로
             </Button>
             <div className="flex items-center gap-3 mb-3">
-              <Badge className={cn('font-semibold', getStatusColor(hackathon.status))}>{statusText}</Badge>
+              <Badge
+                className={cn('font-semibold', getStatusColor(hackathon.status))}
+              >
+                {statusText}
+              </Badge>
             </div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight">{details.title}</h1>
-              <motion.button whileTap={{ scale: 1.2 }} onClick={handleBookmarkClick} aria-label="Bookmark hackathon">
-                <Heart className={cn("w-6 h-6 text-slate-300 dark:text-slate-600 transition-colors", isBookmarked && "fill-red-500 text-red-500")} />
+              <h1 className="text-3xl font-bold tracking-tight">
+                {details.title}
+              </h1>
+              <motion.button
+                whileTap={{ scale: 1.2 }}
+                onClick={handleBookmarkClick}
+                aria-label="Bookmark hackathon"
+              >
+                <Heart
+                  className={cn(
+                    'w-6 h-6 text-slate-300 dark:text-slate-600 transition-colors',
+                    isBookmarked && 'fill-red-500 text-red-500',
+                  )}
+                />
               </motion.button>
             </div>
             <div className="flex flex-wrap gap-2 my-4">
-              {hackathon.tags.map((tag) => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+              {hackathon.tags.map((tag) => (
+                <Badge key={tag} variant="secondary">
+                  {tag}
+                </Badge>
+              ))}
             </div>
             <div className="text-muted-foreground text-sm flex items-center gap-2 mb-5">
               <CalendarIcon className="w-4 h-4" />
-              <span>{formatDate(firstMilestone.at)} ~ {formatDate(lastMilestone.at)}</span>
-              <span className="text-slate-400 dark:text-slate-500">({schedule.timezone})</span>
+              <span>
+                {formatDate(firstMilestone.at)} ~ {formatDate(lastMilestone.at)}
+              </span>
+              <span className="text-slate-400 dark:text-slate-500">
+                ({schedule.timezone})
+              </span>
             </div>
             <div className="flex gap-2">
               <Button asChild variant="outline" size="sm">
-                <Link href={details.sections.info.links.rules} target="_blank" rel="noopener noreferrer">
+                <Link
+                  href={details.sections.info.links.rules}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <FileText className="mr-1.5" /> 규정
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm">
-                <Link href={details.sections.info.links.faq} target="_blank" rel="noopener noreferrer">
+                <Link
+                  href={details.sections.info.links.faq}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <HelpCircle className="mr-1.5" /> FAQ
                 </Link>
               </Button>
@@ -152,33 +260,39 @@ export default function HackathonDetailPage() {
             <SectionWrapper id="overview" title="개요" icon={BookOpen}>
               <OverviewSection overview={details.sections.overview} />
             </SectionWrapper>
-            
+
             <SectionWrapper id="info" title="안내" icon={Info}>
               <InfoSection info={details.sections.info} />
             </SectionWrapper>
-            
+
             <SectionWrapper id="eval" title="평가" icon={BarChart}>
               <EvalSection evalData={details.sections.eval} />
             </SectionWrapper>
-            
+
             <SectionWrapper id="schedule" title="일정" icon={CalendarIcon}>
               <ScheduleSection schedule={details.sections.schedule} />
             </SectionWrapper>
-            
+
             <SectionWrapper id="prize" title="상금" icon={Trophy}>
               <PrizeSection prize={details.sections.prize} />
             </SectionWrapper>
 
             <SectionWrapper id="teams" title="팀" icon={Users}>
-              <TeamsSection hackathonSlug={slug} teamPolicy={details.sections.overview.teamPolicy} />
+              <TeamsSection
+                hackathonSlug={slug}
+                teamPolicy={details.sections.overview.teamPolicy}
+              />
             </SectionWrapper>
-            
+
             <SectionWrapper id="submit" title="제출" icon={Upload}>
-               <SubmitSection hackathonSlug={slug} hackathonDetail={details} />
+              <SubmitSection hackathonSlug={slug} hackathonDetail={details} />
             </SectionWrapper>
 
             <SectionWrapper id="leaderboard" title="리더보드" icon={Medal}>
-              <LeaderboardSection leaderboard={leaderboard} hackathonDetail={details} />
+              <LeaderboardSection
+                leaderboard={leaderboard}
+                hackathonDetail={details}
+              />
             </SectionWrapper>
           </main>
         </div>

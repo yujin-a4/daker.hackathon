@@ -12,9 +12,14 @@ type Section = {
 type SectionNavProps = {
   sections: Section[];
   activeSection: string;
+  onNavClick?: (id: string) => void;
 };
 
-export default function SectionNav({ sections, activeSection }: SectionNavProps) {
+export default function SectionNav({
+  sections,
+  activeSection,
+  onNavClick,
+}: SectionNavProps) {
   const isMobile = useIsMobile();
   const activeTabRef = useRef<HTMLButtonElement>(null);
 
@@ -28,19 +33,27 @@ export default function SectionNav({ sections, activeSection }: SectionNavProps)
     }
   }, [activeSection, isMobile]);
 
-  const handleNavItemClick = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-        const yOffset = -80; // for sticky header
-        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-        window.scrollTo({top: y, behavior: 'smooth'});
+  const handleClick = (id: string) => {
+    if (onNavClick) {
+      onNavClick(id);
+    } else {
+      const element = document.getElementById(id);
+      if (element) {
+        const yOffset = -88;
+        const y =
+          element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
     }
   };
-  
+
   if (isMobile) {
     return (
       <div className="sticky top-14 z-40 bg-background/95 backdrop-blur-sm">
-        <div className="overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div
+          className="overflow-x-auto"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
           <div className="flex px-2 border-b">
             {sections.map((section) => {
               const isActive = activeSection === section.id;
@@ -48,12 +61,12 @@ export default function SectionNav({ sections, activeSection }: SectionNavProps)
                 <button
                   key={section.id}
                   ref={isActive ? activeTabRef : null}
-                  onClick={() => handleNavItemClick(section.id)}
+                  onClick={() => handleClick(section.id)}
                   className={cn(
                     'px-3.5 py-3 text-sm font-medium whitespace-nowrap transition-colors',
                     isActive
                       ? 'border-b-2 border-indigo-500 text-indigo-600'
-                      : 'text-slate-500 hover:text-slate-700 border-b-2 border-transparent'
+                      : 'text-slate-500 hover:text-slate-700 border-b-2 border-transparent',
                   )}
                 >
                   {section.label}
@@ -78,13 +91,13 @@ export default function SectionNav({ sections, activeSection }: SectionNavProps)
                   href={`#${section.id}`}
                   onClick={(e) => {
                     e.preventDefault();
-                    handleNavItemClick(section.id);
+                    handleClick(section.id);
                   }}
                   className={cn(
                     'block pl-5 pr-2 py-2 text-sm rounded-r-md transition-all',
                     isActive
                       ? 'border-l-4 border-indigo-500 text-indigo-600 font-semibold bg-indigo-50'
-                      : 'border-l-4 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                      : 'border-l-4 border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50',
                   )}
                 >
                   {section.label}
