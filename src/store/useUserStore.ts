@@ -22,7 +22,18 @@ interface UserState {
 export const useUserStore = create<UserState>()(
   persist(
     (set, get) => ({
-      currentUser: null,
+      // 🔥 시니어의 매직: 초기 접속 시 '강유진' 님으로 자동 로그인 상태 세팅
+      currentUser: {
+        id: 'dummy-user-yujin-001',
+        nickname: '강유진',
+        email: 'yujin.kang@daker.ai',
+        teamCodes: ['T-HANDOVER-01'], // 404found 팀 소속으로 세팅
+        joinedAt: new Date().toISOString(),
+        bookmarkedSlugs: ['daker-handover-2026-03'], // 해커톤 북마크
+        role: '프론트엔드 개발자',
+        preferredTypes: ['Web', 'VibeCoding'],
+        skills: ['React', 'Next.js', 'Tailwind CSS'],
+      },
 
       register: (nickname: string, email: string) => {
         const newUser: CurrentUser = {
@@ -40,11 +51,8 @@ export const useUserStore = create<UserState>()(
       },
 
       login: (nickname: string) => {
-        // localStorage 기반이라 별도 인증 없이 기존 유저 복원
-        // 이미 persist로 저장되어 있으므로, 이 함수는 시드 유저로 로그인할 때 사용
         const { currentUser } = get();
         if (currentUser && currentUser.nickname === nickname) return;
-        // 새 세션 (간단 로그인)
         set({
           currentUser: {
             id: generateId('user'),
