@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Dna, Sun, Moon, LogIn, Megaphone } from 'lucide-react'; // Megaphone 아이콘 추가
+import { Menu, X, Dna, Sun, Moon, LogIn, Megaphone, Trophy, Users } from 'lucide-react'; // 아이콘 추가
 
 import { useUserStore } from '@/store/useUserStore';
 import { useThemeStore } from '@/store/useThemeStore';
@@ -28,17 +28,55 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [showBanner, setShowBanner] = useState(true); // 배너 표시 상태 추가
+  const [showBanner, setShowBanner] = useState(true);
+
+  // 공지 롤링을 위한 상태
+  const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
+
+  // 시니어의 꼼꼼한 데이터 큐레이션: 공지 데이터 배열 (useMemo로 최적화)
+  const notices = useMemo(() => [
+    {
+      id: 'deadline',
+      type: '마감임박',
+      icon: Megaphone,
+      // innerHTML로 HTML 태그 지원 (font-bold 등)
+      text: '🚨 긴급 인수인계 해커톤 제출 마감 <span class="font-bold text-yellow-300">D-3</span>! 늦기 전에 결과물을 제출하세요!'
+    },
+    {
+      id: 'ranking',
+      type: '랭킹업데이트',
+      icon: Trophy,
+      text: '🏆 현재 1위는 <span class="font-bold">팀 시너지</span> (31 커밋)! 추격자가 나타날까요?'
+    },
+    {
+      id: 'recruitment',
+      type: '팀원모집',
+      icon: Users,
+      text: '🤝 새 팀들이 등록되었습니다! <span class="font-bold">팀 찾기</span> 탭에서 지금 합류하세요.'
+    }
+  ], []);
 
   useEffect(() => setMounted(true), []);
+
+  // 4초마다 자동으로 공지를 롤링하는 기가 막힌 로직 (시니어님 최고 👍)
+  useEffect(() => {
+    if (!showBanner || notices.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentNoticeIndex((prevIndex) => (prevIndex + 1) % notices.length);
+    }, 4000); // 4초 간격
+
+    return () => clearInterval(interval); // 컴포넌트 언마운트 시 클리어 (유지보수 필수!)
+  }, [showBanner, notices.length]);
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
+  const CurrentIcon = notices[currentNoticeIndex].icon;
+
   return (
     <>
-      {/* 마감 임박 공지 배너 (시니어의 센스 한 스푼 🥄) */}
       <AnimatePresence>
         {showBanner && (
           <motion.div
@@ -46,22 +84,38 @@ export default function Navbar() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0, overflow: 'hidden' }}
             transition={{ duration: 0.3 }}
-            className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-purple-600 w-full"
+            className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-purple-600 w-full overflow-hidden" // overflow-hidden 추가
           >
-            <div className="container mx-auto flex h-10 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-              <div className="flex-1 flex items-center justify-center space-x-2 text-white text-xs sm:text-sm font-medium">
-                <Megaphone className="h-4 w-4 animate-pulse" />
-                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] sm:text-xs font-bold backdrop-blur-sm border border-white/30">
-                  마감임박
-                </span>
-                <span className="truncate">
-                  🚨 긴급 인수인계 해커톤 제출 마감 <span className="font-bold text-yellow-300">D-3</span>! 늦기 전에 결과물을 제출하세요!
-                </span>
+            <div className="container mx-auto flex h-10 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 relative">
+              
+              {/* 공지 롤링 영역 (AnimatePresence mode="wait" 필수!) */}
+              <div className="flex-1 h-full flex items-center justify-center relative">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={notices[currentNoticeIndex].id} // 키값이 바뀌어야 애니메이션이 먹힘
+                    initial={{ y: 20, opacity: 0 }} // 아래에서
+                    animate={{ y: 0, opacity: 1 }} // 스윽 올라옴
+                    exit={{ y: -20, opacity: 0 }} // 위로 사라짐
+                    transition={{ duration: 0.5, ease: 'easeInOut' }}
+                    className="flex items-center space-x-2 text-white text-xs sm:text-sm font-medium absolute inset-0 justify-center"
+                  >
+                    <CurrentIcon className="h-4 w-4 shrink-0" />
+                    <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] sm:text-xs font-bold backdrop-blur-sm border border-white/30 shrink-0">
+                      {notices[currentNoticeIndex].type}
+                    </span>
+                    <span 
+                      className="truncate"
+                      dangerouslySetInnerHTML={{ __html: notices[currentNoticeIndex].text }} // HTML 렌더링
+                    />
+                  </motion.div>
+                </AnimatePresence>
               </div>
+
+              {/* 닫기 버튼 */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 text-white hover:bg-white/20 hover:text-white rounded-full transition-colors shrink-0 ml-2"
+                className="h-6 w-6 text-white hover:bg-white/20 hover:text-white rounded-full transition-colors shrink-0 ml-2 relative z-10" // z-10 추가
                 onClick={() => setShowBanner(false)}
                 aria-label="Close banner"
               >
@@ -115,10 +169,10 @@ export default function Navbar() {
                 <UserDropdown />
               ) : (
                 <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => setIsAuthOpen(true)}
-                  className="hidden sm:inline-flex"
+                    variant="default"
+                    size="sm"
+                    onClick={() => setIsAuthOpen(true)}
+                    className="hidden sm:inline-flex"
                 >
                   <LogIn className="w-4 h-4 mr-1.5" />
                   로그인
