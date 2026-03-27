@@ -42,6 +42,9 @@ export default function HackathonsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showBookmarkedOnly, setShowBookmarkedOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortOption, setSortOption] = useState<
+    'deadline' | 'participantsDesc' | 'participantsAsc' | 'prizeDesc' | 'prizeAsc'
+  >('deadline');
 
   const allTypes = useMemo(() => {
     const types = new Set<string>();
@@ -64,6 +67,20 @@ export default function HackathonsPage() {
         const statusOrder = { ongoing: 0, upcoming: 1, ended: 2 };
         const statusDiff = statusOrder[a.status] - statusOrder[b.status];
         if (statusDiff !== 0) return statusDiff;
+
+        if (sortOption.startsWith('participants')) {
+          return sortOption === 'participantsDesc'
+            ? b.participantCount - a.participantCount
+            : a.participantCount - b.participantCount;
+        }
+        
+        if (sortOption.startsWith('prize')) {
+          const prizeA = parseInt(a.prizeTotal?.replace(/[^0-9]/g, '') || '0', 10);
+          const prizeB = parseInt(b.prizeTotal?.replace(/[^0-9]/g, '') || '0', 10);
+          return sortOption === 'prizeDesc' ? prizeB - prizeA : prizeA - prizeB;
+        }
+
+        // default: deadline
         return (
           new Date(a.period.submissionDeadlineAt).getTime() -
           new Date(b.period.submissionDeadlineAt).getTime()
@@ -84,7 +101,7 @@ export default function HackathonsPage() {
           currentUser?.bookmarkedSlugs?.includes(hackathon.slug);
         return statusMatch && typeMatch && searchMatch && bookmarkMatch;
       });
-  }, [hackathons, statusFilter, selectedType, searchQuery, showBookmarkedOnly, currentUser]);
+  }, [hackathons, statusFilter, selectedType, searchQuery, showBookmarkedOnly, currentUser, sortOption]);
 
   const totalPages = Math.ceil(filteredHackathons.length / ITEMS_PER_PAGE);
   const paginatedHackathons = filteredHackathons.slice(
@@ -147,8 +164,22 @@ export default function HackathonsPage() {
         {/* 추천 섹션: 필터가 기본 상태일 때만 표시 */}
         {isDefaultFilter && <RecommendedSection />}
 
-        <div className="text-sm text-muted-foreground font-medium">
-          총 {filteredHackathons.length}개
+        <div className="flex items-center justify-between text-sm text-muted-foreground font-medium">
+          <span>총 {filteredHackathons.length}개</span>
+          <select
+            value={sortOption}
+            onChange={(e) => {
+              setSortOption(e.target.value as any);
+              setCurrentPage(1);
+            }}
+            className="bg-transparent border-none outline-none focus:ring-0 text-foreground cursor-pointer hover:text-primary transition-colors pr-2"
+          >
+            <option value="deadline">마감일 임박순</option>
+            <option value="participantsDesc">참가인원 많은 순</option>
+            <option value="participantsAsc">참가인원 적은 순</option>
+            <option value="prizeDesc">상금 높은 순</option>
+            <option value="prizeAsc">상금 낮은 순</option>
+          </select>
         </div>
 
         {paginatedHackathons.length > 0 ? (

@@ -21,8 +21,8 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
-  const [mode, setMode] = useState<'login' | 'register'>('register');
-  const [nickname, setNickname] = useState('');
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [nickname, setNickname] = useState('강유진');
   const [email, setEmail] = useState('');
   const { register, login } = useUserStore();
   const { toast } = useToast();

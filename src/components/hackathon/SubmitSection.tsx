@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CheckCircle, XCircle, Upload, AlertTriangle } from 'lucide-react';
+import { CheckCircle, XCircle, Upload, AlertTriangle, Target } from 'lucide-react';
 import { formatDateTime } from '@/lib/date';
 import {
   AlertDialog,
@@ -199,6 +199,26 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
 
   return (
     <div className="space-y-8">
+      {userTeam && (
+        <div className="bg-indigo-600 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between text-white shadow-lg gap-4 mt-2">
+          <div>
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <Target className="w-5 h-5 text-indigo-300" />
+              팀 작전실(Basecamp) 오픈!
+            </h3>
+            <p className="text-indigo-100 text-sm mt-1">
+              제출 전, 팀 작전실에 입장하여 일정을 점검하고 패들렛 보드에서 팀원들과 아이디어를 나누세요.
+            </p>
+          </div>
+          <Button 
+            variant="secondary" 
+            onClick={() => router.push(`/basecamp/${userTeam.teamCode}`)}
+            className="flex-shrink-0 w-full sm:w-auto font-bold bg-white text-indigo-700 hover:bg-slate-100 shadow-md"
+          >
+            입장하기
+          </Button>
+        </div>
+      )}
       <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-xl p-6">
         <ul className="space-y-4">
           {submitInfo.guide.map((item, index) => (

@@ -53,6 +53,25 @@ export const useUserStore = create<UserState>()(
       login: (nickname: string) => {
         const { currentUser } = get();
         if (currentUser && currentUser.nickname === nickname) return;
+
+        // 시드 데이터의 '강유진' 유저인 경우 원래 데이터 복원
+        if (nickname === '강유진') {
+          set({
+            currentUser: {
+              id: 'dummy-user-yujin-001',
+              nickname: '강유진',
+              email: 'yujin.kang@daker.ai',
+              teamCodes: ['T-HANDOVER-01'],
+              joinedAt: new Date().toISOString(),
+              bookmarkedSlugs: ['daker-handover-2026-03'],
+              role: '프론트엔드 개발자',
+              preferredTypes: ['Web', 'VibeCoding'],
+              skills: ['React', 'Next.js', 'Tailwind CSS'],
+            },
+          });
+          return;
+        }
+
         set({
           currentUser: {
             id: generateId('user'),

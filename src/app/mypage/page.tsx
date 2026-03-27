@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -15,7 +14,10 @@ import {
   Edit3,
   LogOut,
   Shield,
+  Target,
 } from 'lucide-react';
+
+import HackathonTradingCard from '@/components/mypage/HackathonTradingCard';
 
 import { useUserStore } from '@/store/useUserStore';
 import { useTeamStore } from '@/store/useTeamStore';
@@ -32,16 +34,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import EmptyState from '@/components/shared/EmptyState';
 
 export default function MyPage() {
@@ -51,9 +43,6 @@ export default function MyPage() {
   const { hackathons, hackathonDetails, leaderboards } = useHackathonStore();
   const { submissions } = useSubmissionStore();
 
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [editNickname, setEditNickname] = useState('');
-  const [editEmail, setEditEmail] = useState('');
 
   if (!currentUser) {
     return (
@@ -80,8 +69,11 @@ export default function MyPage() {
         .filter(Boolean) as string[],
     ),
   ];
-  const myHackathons = hackathons.filter((h) =>
-    myHackathonSlugs.includes(h.slug),
+  const myHackathons = hackathons.filter(
+    (h) => myHackathonSlugs.includes(h.slug) && h.status !== 'ended',
+  );
+  const myEndedHackathons = hackathons.filter(
+    (h) => myHackathonSlugs.includes(h.slug) && h.status === 'ended',
   );
 
   // ── 북마크한 해커톤 ──
@@ -106,26 +98,7 @@ export default function MyPage() {
     return `D+${Math.abs(diff)}`;
   };
 
-  // ── 프로필 수정 ──
-  const handleEditOpen = () => {
-    setEditNickname(currentUser.nickname);
-    setEditEmail(currentUser.email);
-    setIsEditOpen(true);
-  };
 
-  const handleEditSave = () => {
-    const { currentUser: user } = useUserStore.getState();
-    if (user) {
-      useUserStore.setState({
-        currentUser: {
-          ...user,
-          nickname: editNickname.trim() || user.nickname,
-          email: editEmail.trim() || user.email,
-        },
-      });
-    }
-    setIsEditOpen(false);
-  };
 
   // ── 상태 배지 색상 ──
   const getStatusBadge = (status: string) => {
@@ -210,7 +183,7 @@ export default function MyPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleEditOpen}
+                onClick={() => router.push('/mypage/profile')}
                 className="flex-shrink-0"
               >
                 <Edit3 className="w-4 h-4 mr-1.5" />
@@ -280,65 +253,22 @@ export default function MyPage() {
                 </Button>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 py-4 px-2">
                 {myHackathons.map((h) => {
-                  const detail = hackathonDetails[h.slug];
                   const submission = mySubmissions.find(
                     (s) => s.hackathonSlug === h.slug,
                   );
-                  const deadline = h.period.submissionDeadlineAt;
                   const team = myTeams.find(
                     (t) => t.hackathonSlug === h.slug,
                   );
 
                   return (
-                    <div
+                    <HackathonTradingCard
                       key={h.slug}
-                      className="flex items-center justify-between p-4 rounded-lg border hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
-                      onClick={() =>
-                        router.push(`/hackathons/${h.slug}`)
-                      }
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          {getStatusBadge(h.status)}
-                          <h3 className="font-semibold text-sm truncate">
-                            {h.title}
-                          </h3>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                          {team && (
-                            <span className="flex items-center gap-1">
-                              <Users className="w-3 h-3" />
-                              {team.name}
-                            </span>
-                          )}
-                          {deadline && (
-                            <span className="flex items-center gap-1">
-                              <CalendarIcon className="w-3 h-3" />
-                              마감{' '}
-                              <span
-                                className={cn(
-                                  'font-semibold',
-                                  getDday(deadline).startsWith('D-') &&
-                                    parseInt(getDday(deadline).slice(2)) <= 7
-                                    ? 'text-red-500'
-                                    : '',
-                                )}
-                              >
-                                {getDday(deadline)}
-                              </span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 ml-4">
-                        {submission
-                          ? getSubmissionBadge(submission.status)
-                          : getSubmissionBadge('none')}
-                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                      </div>
-                    </div>
+                      hackathon={h}
+                      team={team}
+                      submission={submission}
+                    />
                   );
                 })}
               </div>
@@ -346,6 +276,46 @@ export default function MyPage() {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* ── 지난 해커톤 (종료) ── */}
+      {myEndedHackathons.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Shield className="w-5 h-5 text-slate-400" />
+                지난 해커톤
+              </CardTitle>
+              <CardDescription>종료된 해커톤 참여 이력</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 py-4 px-2 opacity-75">
+                {myEndedHackathons.map((h) => {
+                  const submission = mySubmissions.find(
+                    (s) => s.hackathonSlug === h.slug,
+                  );
+                  const team = myTeams.find(
+                    (t) => t.hackathonSlug === h.slug,
+                  );
+
+                  return (
+                    <HackathonTradingCard
+                      key={h.slug}
+                      hackathon={h}
+                      team={team}
+                      submission={submission}
+                    />
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* ── 내 팀 목록 ── */}
       <motion.div
@@ -412,6 +382,16 @@ export default function MyPage() {
                         {!linkedHackathon && team.hackathonSlug === null && (
                           <p className="text-slate-400">자유 모집 팀</p>
                         )}
+                      </div>
+                      <div className="mt-4 pt-3 border-t">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="w-full bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 shadow-sm"
+                          onClick={() => router.push(`/basecamp/${team.teamCode}`)}
+                        >
+                          <Target className="w-4 h-4 mr-2" /> 작전실 입장
+                        </Button>
                       </div>
                     </div>
                   );
@@ -524,42 +504,7 @@ export default function MyPage() {
         </Card>
       </motion.div>
 
-      {/* ── 프로필 수정 모달 ── */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>프로필 수정</DialogTitle>
-            <DialogDescription>닉네임과 이메일을 수정할 수 있습니다.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="nickname">닉네임</Label>
-              <Input
-                id="nickname"
-                value={editNickname}
-                onChange={(e) => setEditNickname(e.target.value)}
-                placeholder="닉네임을 입력하세요"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">이메일</Label>
-              <Input
-                id="email"
-                type="email"
-                value={editEmail}
-                onChange={(e) => setEditEmail(e.target.value)}
-                placeholder="이메일을 입력하세요"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditOpen(false)}>
-              취소
-            </Button>
-            <Button onClick={handleEditSave}>저장</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
     </div>
   );
 }

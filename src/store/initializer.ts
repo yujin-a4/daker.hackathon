@@ -14,11 +14,16 @@ import {
   submissions,
 } from '@/data/seed';
 
-export const SEED_VERSION = 'v3.1';
+export const SEED_VERSION = 'v3.4';
 
 export function initializeStore() {
+  const detailsRecord = hackathonDetails.reduce((acc, detail) => {
+    acc[detail.slug] = detail;
+    return acc;
+  }, {} as Record<string, typeof hackathonDetails[0]>);
+
   // hackathon, team, submission, ranking은 시드로 덮어쓰기
-  useHackathonStore.setState({ hackathons, hackathonDetails, leaderboards });
+  useHackathonStore.setState({ hackathons, hackathonDetails: detailsRecord, leaderboards });
   useTeamStore.setState({ teams });
   useSubmissionStore.setState({ submissions });
   useRankingStore.setState({ rankings });

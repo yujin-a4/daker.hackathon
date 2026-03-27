@@ -80,7 +80,7 @@ export default function SectionNav({
   }
 
   return (
-    <aside className="w-56 sticky top-20 h-fit hidden md:block">
+    <nav className="hidden md:block">
       <nav>
         <ul className="space-y-1">
           {sections.map((section) => {
@@ -107,6 +107,6 @@ export default function SectionNav({
           })}
         </ul>
       </nav>
-    </aside>
+    </nav>
   );
 }

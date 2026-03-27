@@ -133,7 +133,7 @@ export default function HackathonListItem({ hackathon }: HackathonListItemProps)
             )}
             <span className="flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5" />
-              ~{formatDate(hackathon.period.endAt)}
+              제출 마감 ~{formatDate(hackathon.period.submissionDeadlineAt)}
             </span>
           </div>
           <span className="hidden sm:flex items-center gap-1 text-sm text-muted-foreground group-hover:text-primary transition-colors">

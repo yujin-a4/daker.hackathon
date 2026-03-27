@@ -39,6 +39,7 @@ import PrizeSection from '@/components/hackathon/PrizeSection';
 import TeamsSection from '@/components/hackathon/TeamsSection';
 import SubmitSection from '@/components/hackathon/SubmitSection';
 import LeaderboardSection from '@/components/hackathon/LeaderboardSection';
+import DeadlineWidget from '@/components/hackathon/DeadlineWidget';
 
 const sections = [
   { id: 'overview', label: '개요', icon: BookOpen },
@@ -55,7 +56,7 @@ export default function HackathonDetailPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
-  const slug = params.slug as string;
+  const slug = params?.slug as string;
 
   const { hackathonDetails, hackathons, leaderboards } = useHackathonStore();
   const { currentUser, toggleBookmark } = useUserStore();
@@ -176,8 +177,10 @@ export default function HackathonDetailPage() {
   }
 
   const schedule = details.sections.schedule;
-  const firstMilestone = schedule.milestones[0];
-  const lastMilestone = schedule.milestones[schedule.milestones.length - 1];
+  const firstMilestone = schedule.milestones?.[0];
+  const lastMilestone = schedule.milestones?.length
+    ? schedule.milestones[schedule.milestones.length - 1]
+    : undefined;
 
   return (
     <div className="container mx-auto py-8">
@@ -191,11 +194,18 @@ export default function HackathonDetailPage() {
 
       <div className="flex flex-col md:flex-row md:gap-12 lg:gap-16">
         {!isMobile && (
-          <SectionNav
-            sections={sections}
-            activeSection={activeSection}
-            onNavClick={handleNavClick}
-          />
+          <div className="w-56 flex-shrink-0 sticky top-20 h-fit hidden md:flex flex-col gap-6">
+            <SectionNav
+              sections={sections}
+              activeSection={activeSection}
+              onNavClick={handleNavClick}
+            />
+            <DeadlineWidget
+              deadlineAt={hackathon.period.submissionDeadlineAt}
+              milestones={details.sections.schedule.milestones || []}
+              timezone={details.sections.schedule.timezone}
+            />
+          </div>
         )}
 
         <div className="flex-1 min-w-0">
@@ -239,6 +249,7 @@ export default function HackathonDetailPage() {
                 </Badge>
               ))}
             </div>
+            {firstMilestone && lastMilestone && (
             <div className="text-muted-foreground text-sm flex items-center gap-2 mb-5">
               <CalendarIcon className="w-4 h-4" />
               <span>
@@ -248,6 +259,7 @@ export default function HackathonDetailPage() {
                 ({schedule.timezone})
               </span>
             </div>
+            )}
             <div className="flex gap-2">
               <Button asChild variant="outline" size="sm">
                 <Link

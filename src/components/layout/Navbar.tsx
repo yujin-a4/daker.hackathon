@@ -39,45 +39,70 @@ export default function Navbar() {
   // 🔥 유저 이름과 참가 중인 해커톤 제목 동적 할당 + 빈 상태 예외 처리
   const notices = useMemo(() => {
     const userName = currentUser ? currentUser.nickname : '참가자';
-    let activeHackathonTitle = null; // 기본값을 null로 설정
+    const dynamicNotices: Array<{id: string, type: string, icon: any, bgClass: string, text: string}> = [];
+    const now = new Date();
     
-    // 유저가 속한 팀을 찾고, 그 팀이 참여 중인 해커톤 제목을 동적으로 찾아냄
+    // 유저가 속한 팀을 찾고, 그 팀이 참여 중인 해커톤의 마감일 공지를 유저가 참여 중인 *모든* 해커톤에 대해 생성
     if (currentUser && currentUser.teamCodes.length > 0) {
-      const myTeam = teams.find(t => t.teamCode === currentUser.teamCodes[0]);
-      if (myTeam) {
-        const myHackathon = hackathons.find(h => h.slug === myTeam.hackathonSlug);
-        if (myHackathon) {
-          activeHackathonTitle = myHackathon.title;
+      // 중복 방지를 위해 slug set 수집
+      const myActiveHackathons = Array.from(new Set(currentUser.teamCodes.map(code => {
+        const team = teams.find(t => t.teamCode === code);
+        return team ? team.hackathonSlug : null;
+      }))).filter(Boolean);
+
+      myActiveHackathons.forEach(slug => {
+        const hackathon = hackathons.find(h => h.slug === slug && h.status === 'ongoing');
+        if (hackathon) {
+          const deadline = new Date(hackathon.period.submissionDeadlineAt);
+          const diffMs = deadline.getTime() - now.getTime();
+          let dDayText = '마감됨';
+          
+          if (diffMs > 0) {
+            const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+            dDayText = diffDays === 0 ? 'D-Day' : `D-${diffDays}`;
+          }
+
+          dynamicNotices.push({
+            id: `deadline-${hackathon.slug}`,
+            type: '마감임박',
+            icon: Megaphone,
+            bgClass: 'bg-rose-500', 
+            text: `🚨 <span class="font-bold text-yellow-300">${userName}</span>님이 참가 중인 [${hackathon.title}] 제출 마감이 <span class="font-bold text-yellow-300">${dDayText}</span> 남았습니다!`
+          });
         }
-      }
+      });
     }
-    
-    return [
-      {
-        id: 'deadline',
-        type: activeHackathonTitle ? '마감임박' : '해커톤모집', // 타이틀 유무에 따라 뱃지 텍스트 변경
+
+    // 참가 중인 대회가 하나도 없으면 참여 유도 멘트
+    if (dynamicNotices.length === 0) {
+      dynamicNotices.push({
+        id: 'no-participation',
+        type: '해커톤모집',
         icon: Megaphone,
         bgClass: 'bg-rose-500', 
-        // 🔥 참가 중인 대회가 있으면 마감 알림, 없으면 참여 유도 멘트로 분기 처리!
-        text: activeHackathonTitle 
-          ? `🚨 <span class="font-bold text-yellow-300">${userName}</span>님이 참가 중인 [${activeHackathonTitle}] 제출 마감이 <span class="font-bold text-yellow-300">D-3</span> 남았습니다!`
-          : `🔥 아직 참가 중인 해커톤이 없네요! 지금 바로 <span class="font-bold text-yellow-300">새로운 팀</span>에 합류해 보세요!`
-      },
-      {
-        id: 'ranking',
-        type: '랭킹업데이트',
-        icon: Trophy,
-        bgClass: 'bg-blue-600', 
-        text: `🏆 <span class="font-bold text-yellow-300">${userName}</span>님의 소속 팀이 1위까지 3커밋 남았습니다! 추격해 볼까요?`
-      },
-      {
-        id: 'recruitment',
-        type: '팀원모집',
-        icon: Users,
-        bgClass: 'bg-emerald-600', 
-        text: '🤝 새 팀들이 등록되었습니다! <span class="font-bold text-yellow-300">팀 찾기</span> 탭에서 지금 합류하세요.'
-      }
-    ];
+        text: `🔥 아직 참가 중인 해커톤이 없네요! 지금 바로 <span class="font-bold text-yellow-300">새로운 팀</span>에 합류해 보세요!`
+      });
+    }
+
+    const openTeamCount = teams.filter(t => t.isOpen).length;
+    
+    dynamicNotices.push({
+      id: 'ranking',
+      type: '랭킹업데이트',
+      icon: Trophy,
+      bgClass: 'bg-blue-600', 
+      text: `🏆 현재 <span class="font-bold text-yellow-300">${hackathons.filter(h => h.status === 'ongoing').length}개</span>의 해커톤이 진행 중입니다!`
+    });
+
+    dynamicNotices.push({
+      id: 'recruitment',
+      type: '팀원모집',
+      icon: Users,
+      bgClass: 'bg-emerald-600', 
+      text: `🤝 현재 <span class="font-bold text-yellow-300">${openTeamCount}개 팀</span>이 팀원을 모집 중입니다! <span class="font-bold text-yellow-300">팀 찾기</span> 탭에서 합류하세요.`
+    });
+    
+    return dynamicNotices;
   }, [currentUser, teams, hackathons]);
 
   useEffect(() => setMounted(true), []);
