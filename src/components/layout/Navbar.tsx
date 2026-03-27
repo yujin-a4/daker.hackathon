@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Dna, Sun, Moon, LogIn } from 'lucide-react';
+import { Menu, X, Dna, Sun, Moon, LogIn, Megaphone } from 'lucide-react'; // Megaphone 아이콘 추가
 
 import { useUserStore } from '@/store/useUserStore';
 import { useThemeStore } from '@/store/useThemeStore';
@@ -28,6 +28,7 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showBanner, setShowBanner] = useState(true); // 배너 표시 상태 추가
 
   useEffect(() => setMounted(true), []);
 
@@ -37,6 +38,40 @@ export default function Navbar() {
 
   return (
     <>
+      {/* 마감 임박 공지 배너 (시니어의 센스 한 스푼 🥄) */}
+      <AnimatePresence>
+        {showBanner && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0, overflow: 'hidden' }}
+            transition={{ duration: 0.3 }}
+            className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-purple-600 w-full"
+          >
+            <div className="container mx-auto flex h-10 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+              <div className="flex-1 flex items-center justify-center space-x-2 text-white text-xs sm:text-sm font-medium">
+                <Megaphone className="h-4 w-4 animate-pulse" />
+                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] sm:text-xs font-bold backdrop-blur-sm border border-white/30">
+                  마감임박
+                </span>
+                <span className="truncate">
+                  🚨 긴급 인수인계 해커톤 제출 마감 <span className="font-bold text-yellow-300">D-3</span>! 늦기 전에 결과물을 제출하세요!
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-white hover:bg-white/20 hover:text-white rounded-full transition-colors shrink-0 ml-2"
+                onClick={() => setShowBanner(false)}
+                aria-label="Close banner"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 max-w-7xl items-center">
           {/* 로고 */}
