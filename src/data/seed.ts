@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   Hackathon,
   HackathonDetail,
   Leaderboard,
@@ -10,780 +10,299 @@
 
 // ─── Hackathons ────────────────────────────────────────────
 export const hackathons: Hackathon[] = [
-  // ── ended (12) ──────────────────────────
   {
     slug: 'aimers-8-model-lite',
     title: 'Aimers 8기 : 모델 경량화 온라인 해커톤',
     status: 'ended',
     type: 'SW개발',
-    tags: ['AI/ML', 'LLM', '모델경량화', 'Python'],
-    thumbnailUrl: '/placeholder-images/1.jpg',
+    tags: ['LLM', 'Compression', 'vLLM'],
+    thumbnailUrl: '/placeholder-images/1.jpg', // 임시 이미지 경로 매칭
     period: {
       timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2024-10-14T23:59:00+09:00',
-      endAt: '2024-10-15T23:59:00+09:00',
+      submissionDeadlineAt: '2026-02-25T10:00:00+09:00',
+      endAt: '2026-02-26T10:00:00+09:00',
     },
     participantCount: 312,
     prizeTotal: '500만원',
     links: {
       detail: '/hackathons/aimers-8-model-lite',
-      rules: '/hackathons/aimers-8-model-lite#rules',
-      faq: '/hackathons/aimers-8-model-lite#faq',
+      rules: 'https://example.com/public/rules/aimers8',
+      faq: 'https://example.com/public/faq/aimers8',
     },
   },
   {
-    slug: 'data-viz-challenge-2025',
-    title: '데이터 시각화 챌린지 2025',
-    status: 'ended',
-    type: '데이터/AI',
-    tags: ['시각화', 'D3.js', '대시보드', '공공데이터'],
+    slug: 'monthly-vibe-coding-2026-02',
+    title: '월간 해커톤 : 바이브 코딩 개선 AI 아이디어 공모전 (2026.02)',
+    status: 'ongoing',
+    type: '서비스기획',
+    tags: ['Idea', 'GenAI', 'Workflow'],
     thumbnailUrl: '/placeholder-images/2.jpg',
     period: {
       timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2024-11-29T23:59:00+09:00',
-      endAt: '2024-11-30T23:59:00+09:00',
+      submissionDeadlineAt: '2026-03-03T10:00:00+09:00',
+      endAt: '2026-03-09T10:00:00+09:00',
     },
-    participantCount: 189,
-    prizeTotal: '300만원',
+    participantCount: 205,
+    prizeTotal: '100만원',
     links: {
-      detail: '/hackathons/data-viz-challenge-2025',
-      rules: '/hackathons/data-viz-challenge-2025#rules',
-      faq: '/hackathons/data-viz-challenge-2025#faq',
+      detail: '/hackathons/monthly-vibe-coding-2026-02',
+      rules: 'https://example.com/public/rules/vibe202602',
+      faq: 'https://example.com/public/faq/vibe202602',
     },
   },
   {
-    slug: 'web-accessibility-hack',
-    title: '웹 접근성 개선 해커톤',
-    status: 'ended',
+    slug: 'daker-handover-2026-03',
+    title: '긴급 인수인계 해커톤: 명세서만 보고 구현하라',
+    status: 'upcoming', // initializer.ts에서 ongoing으로 자동 변환됨
     type: 'SW개발',
-    tags: ['React', '웹접근성', 'WCAG', 'TypeScript'],
+    tags: ['VibeCoding', 'Web', 'Vercel', 'Handover'],
     thumbnailUrl: '/placeholder-images/3.jpg',
     period: {
       timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2024-09-29T23:59:00+09:00',
-      endAt: '2024-09-30T23:59:00+09:00',
+      submissionDeadlineAt: '2026-03-30T10:00:00+09:00',
+      endAt: '2026-04-27T10:00:00+09:00',
     },
-    participantCount: 156,
-    prizeTotal: '200만원',
+    participantCount: 358,
+    prizeTotal: '100만원',
     links: {
-      detail: '/hackathons/web-accessibility-hack',
-      rules: '/hackathons/web-accessibility-hack#rules',
-      faq: '/hackathons/web-accessibility-hack#faq',
+      detail: '/hackathons/daker-handover-2026-03',
+      rules: 'https://example.com/public/rules/daker-handover-202603',
+      faq: 'https://example.com/public/faq/daker-handover-202603',
     },
-  },
-  {
-    slug: 'fintech-data-analysis',
-    title: '핀테크 데이터 분석 경진대회',
-    status: 'ended',
-    type: '데이터/AI',
-    tags: ['금융데이터', 'Pandas', '머신러닝', '이상탐지'],
-    thumbnailUrl: '/placeholder-images/4.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2024-08-30T23:59:00+09:00',
-      endAt: '2024-08-31T23:59:00+09:00',
-    },
-    participantCount: 274,
-    prizeTotal: '1000만원',
-    links: {
-      detail: '/hackathons/fintech-data-analysis',
-      rules: '/hackathons/fintech-data-analysis#rules',
-      faq: '/hackathons/fintech-data-analysis#faq',
-    },
-  },
-  {
-    slug: 'flutter-app-challenge',
-    title: 'Flutter 크로스플랫폼 앱 챌린지',
-    status: 'ended',
-    type: 'SW개발',
-    tags: ['Flutter', 'Dart', '모바일', 'Firebase'],
-    thumbnailUrl: '/placeholder-images/5.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2024-07-14T23:59:00+09:00',
-      endAt: '2024-07-15T23:59:00+09:00',
-    },
-    participantCount: 198,
-    prizeTotal: '400만원',
-    links: {
-      detail: '/hackathons/flutter-app-challenge',
-      rules: '/hackathons/flutter-app-challenge#rules',
-      faq: '/hackathons/flutter-app-challenge#faq',
-    },
-  },
-  {
-    slug: 'chatbot-ux-hackathon',
-    title: 'AI 챗봇 UX 해커톤',
-    status: 'ended',
-    type: 'SW개발',
-    tags: ['AI/ML', 'NLP', 'Chatbot', 'UX'],
-    thumbnailUrl: '/placeholder-images/6.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2024-10-30T23:59:00+09:00',
-      endAt: '2024-10-31T23:59:00+09:00',
-    },
-    participantCount: 221,
-    prizeTotal: '600만원',
-    links: {
-      detail: '/hackathons/chatbot-ux-hackathon',
-      rules: '/hackathons/chatbot-ux-hackathon#rules',
-      faq: '/hackathons/chatbot-ux-hackathon#faq',
-    },
-  },
-  {
-    slug: 'open-data-dashboard',
-    title: '공공데이터 활용 대시보드 공모전',
-    status: 'ended',
-    type: '데이터/AI',
-    tags: ['공공데이터', 'API', '대시보드', 'React'],
-    thumbnailUrl: '/placeholder-images/7.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2024-06-29T23:59:00+09:00',
-      endAt: '2024-06-30T23:59:00+09:00',
-    },
-    participantCount: 143,
-    prizeTotal: '250만원',
-    links: {
-      detail: '/hackathons/open-data-dashboard',
-      rules: '/hackathons/open-data-dashboard#rules',
-      faq: '/hackathons/open-data-dashboard#faq',
-    },
-  },
-  {
-    slug: 'cloud-infra-optimization',
-    title: '클라우드 인프라 최적화 챌린지',
-    status: 'ended',
-    type: 'SW개발',
-    tags: ['AWS', 'Docker', 'Kubernetes', '비용최적화'],
-    thumbnailUrl: '/placeholder-images/8.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2024-12-14T23:59:00+09:00',
-      endAt: '2024-12-15T23:59:00+09:00',
-    },
-    participantCount: 167,
-    prizeTotal: '350만원',
-    links: {
-      detail: '/hackathons/cloud-infra-optimization',
-      rules: '/hackathons/cloud-infra-optimization#rules',
-      faq: '/hackathons/cloud-infra-optimization#faq',
-    },
-  },
-  {
-    slug: 'image-classification-contest',
-    title: '이미지 분류 AI 경진대회',
-    status: 'ended',
-    type: 'SW개발',
-    tags: ['AI/ML', 'CNN', 'PyTorch', '컴퓨터비전'],
-    thumbnailUrl: '/placeholder-images/9.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2024-05-30T23:59:00+09:00',
-      endAt: '2024-05-31T23:59:00+09:00',
-    },
-    participantCount: 356,
-    prizeTotal: '800만원',
-    links: {
-      detail: '/hackathons/image-classification-contest',
-      rules: '/hackathons/image-classification-contest#rules',
-      faq: '/hackathons/image-classification-contest#faq',
-    },
-  },
-  {
-    slug: 'blockchain-defi-hack',
-    title: '블록체인 DeFi 해커톤',
-    status: 'ended',
-    type: 'SW개발',
-    tags: ['블록체인', 'Solidity', 'DeFi', 'Web3'],
-    thumbnailUrl: '/placeholder-images/10.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2024-04-14T23:59:00+09:00',
-      endAt: '2024-04-15T23:59:00+09:00',
-    },
-    participantCount: 128,
-    prizeTotal: '700만원',
-    links: {
-      detail: '/hackathons/blockchain-defi-hack',
-      rules: '/hackathons/blockchain-defi-hack#rules',
-      faq: '/hackathons/blockchain-defi-hack#faq',
-    },
-  },
-  {
-    slug: 'recommendation-system-battle',
-    title: '추천 시스템 알고리즘 배틀',
-    status: 'ended',
-    type: '데이터/AI',
-    tags: ['추천시스템', '협업필터링', 'Python', 'ML'],
-    thumbnailUrl: '/placeholder-images/11.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2024-09-14T23:59:00+09:00',
-      endAt: '2024-09-15T23:59:00+09:00',
-    },
-    participantCount: 203,
-    prizeTotal: '450만원',
-    links: {
-      detail: '/hackathons/recommendation-system-battle',
-      rules: '/hackathons/recommendation-system-battle#rules',
-      faq: '/hackathons/recommendation-system-battle#faq',
-    },
-  },
-  {
-    slug: 'ui-design-sprint',
-    title: 'UI/UX 디자인 스프린트',
-    status: 'ended',
-    type: '디자인/UX',
-    tags: ['Figma', 'UI/UX', '프로토타이핑', '사용자리서치'],
-    thumbnailUrl: '/placeholder-images/12.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2024-11-14T23:59:00+09:00',
-      endAt: '2024-11-15T23:59:00+09:00',
-    },
-    participantCount: 95,
-    prizeTotal: '200만원',
-    links: {
-      detail: '/hackathons/ui-design-sprint',
-      rules: '/hackathons/ui-design-sprint#rules',
-      faq: '/hackathons/ui-design-sprint#faq',
-    },
-  },
-
-  // ── ongoing (5) ──────────────────────────
-  {
-    slug: 'smart-city-iot-hack',
-    title: '스마트시티 IoT 해커톤 2025',
-    status: 'ongoing',
-    type: '종합',
-    tags: ['IoT', '센서데이터', '스마트시티', 'Arduino'],
-    thumbnailUrl: '/placeholder-images/13.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2025-04-29T23:59:00+09:00',
-      endAt: '2025-04-30T23:59:00+09:00',
-    },
-    participantCount: 245,
-    prizeTotal: '1500만원',
-    links: {
-      detail: '/hackathons/smart-city-iot-hack',
-      rules: '/hackathons/smart-city-iot-hack#rules',
-      faq: '/hackathons/smart-city-iot-hack#faq',
-    },
-  },
-  {
-    slug: 'gen-ai-app-challenge',
-    title: '생성형 AI 앱 개발 챌린지',
-    status: 'ongoing',
-    type: 'SW개발',
-    tags: ['AI/ML', 'LLM', 'RAG', 'Next.js'],
-    thumbnailUrl: '/placeholder-images/14.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2025-04-14T23:59:00+09:00',
-      endAt: '2025-04-15T23:59:00+09:00',
-    },
-    participantCount: 489,
-    prizeTotal: '2000만원',
-    links: {
-      detail: '/hackathons/gen-ai-app-challenge',
-      rules: '/hackathons/gen-ai-app-challenge#rules',
-      faq: '/hackathons/gen-ai-app-challenge#faq',
-    },
-  },
-  {
-    slug: 'healthcare-data-hack',
-    title: '헬스케어 데이터 분석 해커톤',
-    status: 'ongoing',
-    type: '데이터/AI',
-    tags: ['헬스케어', '의료데이터', 'Python', '통계분석'],
-    thumbnailUrl: '/placeholder-images/15.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2025-05-14T23:59:00+09:00',
-      endAt: '2025-05-15T23:59:00+09:00',
-    },
-    participantCount: 178,
-    prizeTotal: '800만원',
-    links: {
-      detail: '/hackathons/healthcare-data-hack',
-      rules: '/hackathons/healthcare-data-hack#rules',
-      faq: '/hackathons/healthcare-data-hack#faq',
-    },
-  },
-  {
-    slug: 'sustainable-tech-ideathon',
-    title: '지속가능한 기술 아이디어톤',
-    status: 'ongoing',
-    type: '서비스기획',
-    tags: ['ESG', '지속가능성', '기획', '비즈니스모델'],
-    thumbnailUrl: '/placeholder-images/16.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2025-05-30T23:59:00+09:00',
-      endAt: '2025-05-31T23:59:00+09:00',
-    },
-    participantCount: 134,
-    prizeTotal: '300만원',
-    links: {
-      detail: '/hackathons/sustainable-tech-ideathon',
-      rules: '/hackathons/sustainable-tech-ideathon#rules',
-      faq: '/hackathons/sustainable-tech-ideathon#faq',
-    },
-  },
-  {
-    slug: 'realtime-collab-tool',
-    title: '실시간 협업 도구 개발 해커톤',
-    status: 'ongoing',
-    type: 'SW개발',
-    tags: ['WebSocket', 'React', '실시간', 'CRDT'],
-    thumbnailUrl: '/placeholder-images/17.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2025-04-19T23:59:00+09:00',
-      endAt: '2025-04-20T23:59:00+09:00',
-    },
-    participantCount: 163,
-    prizeTotal: '500만원',
-    links: {
-      detail: '/hackathons/realtime-collab-tool',
-      rules: '/hackathons/realtime-collab-tool#rules',
-      faq: '/hackathons/realtime-collab-tool#faq',
-    },
-  },
-
-  // ── upcoming (3) ──────────────────────────
-  {
-    slug: 'quantum-computing-intro',
-    title: '양자 컴퓨팅 입문 해커톤',
-    status: 'upcoming',
-    type: 'SW개발',
-    tags: ['양자컴퓨팅', 'Qiskit', 'Python', '알고리즘'],
-    thumbnailUrl: '/placeholder-images/18.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2025-07-30T23:59:00+09:00',
-      endAt: '2025-07-31T23:59:00+09:00',
-    },
-    participantCount: 0,
-    prizeTotal: '1000만원',
-    links: {
-      detail: '/hackathons/quantum-computing-intro',
-      rules: '/hackathons/quantum-computing-intro#rules',
-      faq: '/hackathons/quantum-computing-intro#faq',
-    },
-  },
-  {
-    slug: 'edu-platform-design',
-    title: '교육 플랫폼 UX 디자인 공모전',
-    status: 'upcoming',
-    type: '디자인/UX',
-    tags: ['Figma', '교육', 'UI/UX', '접근성'],
-    thumbnailUrl: '/placeholder-images/19.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2025-08-30T23:59:00+09:00',
-      endAt: '2025-08-31T23:59:00+09:00',
-    },
-    participantCount: 0,
-    prizeTotal: '400만원',
-    links: {
-      detail: '/hackathons/edu-platform-design',
-      rules: '/hackathons/edu-platform-design#rules',
-      faq: '/hackathons/edu-platform-design#faq',
-    },
-  },
-  {
-    slug: 'climate-data-challenge',
-    title: '기후 데이터 분석 챌린지 2025',
-    status: 'upcoming',
-    type: '데이터/AI',
-    tags: ['기후데이터', '시계열분석', 'Python', 'GIS'],
-    thumbnailUrl: '/placeholder-images/20.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2025-09-29T23:59:00+09:00',
-      endAt: '2025-09-30T23:59:00+09:00',
-    },
-    participantCount: 0,
-    prizeTotal: '600만원',
-    links: {
-      detail: '/hackathons/climate-data-challenge',
-      rules: '/hackathons/climate-data-challenge#rules',
-      faq: '/hackathons/climate-data-challenge#faq',
-    },
-  },
+  }
 ];
 
 // ─── Hackathon Details ─────────────────────────────────────
-export const hackathonDetails: Record<string, HackathonDetail> = Object.fromEntries(
-  hackathons.map((h) => [
-    h.slug,
-    {
-      slug: h.slug,
-      title: h.title,
-      sections: {
-        overview: {
-          summary: `${h.title}에 참가하여 실력을 겨루세요! ${h.type} 분야의 다양한 기술을 활용한 프로젝트를 개발합니다.`,
-          teamPolicy: { allowSolo: true, maxTeamSize: 4 },
-        },
-        info: {
-          notice: [
-            '참가 신청 후 팀 구성을 완료해 주세요.',
-            '제출 기한을 반드시 준수해 주세요.',
-            '표절 및 기존 프로젝트 제출은 금지됩니다.',
-          ],
-          links: {
-            rules: h.links.rules,
-            faq: h.links.faq,
-          },
-        },
-        eval: {
-          metricName: '종합 평가',
-          description: '기술 완성도, 창의성, 실용성, 발표/문서를 종합적으로 평가합니다.',
-          scoreSource: 'auto' as const,
-          limits: { maxRuntimeSec: 300, maxSubmissionsPerDay: 5 },
-          scoreDisplay: {
-            label: '종합 점수',
-            breakdown: [
-              { key: 'tech', label: '기술 완성도', weightPercent: 30 },
-              { key: 'creativity', label: '창의성', weightPercent: 25 },
-              { key: 'practicality', label: '실용성', weightPercent: 25 },
-              { key: 'presentation', label: '발표/문서', weightPercent: 20 },
-            ],
-          },
-        },
-        schedule: {
-          timezone: 'Asia/Seoul',
-          milestones: [
-            { name: '접수 시작', at: h.period.submissionDeadlineAt.replace(/T.*/, 'T00:00:00+09:00').replace(/\d{2}T/, '01T') },
-            { name: '중간 점검', at: new Date((new Date(h.period.submissionDeadlineAt).getTime() + new Date(h.period.endAt).getTime()) / 2).toISOString() },
-            { name: '최종 제출 마감', at: h.period.submissionDeadlineAt },
-            { name: '결과 발표', at: h.period.endAt },
-          ],
-        },
-        prize: {
-          items: [
-            { place: '🥇 1위', amountKRW: 3000000 },
-            { place: '🥈 2위', amountKRW: 1500000 },
-            { place: '🥉 3위', amountKRW: 500000 },
-          ],
-        },
-        teams: {
-          campEnabled: false,
-          listUrl: `/hackathons/${h.slug}#teams`,
-        },
-        submit: {
-          allowedArtifactTypes: ['github', 'pdf', 'video'],
-          submissionUrl: `/hackathons/${h.slug}#submit`,
-          guide: [
-            'GitHub 리포지토리 URL을 제출해 주세요.',
-            'README에 프로젝트 설명을 포함해 주세요.',
-            '발표 자료(PDF)를 함께 업로드해 주세요.',
-          ],
-          submissionItems: [
-            { key: 'repo', title: '코드 저장소', format: 'url' },
-            { key: 'doc', title: '발표 자료', format: 'pdf' },
-            { key: 'demo', title: '데모 영상', format: 'url' },
-          ],
-        },
-        leaderboard: {
-          publicLeaderboardUrl: `/hackathons/${h.slug}#leaderboard`,
-          note: '최종 순위는 결과 발표일에 확정됩니다.',
+export const hackathonDetails: HackathonDetail[] = [
+  {
+    slug: 'aimers-8-model-lite',
+    title: 'Aimers 8기 : 모델 경량화 온라인 해커톤',
+    sections: {
+      overview: {
+        summary: '제한된 평가 환경에서 모델의 성능과 추론 속도를 함께 최적화합니다.',
+        teamPolicy: { allowSolo: true, maxTeamSize: 5 },
+      },
+      info: {
+        notice: [
+          '제출 마감 이후 추가 제출은 불가합니다.',
+          '평가 환경은 고정이며, 제출물은 별도 설치 없이 실행 가능해야 합니다.',
+        ],
+        links: {
+          rules: 'https://example.com/public/rules/aimers8',
+          faq: 'https://example.com/public/faq/aimers8',
         },
       },
-    } satisfies HackathonDetail,
-  ])
-);
-
-// ─── Leaderboards ──────────────────────────────────────────
-export const leaderboards: Record<string, Leaderboard> = {
-  'aimers-8-model-lite': {
-    updatedAt: '2024-10-15T12:00:00Z',
-    entries: [
-      { teamName: 'AlphaLite', score: 95.2, rank: 1, submittedAt: '2024-10-14T23:10:00Z', scoreBreakdown: { tech: 29, creativity: 23, practicality: 24, presentation: 19.2 } },
-      { teamName: 'ModelMiners', score: 91.7, rank: 2, submittedAt: '2024-10-15T01:30:00Z', scoreBreakdown: { tech: 28, creativity: 22, practicality: 23, presentation: 18.7 } },
-      { teamName: 'CompactAI', score: 88.4, rank: 3, submittedAt: '2024-10-14T20:00:00Z', scoreBreakdown: { tech: 27, creativity: 21, practicality: 22, presentation: 18.4 } },
-      { teamName: 'TinyNet', score: 85.1, rank: 4, submittedAt: '2024-10-13T18:00:00Z', scoreBreakdown: { tech: 26, creativity: 20, practicality: 21, presentation: 18.1 } },
-      { teamName: 'LightWeighters', score: 82.0, rank: 5, submittedAt: '2024-10-15T03:00:00Z', scoreBreakdown: { tech: 25, creativity: 19, practicality: 20, presentation: 18 } },
-    ],
+      eval: {
+        metricName: 'FinalScore',
+        description: '성능과 속도를 종합한 점수(세부 산식은 규정 참고).',
+        scoreSource: 'auto',
+        limits: { maxRuntimeSec: 1200, maxSubmissionsPerDay: 5 },
+      },
+      schedule: {
+        timezone: 'Asia/Seoul',
+        milestones: [
+          { name: '리더보드 제출 마감', at: '2026-02-25T10:00:00+09:00' },
+          { name: '대회 종료', at: '2026-02-26T10:00:00+09:00' },
+        ],
+      },
+      prize: {
+        items: [
+          { place: '1st', amountKRW: 3000000 },
+          { place: '2nd', amountKRW: 1500000 },
+          { place: '3rd', amountKRW: 800000 },
+        ],
+      },
+      teams: { campEnabled: true, listUrl: '/camp?hackathon=aimers-8-model-lite' },
+      submit: {
+        allowedArtifactTypes: ['zip'],
+        submissionUrl: '/hackathons/aimers-8-model-lite#submit',
+        guide: [
+          '제출물은 규정에 맞는 단일 zip 파일로 업로드합니다.',
+          '업로드 후 제출 버튼을 눌러야 리더보드에 반영됩니다.',
+        ],
+      },
+      leaderboard: {
+        publicLeaderboardUrl: '/hackathons/aimers-8-model-lite#leaderboard',
+        note: 'Public 리더보드는 제출 마감 시점 기준으로 고정될 수 있습니다(규정 참고).',
+      },
+    },
   },
-  'data-viz-challenge-2025': {
-    updatedAt: '2024-11-30T12:00:00Z',
-    entries: [
-      { teamName: 'PixelCraft', score: 92.0, rank: 1, submittedAt: '2024-11-29T22:00:00Z', scoreBreakdown: { tech: 28, creativity: 24, practicality: 22, presentation: 18 } },
-      { teamName: 'ChartBusters', score: 89.5, rank: 2, submittedAt: '2024-11-30T00:30:00Z', scoreBreakdown: { tech: 27, creativity: 23, practicality: 22, presentation: 17.5 } },
-      { teamName: 'DataCanvas', score: 86.3, rank: 3, submittedAt: '2024-11-28T15:00:00Z', scoreBreakdown: { tech: 26, creativity: 22, practicality: 21, presentation: 17.3 } },
-    ],
+  {
+    slug: 'monthly-vibe-coding-2026-02',
+    title: '월간 해커톤 : 바이브 코딩 개선 AI 아이디어 공모전 (2026.02)',
+    sections: {
+      overview: { summary: '바이브 코딩 경험 개선을 위한 아이디어 제안', teamPolicy: { allowSolo: true, maxTeamSize: 4 } },
+      info: { notice: [], links: {} },
+      eval: { metricName: '평가', description: '아이디어 평가', scoreSource: 'vote' },
+      schedule: { timezone: 'Asia/Seoul', milestones: [] },
+      teams: { campEnabled: true, listUrl: '/camp?hackathon=monthly-vibe-coding-2026-02' },
+      submit: { allowedArtifactTypes: ['text'], guide: [] },
+      leaderboard: { note: '투표 기반' }
+    }
   },
-  'fintech-data-analysis': {
-    updatedAt: '2024-08-31T12:00:00Z',
-    entries: [
-      { teamName: 'MoneyMinds', score: 97.1, rank: 1, submittedAt: '2024-08-30T23:00:00Z', scoreBreakdown: { tech: 30, creativity: 24, practicality: 25, presentation: 18.1 } },
-      { teamName: 'RiskRadar', score: 93.8, rank: 2, submittedAt: '2024-08-31T02:00:00Z', scoreBreakdown: { tech: 29, creativity: 23, practicality: 24, presentation: 17.8 } },
-      { teamName: 'FinFlow', score: 90.2, rank: 3, submittedAt: '2024-08-29T19:00:00Z', scoreBreakdown: { tech: 28, creativity: 22, practicality: 23, presentation: 17.2 } },
-      { teamName: 'AlphaQuant', score: 87.6, rank: 4, submittedAt: '2024-08-30T21:00:00Z', scoreBreakdown: { tech: 27, creativity: 21, practicality: 22, presentation: 17.6 } },
-    ],
-  },
-  'image-classification-contest': {
-    updatedAt: '2024-05-31T12:00:00Z',
-    entries: [
-      { teamName: 'DeepSight', score: 98.3, rank: 1, submittedAt: '2024-05-30T22:00:00Z', scoreBreakdown: { tech: 30, creativity: 25, practicality: 24, presentation: 19.3 } },
-      { teamName: 'VisionX', score: 96.1, rank: 2, submittedAt: '2024-05-31T01:00:00Z', scoreBreakdown: { tech: 29, creativity: 24, practicality: 24, presentation: 19.1 } },
-      { teamName: 'PixelNet', score: 94.5, rank: 3, submittedAt: '2024-05-29T18:00:00Z', scoreBreakdown: { tech: 29, creativity: 24, practicality: 23, presentation: 18.5 } },
-      { teamName: 'ClassifyPro', score: 91.2, rank: 4, submittedAt: '2024-05-30T14:00:00Z', scoreBreakdown: { tech: 28, creativity: 22, practicality: 23, presentation: 18.2 } },
-      { teamName: 'NeuralEyes', score: 88.0, rank: 5, submittedAt: '2024-05-31T03:00:00Z', scoreBreakdown: { tech: 27, creativity: 21, practicality: 22, presentation: 18 } },
-      { teamName: 'TensorVision', score: 85.7, rank: 6, submittedAt: '2024-05-28T20:00:00Z', scoreBreakdown: { tech: 26, creativity: 21, practicality: 21, presentation: 17.7 } },
-    ],
-  },
-  'gen-ai-app-challenge': {
-    updatedAt: '2025-03-15T17:00:00Z',
-    entries: [
-      { teamName: 'PromptWizards', score: null, rank: null, submittedAt: '2025-03-10T14:00:00Z' },
-      { teamName: 'RAGnarok', score: null, rank: null, submittedAt: '2025-03-12T09:30:00Z' },
-      { teamName: 'NeuralForge', score: null, rank: null, submittedAt: '2025-03-15T17:00:00Z' },
-    ],
-  },
-  'smart-city-iot-hack': {
-    updatedAt: '2025-03-20T10:00:00Z',
-    entries: [
-      { teamName: 'CityPulse', score: null, rank: null, submittedAt: '2025-03-20T10:00:00Z' },
-      { teamName: 'UrbanSense', score: null, rank: null, submittedAt: '2025-03-18T16:00:00Z' },
-    ],
-  },
-};
-
+  {
+    slug: 'daker-handover-2026-03',
+    title: '긴급 인수인계 해커톤: 명세서만 보고 구현하라',
+    sections: {
+      overview: {
+        summary: '기능 명세서만 남기고 사라진 개발자의 문서를 기반으로 바이브 코딩을 통해 웹서비스를 구현·배포하는 해커톤입니다.',
+        teamPolicy: { allowSolo: true, maxTeamSize: 5 },
+      },
+      info: {
+        notice: [
+          '예시 자료 외 데이터는 제공되지 않습니다.',
+          '더미 데이터/로컬 저장소(localStorage 등)를 활용해 구현하세요.',
+          '배포 URL은 외부에서 접속 가능해야하며 심사 기간동안 접근 가능해야합니다.',
+          '외부 API/외부 DB를 쓰는 경우에도 심사자가 별도 키 없이 확인 가능해야 합니다. (키가 필요한 기능은 평가에서 확인이 제한될 수 있음)',
+        ],
+        links: {
+          rules: 'https://example.com/public/rules/daker-handover-202603',
+          faq: 'https://example.com/public/faq/daker-handover-202603',
+        },
+      },
+      eval: {
+        metricName: 'FinalScore',
+        description: '참가팀/심사위원 투표 점수를 가중치로 합산한 최종 점수',
+        scoreSource: 'vote',
+        scoreDisplay: {
+          label: '투표 점수',
+          breakdown: [
+            { key: 'participant', label: '참가자', weightPercent: 30 },
+            { key: 'judge', label: '심사위원', weightPercent: 70 },
+          ],
+        },
+      },
+      schedule: {
+        timezone: 'Asia/Seoul',
+        milestones: [
+          { name: '접수/기획서 제출 기간', at: '2026-03-04T10:00:00+09:00' },
+          { name: '접수/기획서 제출 마감', at: '2026-03-30T10:00:00+09:00' },
+          { name: '최종 웹링크 제출 마감', at: '2026-04-06T10:00:00+09:00' },
+          { name: '최종 솔루션 PDF 제출 마감', at: '2026-04-13T10:00:00+09:00' },
+          { name: '최종 결과 발표', at: '2026-04-27T10:00:00+09:00' },
+        ],
+      },
+      teams: {
+        campEnabled: true,
+        listUrl: '/camp?hackathon=daker-handover-2026-03',
+      },
+      submit: {
+        allowedArtifactTypes: ['text', 'url', 'pdf'],
+        submissionUrl: '/hackathons/daker-handover-2026-03#submit',
+        guide: [
+          '기획서 → 웹링크 → PDF를 단계별로 제출합니다.',
+          '배포 URL은 외부에서 접속 가능해야 하며 심사 기간 동안 접근 가능해야 합니다.',
+          'PPT는 PDF로 변환하여 제출합니다.',
+        ],
+        submissionItems: [
+          { key: 'plan', title: '기획서(1차 제출)', format: 'text_or_url' },
+          { key: 'web', title: '최종 웹링크 제출', format: 'url' },
+          { key: 'pdf', title: '최종 솔루션 PDF 제출', format: 'pdf_url' },
+        ],
+      },
+      leaderboard: {
+        publicLeaderboardUrl: '/hackathons/daker-handover-2026-03#leaderboard',
+        note: '아이디어 해커톤의 점수(score)는 투표 결과를 기반으로 표시됩니다.',
+      },
+    },
+  }
+];
 
 // ─── Teams ─────────────────────────────────────────────────
 export const teams: Team[] = [
   {
-    teamCode: 'TEAM-001',
-    hackathonSlug: 'gen-ai-app-challenge',
-    name: 'PromptWizards',
-    isOpen: true,
-    memberCount: 3,
-    maxTeamSize: 4,
-    lookingFor: [{ position: '백엔드', description: 'FastAPI / LangChain 경험자' }],
-    intro: 'LLM 기반 여행 플래너를 만들고 있습니다.',
-    contact: { type: 'discord', url: 'https://discord.gg/promptwizards' },
-    createdAt: '2025-01-20T10:00:00Z',
-  },
-  {
-    teamCode: 'TEAM-002',
-    hackathonSlug: 'smart-city-iot-hack',
-    name: 'CityPulse',
-    isOpen: false,
-    memberCount: 2,
-    maxTeamSize: 4,
-    lookingFor: [],
-    intro: '도시 공기질 실시간 모니터링 프로젝트.',
-    contact: { type: 'email', url: 'mailto:citypulse@example.com' },
-    createdAt: '2025-02-05T14:00:00Z',
-  },
-  {
-    teamCode: 'TEAM-003',
-    hackathonSlug: 'gen-ai-app-challenge',
-    name: 'RAGnarok',
-    isOpen: false,
-    memberCount: 4,
-    maxTeamSize: 4,
-    lookingFor: [],
-    intro: '법률 문서 AI 어시스턴트를 개발 중입니다.',
-    contact: { type: 'discord', url: 'https://discord.gg/ragnarok' },
-    createdAt: '2025-01-22T09:00:00Z',
-  },
-  {
-    teamCode: 'TEAM-004',
-    hackathonSlug: 'gen-ai-app-challenge',
-    name: 'NeuralForge',
-    isOpen: true,
-    memberCount: 2,
-    maxTeamSize: 4,
-    lookingFor: [
-      { position: '프론트엔드', description: 'React/Next.js 경험자' },
-      { position: 'AI 엔지니어', description: 'LLM fine-tuning 경험자' },
-    ],
-    intro: '코드 리뷰 AI 봇을 만들고 있습니다.',
-    contact: { type: 'discord', url: 'https://discord.gg/neuralforge' },
-    createdAt: '2025-02-01T11:00:00Z',
-  },
-  {
-    teamCode: 'TEAM-005',
-    hackathonSlug: 'healthcare-data-hack',
-    name: 'MedData',
-    isOpen: true,
-    memberCount: 3,
-    maxTeamSize: 4,
-    lookingFor: [{ position: '데이터 분석가', description: '의료 데이터 경험 우대' }],
-    intro: '헬스케어 데이터 인사이트 프로젝트.',
-    contact: { type: 'email', url: 'mailto:meddata@example.com' },
-    createdAt: '2025-02-20T13:00:00Z',
-  },
-  {
-    teamCode: 'TEAM-006',
-    hackathonSlug: 'smart-city-iot-hack',
-    name: 'UrbanSense',
-    isOpen: true,
-    memberCount: 3,
-    maxTeamSize: 4,
-    lookingFor: [{ position: '하드웨어', description: 'Arduino/라즈베리파이 경험자' }],
-    intro: '스마트 주차 관리 시스템 개발 팀.',
-    contact: { type: 'discord', url: 'https://discord.gg/urbansense' },
-    createdAt: '2025-02-10T08:00:00Z',
-  },
-  {
-    teamCode: 'TEAM-007',
-    hackathonSlug: 'realtime-collab-tool',
-    name: 'SyncMasters',
-    isOpen: true,
-    memberCount: 2,
-    maxTeamSize: 4,
-    lookingFor: [
-      { position: '백엔드', description: 'WebSocket/CRDT 경험자' },
-      { position: '프론트엔드', description: 'React 실시간 UI 경험자' },
-    ],
-    intro: '실시간 문서 협업 도구를 만들고 있습니다.',
-    contact: { type: 'discord', url: 'https://discord.gg/syncmasters' },
-    createdAt: '2025-03-01T10:00:00Z',
-  },
-  {
-    teamCode: 'TEAM-008',
+    teamCode: 'T-ALPHA',
     hackathonSlug: 'aimers-8-model-lite',
-    name: 'AlphaLite',
-    isOpen: false,
+    name: 'Team Alpha',
+    isOpen: true,
     memberCount: 3,
-    maxTeamSize: 4,
-    lookingFor: [],
-    intro: 'LLM 양자화 최적화 파이프라인 프로젝트.',
-    contact: { type: 'email', url: 'mailto:alphalite@example.com' },
-    createdAt: '2024-09-05T09:00:00Z',
+    maxTeamSize: 5,
+    lookingFor: [{ position: 'Backend' }, { position: 'ML Engineer' }],
+    intro: '추론 최적화/경량화 실험을 함께 진행할 팀원을 찾습니다.',
+    contact: { type: 'link', url: 'https://open.kakao.com/o/example1' },
+    createdAt: '2026-02-20T11:00:00+09:00',
   },
+  {
+    teamCode: 'T-BETA',
+    hackathonSlug: 'monthly-vibe-coding-2026-02',
+    name: 'PromptRunners',
+    isOpen: true,
+    memberCount: 1,
+    maxTeamSize: 4,
+    lookingFor: [{ position: 'Frontend' }, { position: 'Designer' }],
+    intro: '프롬프트 품질 점수화 + 개선 가이드 UX를 기획합니다.',
+    contact: { type: 'link', url: 'https://forms.gle/example2' },
+    createdAt: '2026-02-18T18:30:00+09:00',
+  },
+  {
+    teamCode: 'T-HANDOVER-01',
+    hackathonSlug: 'daker-handover-2026-03',
+    name: '404found',
+    isOpen: true,
+    memberCount: 3,
+    maxTeamSize: 5,
+    lookingFor: [{ position: 'Frontend' }, { position: 'Designer' }],
+    intro: '명세서 기반으로 기본 기능을 빠르게 완성하고 UX 확장을 노립니다.',
+    contact: { type: 'link', url: 'https://open.kakao.com/o/example3' },
+    createdAt: '2026-03-04T11:00:00+09:00',
+  },
+  {
+    teamCode: 'T-HANDOVER-02',
+    hackathonSlug: 'daker-handover-2026-03',
+    name: 'LGTM',
+    isOpen: false,
+    memberCount: 5,
+    maxTeamSize: 5,
+    lookingFor: [],
+    intro: '기획서-구현-문서화를 깔끔하게 맞추는 방향으로 진행합니다.',
+    contact: { type: 'link', url: 'https://forms.gle/example4' },
+    createdAt: '2026-03-05T09:20:00+09:00',
+  }
 ];
 
-// ─── Rankings ──────────────────────────────────────────────
+// ─── Leaderboards ──────────────────────────────────────────
+export const leaderboards: Record<string, Leaderboard> = {
+  'aimers-8-model-lite': {
+    updatedAt: '2026-02-26T10:00:00+09:00',
+    entries: [
+      { teamName: 'Team Alpha', score: 0.7421, rank: 1, submittedAt: '2026-02-24T21:05:00+09:00' },
+      { teamName: 'Team Gamma', score: 0.7013, rank: 2, submittedAt: '2026-02-25T09:40:00+09:00' },
+    ],
+  },
+  'daker-handover-2026-03': {
+    updatedAt: '2026-04-17T10:00:00+09:00',
+    entries: [
+      { 
+        teamName: '404found', score: 87.5, rank: 1, submittedAt: '2026-04-13T09:58:00+09:00',
+        scoreBreakdown: { participant: 82, judge: 90 },
+      },
+      { 
+        teamName: 'LGTM', score: 84.2, rank: 2, submittedAt: '2026-04-13T09:40:00+09:00',
+        scoreBreakdown: { participant: 79, judge: 88 },
+      }
+    ]
+  }
+};
+
+// ─── Rankings (유지) ──────────────────────────────────────
 export const rankings: RankingUser[] = [
-  { rank: 1, nickname: '김다커', points: 0, basePoints: 520, hackathonsJoined: 8, winsCount: 3, lastActiveAt: '2025-03-20T10:00:00Z' },
-  { rank: 2, nickname: '이모델', points: 0, basePoints: 490, hackathonsJoined: 7, winsCount: 3, lastActiveAt: '2025-03-20T08:00:00Z' },
-  { rank: 3, nickname: '송딥러닝', points: 0, basePoints: 440, hackathonsJoined: 6, winsCount: 2, lastActiveAt: '2025-03-20T09:00:00Z' },
-  { rank: 4, nickname: '문풀스택', points: 0, basePoints: 420, hackathonsJoined: 6, winsCount: 2, lastActiveAt: '2025-03-18T10:00:00Z' },
-  { rank: 5, nickname: '이해커', points: 0, basePoints: 410, hackathonsJoined: 6, winsCount: 2, lastActiveAt: '2025-03-18T14:00:00Z' },
-  { rank: 6, nickname: '권데이터', points: 0, basePoints: 400, hackathonsJoined: 6, winsCount: 2, lastActiveAt: '2025-03-19T14:00:00Z' },
-  { rank: 7, nickname: '박코딩', points: 0, basePoints: 380, hackathonsJoined: 7, winsCount: 2, lastActiveAt: '2025-03-15T09:00:00Z' },
-  { rank: 8, nickname: '장알고리즘', points: 0, basePoints: 360, hackathonsJoined: 5, winsCount: 1, lastActiveAt: '2025-03-17T15:00:00Z' },
-  { rank: 9, nickname: '정러닝', points: 0, basePoints: 350, hackathonsJoined: 5, winsCount: 1, lastActiveAt: '2025-03-19T16:00:00Z' },
-  { rank: 10, nickname: '조시티', points: 0, basePoints: 340, hackathonsJoined: 5, winsCount: 1, lastActiveAt: '2025-03-19T11:00:00Z' },
-  { rank: 11, nickname: '서백엔드', points: 0, basePoints: 330, hackathonsJoined: 5, winsCount: 1, lastActiveAt: '2025-03-16T08:00:00Z' },
-  { rank: 12, nickname: '오임베딩', points: 0, basePoints: 320, hackathonsJoined: 5, winsCount: 1, lastActiveAt: '2025-03-14T12:00:00Z' },
-  { rank: 13, nickname: '강메디', points: 0, basePoints: 310, hackathonsJoined: 4, winsCount: 1, lastActiveAt: '2025-03-16T13:00:00Z' },
-  { rank: 14, nickname: '유클라우드', points: 0, basePoints: 310, hackathonsJoined: 4, winsCount: 1, lastActiveAt: '2025-03-15T16:00:00Z' },
-  { rank: 15, nickname: '박경량', points: 0, basePoints: 300, hackathonsJoined: 4, winsCount: 1, lastActiveAt: '2025-03-13T09:00:00Z' },
-  { rank: 16, nickname: '한벡터', points: 0, basePoints: 290, hackathonsJoined: 4, winsCount: 1, lastActiveAt: '2025-03-17T11:00:00Z' },
-  { rank: 17, nickname: '전기획', points: 0, basePoints: 280, hackathonsJoined: 3, winsCount: 1, lastActiveAt: '2025-03-10T10:00:00Z' },
-  { rank: 18, nickname: '하프론트', points: 0, basePoints: 270, hackathonsJoined: 4, winsCount: 0, lastActiveAt: '2025-03-09T12:00:00Z' },
-  { rank: 19, nickname: '류체인', points: 0, basePoints: 260, hackathonsJoined: 4, winsCount: 0, lastActiveAt: '2025-03-12T15:00:00Z' },
-  { rank: 20, nickname: '피엠장', points: 0, basePoints: 250, hackathonsJoined: 4, winsCount: 0, lastActiveAt: '2025-03-08T13:00:00Z' },
-  { rank: 21, nickname: '안보안', points: 0, basePoints: 240, hackathonsJoined: 3, winsCount: 0, lastActiveAt: '2025-03-06T09:00:00Z' },
-  { rank: 22, nickname: '홍머신', points: 0, basePoints: 230, hackathonsJoined: 3, winsCount: 0, lastActiveAt: '2025-03-07T11:00:00Z' },
-  { rank: 23, nickname: '배도시', points: 0, basePoints: 220, hackathonsJoined: 3, winsCount: 0, lastActiveAt: '2025-03-05T14:00:00Z' },
-  { rank: 24, nickname: '최센서', points: 0, basePoints: 210, hackathonsJoined: 3, winsCount: 0, lastActiveAt: '2025-03-10T08:00:00Z' },
-  { rank: 25, nickname: '나실시간', points: 0, basePoints: 200, hackathonsJoined: 3, winsCount: 0, lastActiveAt: '2025-03-11T10:00:00Z' },
-  { rank: 26, nickname: '임트랜스', points: 0, basePoints: 190, hackathonsJoined: 3, winsCount: 0, lastActiveAt: '2025-03-08T10:00:00Z' },
-  { rank: 27, nickname: '소디자인', points: 0, basePoints: 170, hackathonsJoined: 2, winsCount: 0, lastActiveAt: '2025-02-20T14:00:00Z' },
-  { rank: 28, nickname: '신스마트', points: 0, basePoints: 160, hackathonsJoined: 2, winsCount: 0, lastActiveAt: '2025-02-25T16:00:00Z' },
-  { rank: 29, nickname: '윤헬스', points: 0, basePoints: 150, hackathonsJoined: 2, winsCount: 0, lastActiveAt: '2025-02-28T09:00:00Z' },
-  { rank: 30, nickname: '노코드왕', points: 0, basePoints: 140, hackathonsJoined: 2, winsCount: 0, lastActiveAt: '2025-02-15T11:00:00Z' },
+  { rank: 1, nickname: '김다커', points: 0, basePoints: 520, hackathonsJoined: 8, winsCount: 3, lastActiveAt: '2026-03-20T10:00:00Z' },
+  { rank: 2, nickname: '이모델', points: 0, basePoints: 490, hackathonsJoined: 7, winsCount: 3, lastActiveAt: '2026-03-20T08:00:00Z' },
+  { rank: 3, nickname: '송딥러닝', points: 0, basePoints: 440, hackathonsJoined: 6, winsCount: 2, lastActiveAt: '2026-03-20T09:00:00Z' },
 ];
 
-// ─── Submissions ───────────────────────────────────────────
-export const submissions: Submission[] = [
-  {
-    id: 'sub-001',
-    hackathonSlug: 'gen-ai-app-challenge',
-    teamCode: 'TEAM-001',
-    teamName: 'PromptWizards',
-    status: 'submitted',
-    artifacts: [
-      { type: 'github', key: 'repo', content: 'https://github.com/promptwizards/ai-travel', uploadedAt: '2025-03-10T14:00:00Z' },
-      { type: 'pdf', key: 'doc', fileName: 'PromptWizards_발표자료.pdf', uploadedAt: '2025-03-10T14:05:00Z' },
-    ],
-    notes: 'LLM 기반 맞춤형 여행 일정 생성 서비스. RAG를 활용해 실시간 여행 정보를 반영합니다.',
-    submittedAt: '2025-03-10T14:00:00Z',
-  },
-  {
-    id: 'sub-002',
-    hackathonSlug: 'gen-ai-app-challenge',
-    teamCode: 'TEAM-003',
-    teamName: 'RAGnarok',
-    status: 'submitted',
-    artifacts: [
-      { type: 'github', key: 'repo', content: 'https://github.com/ragnarok/legal-ai', uploadedAt: '2025-03-12T09:30:00Z' },
-    ],
-    notes: '법률 문서를 자동으로 분석하고 핵심 조항을 요약하는 RAG 기반 서비스.',
-    submittedAt: '2025-03-12T09:30:00Z',
-  },
-  {
-    id: 'sub-003',
-    hackathonSlug: 'gen-ai-app-challenge',
-    teamCode: 'TEAM-004',
-    teamName: 'NeuralForge',
-    status: 'submitted',
-    artifacts: [
-      { type: 'github', key: 'repo', content: 'https://github.com/neuralforge/code-reviewer', uploadedAt: '2025-03-15T17:00:00Z' },
-      { type: 'url', key: 'demo', content: 'https://demo.neuralforge.dev', uploadedAt: '2025-03-15T17:10:00Z' },
-    ],
-    notes: 'PR을 자동으로 분석하여 코드 품질, 보안 취약점, 최적화 포인트를 제안하는 봇.',
-    submittedAt: '2025-03-15T17:00:00Z',
-  },
-  {
-    id: 'sub-004',
-    hackathonSlug: 'smart-city-iot-hack',
-    teamCode: 'TEAM-002',
-    teamName: 'CityPulse',
-    status: 'submitted',
-    artifacts: [
-      { type: 'github', key: 'repo', content: 'https://github.com/citypulse/air-quality', uploadedAt: '2025-03-20T10:00:00Z' },
-    ],
-    notes: 'IoT 센서 네트워크와 대시보드를 활용한 도시 공기질 실시간 모니터링 시스템.',
-    submittedAt: '2025-03-20T10:00:00Z',
-  },
-  {
-    id: 'sub-005',
-    hackathonSlug: 'smart-city-iot-hack',
-    teamCode: 'TEAM-006',
-    teamName: 'UrbanSense',
-    status: 'draft',
-    artifacts: [
-      { type: 'github', key: 'repo', content: 'https://github.com/urbansense/smart-parking', uploadedAt: '2025-03-18T16:00:00Z' },
-    ],
-    notes: '초음파 센서와 앱을 결합한 실시간 주차 공간 안내 시스템.',
-    submittedAt: null,
-  },
-  {
-    id: 'sub-006',
-    hackathonSlug: 'aimers-8-model-lite',
-    teamCode: 'TEAM-008',
-    teamName: 'AlphaLite',
-    status: 'submitted',
-    artifacts: [
-      { type: 'github', key: 'repo', content: 'https://github.com/alphalite/llm-quantize', uploadedAt: '2024-10-14T23:10:00Z' },
-      { type: 'pdf', key: 'doc', fileName: 'AlphaLite_최종보고서.pdf', uploadedAt: '2024-10-14T23:15:00Z' },
-    ],
-    notes: 'GPTQ + AWQ 기반 LLM 경량화 파이프라인. 모델 크기 70% 감소, 성능 손실 5% 이내.',
-    submittedAt: '2024-10-14T23:10:00Z',
-  },
-];
+// ─── Submissions (유지) ───────────────────────────────────
+export const submissions: Submission[] = [];
 
-// ─── Current User ──────────────────────────────────────────
+// ─── Current User (🔥 강유진으로 업데이트!) ──────────────────
 export const currentUser: CurrentUser = {
-  id: 'user-001',
-  nickname: '김다커',
-  email: 'daker@example.com',
-  teamCodes: ['TEAM-001', 'TEAM-002', 'TEAM-005', 'TEAM-007', 'TEAM-008'],
-  joinedAt: '2024-01-15T10:00:00Z',
-  bookmarkedSlugs: ['gen-ai-app-challenge', 'quantum-computing-intro', 'healthcare-data-hack'],
-  role: '풀스택 개발자',
-  preferredTypes: ['개발', '데이터'],
-  skills: ['React', 'Next.js', 'Python', 'AI/ML', 'TypeScript'],
+  id: 'user-001-yujin',
+  nickname: '강유진',
+  email: 'yujin.kang@daker.ai',
+  teamCodes: ['T-HANDOVER-01'], // 404found 팀 소속
+  joinedAt: '2026-01-15T10:00:00Z',
+  bookmarkedSlugs: ['daker-handover-2026-03', 'aimers-8-model-lite'],
+  role: '프론트엔드 개발자',
+  preferredTypes: ['VibeCoding', 'Web'],
+  skills: ['React', 'Next.js', 'Tailwind CSS'],
 };
