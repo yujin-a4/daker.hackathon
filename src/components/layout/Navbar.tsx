@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Dna, Sun, Moon, LogIn, Megaphone, Trophy, Users } from 'lucide-react'; // 아이콘 추가
+import { Menu, X, Dna, Sun, Moon, LogIn, Megaphone, Trophy, Users } from 'lucide-react';
 
 import { useUserStore } from '@/store/useUserStore';
 import { useThemeStore } from '@/store/useThemeStore';
@@ -30,50 +30,51 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
 
-  // 공지 롤링을 위한 상태
   const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
 
-  // 시니어의 꼼꼼한 데이터 큐레이션: 공지 데이터 배열 (useMemo로 최적화)
+  // 카테고리별 배경색(bgClass) 추가!
   const notices = useMemo(() => [
     {
       id: 'deadline',
       type: '마감임박',
       icon: Megaphone,
-      // innerHTML로 HTML 태그 지원 (font-bold 등)
+      bgClass: 'bg-rose-500', // 강렬한 레드
       text: '🚨 긴급 인수인계 해커톤 제출 마감 <span class="font-bold text-yellow-300">D-3</span>! 늦기 전에 결과물을 제출하세요!'
     },
     {
       id: 'ranking',
       type: '랭킹업데이트',
       icon: Trophy,
-      text: '🏆 현재 1위는 <span class="font-bold">팀 시너지</span> (31 커밋)! 추격자가 나타날까요?'
+      bgClass: 'bg-blue-600', // 신뢰의 블루
+      text: '🏆 현재 1위는 <span class="font-bold text-yellow-300">팀 시너지</span> (31 커밋)! 추격자가 나타날까요?'
     },
     {
       id: 'recruitment',
       type: '팀원모집',
       icon: Users,
-      text: '🤝 새 팀들이 등록되었습니다! <span class="font-bold">팀 찾기</span> 탭에서 지금 합류하세요.'
+      bgClass: 'bg-emerald-600', // 활력의 에메랄드
+      text: '🤝 새 팀들이 등록되었습니다! <span class="font-bold text-yellow-300">팀 찾기</span> 탭에서 지금 합류하세요.'
     }
   ], []);
 
   useEffect(() => setMounted(true), []);
 
-  // 4초마다 자동으로 공지를 롤링하는 기가 막힌 로직 (시니어님 최고 👍)
   useEffect(() => {
     if (!showBanner || notices.length <= 1) return;
 
     const interval = setInterval(() => {
       setCurrentNoticeIndex((prevIndex) => (prevIndex + 1) % notices.length);
-    }, 4000); // 4초 간격
+    }, 4000);
 
-    return () => clearInterval(interval); // 컴포넌트 언마운트 시 클리어 (유지보수 필수!)
+    return () => clearInterval(interval);
   }, [showBanner, notices.length]);
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
-  const CurrentIcon = notices[currentNoticeIndex].icon;
+  const CurrentNotice = notices[currentNoticeIndex];
+  const CurrentIcon = CurrentNotice.icon;
 
   return (
     <>
@@ -84,38 +85,41 @@ export default function Navbar() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0, overflow: 'hidden' }}
             transition={{ duration: 0.3 }}
-            className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-purple-600 w-full overflow-hidden" // overflow-hidden 추가
+            // cn 함수를 이용해 bgClass를 동적으로 교체하고, transition-colors로 부드럽게 색 전환
+            className={cn(
+              "w-full overflow-hidden transition-colors duration-500",
+              CurrentNotice.bgClass
+            )}
           >
             <div className="container mx-auto flex h-10 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 relative">
               
-              {/* 공지 롤링 영역 (AnimatePresence mode="wait" 필수!) */}
               <div className="flex-1 h-full flex items-center justify-center relative">
                 <AnimatePresence mode="wait">
                   <motion.div
-                    key={notices[currentNoticeIndex].id} // 키값이 바뀌어야 애니메이션이 먹힘
-                    initial={{ y: 20, opacity: 0 }} // 아래에서
-                    animate={{ y: 0, opacity: 1 }} // 스윽 올라옴
-                    exit={{ y: -20, opacity: 0 }} // 위로 사라짐
+                    key={CurrentNotice.id}
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -20, opacity: 0 }}
                     transition={{ duration: 0.5, ease: 'easeInOut' }}
                     className="flex items-center space-x-2 text-white text-xs sm:text-sm font-medium absolute inset-0 justify-center"
                   >
                     <CurrentIcon className="h-4 w-4 shrink-0" />
-                    <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] sm:text-xs font-bold backdrop-blur-sm border border-white/30 shrink-0">
-                      {notices[currentNoticeIndex].type}
+                    {/* 뱃지는 반투명한 화이트(글래스모피즘)로 둬서 어떤 배경색이든 찰떡같이 어울리게 함 */}
+                    <span className="rounded-full bg-white/25 px-2 py-0.5 text-[10px] sm:text-xs font-bold backdrop-blur-md border border-white/30 shrink-0 shadow-sm">
+                      {CurrentNotice.type}
                     </span>
                     <span 
                       className="truncate"
-                      dangerouslySetInnerHTML={{ __html: notices[currentNoticeIndex].text }} // HTML 렌더링
+                      dangerouslySetInnerHTML={{ __html: CurrentNotice.text }}
                     />
                   </motion.div>
                 </AnimatePresence>
               </div>
 
-              {/* 닫기 버튼 */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 text-white hover:bg-white/20 hover:text-white rounded-full transition-colors shrink-0 ml-2 relative z-10" // z-10 추가
+                className="h-6 w-6 text-white hover:bg-white/20 hover:text-white rounded-full transition-colors shrink-0 ml-2 relative z-10"
                 onClick={() => setShowBanner(false)}
                 aria-label="Close banner"
               >
@@ -128,13 +132,11 @@ export default function Navbar() {
 
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 max-w-7xl items-center">
-          {/* 로고 */}
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Dna className="h-6 w-6 text-primary" />
             <span className="font-bold text-xl text-primary">DAKER</span>
           </Link>
 
-          {/* 데스크탑 내비게이션 */}
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             {navLinks.map((link) => (
               <Link
@@ -153,9 +155,7 @@ export default function Navbar() {
             ))}
           </nav>
 
-          {/* 우측 영역 */}
           <div className="flex flex-1 items-center justify-end space-x-2">
-            {/* 다크모드 토글 */}
             {mounted && (
               <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
                 <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -163,7 +163,6 @@ export default function Navbar() {
               </Button>
             )}
 
-            {/* 로그인 상태에 따라 분기 */}
             {mounted && (
               currentUser ? (
                 <UserDropdown />
@@ -180,7 +179,6 @@ export default function Navbar() {
               )
             )}
 
-            {/* 모바일 메뉴 버튼 */}
             <Button
               variant="ghost"
               size="icon"
@@ -194,7 +192,6 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* 모바일 사이드 메뉴 */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
@@ -244,7 +241,6 @@ export default function Navbar() {
                 ))}
               </nav>
 
-              {/* 모바일 로그인/유저 영역 */}
               <div className="mt-8 pt-6 border-t">
                 {currentUser ? (
                   <div className="flex items-center justify-between">
@@ -284,7 +280,6 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* 인증 모달 */}
       <AuthModal open={isAuthOpen} onOpenChange={setIsAuthOpen} />
     </>
   );
