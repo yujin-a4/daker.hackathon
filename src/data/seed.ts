@@ -16,7 +16,7 @@ export const hackathons: Hackathon[] = [
     status: 'ended',
     type: 'SW개발',
     tags: ['LLM', 'Compression', 'vLLM'],
-    thumbnailUrl: '/placeholder-images/1.jpg', // 임시 이미지 경로 매칭
+    thumbnailUrl: '/placeholder-images/1.jpg', 
     period: {
       timezone: 'Asia/Seoul',
       submissionDeadlineAt: '2026-02-25T10:00:00+09:00',
@@ -53,7 +53,7 @@ export const hackathons: Hackathon[] = [
   {
     slug: 'daker-handover-2026-03',
     title: '긴급 인수인계 해커톤: 명세서만 보고 구현하라',
-    status: 'upcoming', // initializer.ts에서 ongoing으로 자동 변환됨
+    status: 'upcoming', 
     type: 'SW개발',
     tags: ['VibeCoding', 'Web', 'Vercel', 'Handover'],
     thumbnailUrl: '/placeholder-images/3.jpg',
@@ -72,9 +72,9 @@ export const hackathons: Hackathon[] = [
   }
 ];
 
-// ─── Hackathon Details ─────────────────────────────────────
-export const hackathonDetails: HackathonDetail[] = [
-  {
+// ─── Hackathon Details (🔥 여기서 배열이 아니라 객체로 롤백!) ───
+export const hackathonDetails: Record<string, HackathonDetail> = {
+  'aimers-8-model-lite': {
     slug: 'aimers-8-model-lite',
     title: 'Aimers 8기 : 모델 경량화 온라인 해커톤',
     sections: {
@@ -87,10 +87,7 @@ export const hackathonDetails: HackathonDetail[] = [
           '제출 마감 이후 추가 제출은 불가합니다.',
           '평가 환경은 고정이며, 제출물은 별도 설치 없이 실행 가능해야 합니다.',
         ],
-        links: {
-          rules: 'https://example.com/public/rules/aimers8',
-          faq: 'https://example.com/public/faq/aimers8',
-        },
+        links: { rules: 'https://example.com/public/rules/aimers8', faq: 'https://example.com/public/faq/aimers8' },
       },
       eval: {
         metricName: 'FinalScore',
@@ -127,7 +124,7 @@ export const hackathonDetails: HackathonDetail[] = [
       },
     },
   },
-  {
+  'monthly-vibe-coding-2026-02': {
     slug: 'monthly-vibe-coding-2026-02',
     title: '월간 해커톤 : 바이브 코딩 개선 AI 아이디어 공모전 (2026.02)',
     sections: {
@@ -140,7 +137,7 @@ export const hackathonDetails: HackathonDetail[] = [
       leaderboard: { note: '투표 기반' }
     }
   },
-  {
+  'daker-handover-2026-03': {
     slug: 'daker-handover-2026-03',
     title: '긴급 인수인계 해커톤: 명세서만 보고 구현하라',
     sections: {
@@ -153,7 +150,7 @@ export const hackathonDetails: HackathonDetail[] = [
           '예시 자료 외 데이터는 제공되지 않습니다.',
           '더미 데이터/로컬 저장소(localStorage 등)를 활용해 구현하세요.',
           '배포 URL은 외부에서 접속 가능해야하며 심사 기간동안 접근 가능해야합니다.',
-          '외부 API/외부 DB를 쓰는 경우에도 심사자가 별도 키 없이 확인 가능해야 합니다. (키가 필요한 기능은 평가에서 확인이 제한될 수 있음)',
+          '외부 API/외부 DB를 쓰는 경우에도 심사자가 별도 키 없이 확인 가능해야 합니다.',
         ],
         links: {
           rules: 'https://example.com/public/rules/daker-handover-202603',
@@ -191,8 +188,7 @@ export const hackathonDetails: HackathonDetail[] = [
         submissionUrl: '/hackathons/daker-handover-2026-03#submit',
         guide: [
           '기획서 → 웹링크 → PDF를 단계별로 제출합니다.',
-          '배포 URL은 외부에서 접속 가능해야 하며 심사 기간 동안 접근 가능해야 합니다.',
-          'PPT는 PDF로 변환하여 제출합니다.',
+          '배포 URL은 외부에서 접속 가능해야 합니다.',
         ],
         submissionItems: [
           { key: 'plan', title: '기획서(1차 제출)', format: 'text_or_url' },
@@ -206,100 +202,37 @@ export const hackathonDetails: HackathonDetail[] = [
       },
     },
   }
-];
+};
 
 // ─── Teams ─────────────────────────────────────────────────
 export const teams: Team[] = [
-  {
-    teamCode: 'T-ALPHA',
-    hackathonSlug: 'aimers-8-model-lite',
-    name: 'Team Alpha',
-    isOpen: true,
-    memberCount: 3,
-    maxTeamSize: 5,
-    lookingFor: [{ position: 'Backend' }, { position: 'ML Engineer' }],
-    intro: '추론 최적화/경량화 실험을 함께 진행할 팀원을 찾습니다.',
-    contact: { type: 'link', url: 'https://open.kakao.com/o/example1' },
-    createdAt: '2026-02-20T11:00:00+09:00',
-  },
-  {
-    teamCode: 'T-BETA',
-    hackathonSlug: 'monthly-vibe-coding-2026-02',
-    name: 'PromptRunners',
-    isOpen: true,
-    memberCount: 1,
-    maxTeamSize: 4,
-    lookingFor: [{ position: 'Frontend' }, { position: 'Designer' }],
-    intro: '프롬프트 품질 점수화 + 개선 가이드 UX를 기획합니다.',
-    contact: { type: 'link', url: 'https://forms.gle/example2' },
-    createdAt: '2026-02-18T18:30:00+09:00',
-  },
-  {
-    teamCode: 'T-HANDOVER-01',
-    hackathonSlug: 'daker-handover-2026-03',
-    name: '404found',
-    isOpen: true,
-    memberCount: 3,
-    maxTeamSize: 5,
-    lookingFor: [{ position: 'Frontend' }, { position: 'Designer' }],
-    intro: '명세서 기반으로 기본 기능을 빠르게 완성하고 UX 확장을 노립니다.',
-    contact: { type: 'link', url: 'https://open.kakao.com/o/example3' },
-    createdAt: '2026-03-04T11:00:00+09:00',
-  },
-  {
-    teamCode: 'T-HANDOVER-02',
-    hackathonSlug: 'daker-handover-2026-03',
-    name: 'LGTM',
-    isOpen: false,
-    memberCount: 5,
-    maxTeamSize: 5,
-    lookingFor: [],
-    intro: '기획서-구현-문서화를 깔끔하게 맞추는 방향으로 진행합니다.',
-    contact: { type: 'link', url: 'https://forms.gle/example4' },
-    createdAt: '2026-03-05T09:20:00+09:00',
-  }
+  { teamCode: 'T-ALPHA', hackathonSlug: 'aimers-8-model-lite', name: 'Team Alpha', isOpen: true, memberCount: 3, maxTeamSize: 5, lookingFor: [{ position: 'Backend' }, { position: 'ML Engineer' }], intro: '추론 최적화/경량화 실험을 함께 진행할 팀원을 찾습니다.', contact: { type: 'link', url: 'https://open.kakao.com/o/example1' }, createdAt: '2026-02-20T11:00:00+09:00' },
+  { teamCode: 'T-BETA', hackathonSlug: 'monthly-vibe-coding-2026-02', name: 'PromptRunners', isOpen: true, memberCount: 1, maxTeamSize: 4, lookingFor: [{ position: 'Frontend' }, { position: 'Designer' }], intro: '프롬프트 품질 점수화 + 개선 가이드 UX를 기획합니다.', contact: { type: 'link', url: 'https://forms.gle/example2' }, createdAt: '2026-02-18T18:30:00+09:00' },
+  { teamCode: 'T-HANDOVER-01', hackathonSlug: 'daker-handover-2026-03', name: '404found', isOpen: true, memberCount: 3, maxTeamSize: 5, lookingFor: [{ position: 'Frontend' }, { position: 'Designer' }], intro: '명세서 기반으로 기본 기능을 빠르게 완성하고 UX 확장을 노립니다.', contact: { type: 'link', url: 'https://open.kakao.com/o/example3' }, createdAt: '2026-03-04T11:00:00+09:00' },
+  { teamCode: 'T-HANDOVER-02', hackathonSlug: 'daker-handover-2026-03', name: 'LGTM', isOpen: false, memberCount: 5, maxTeamSize: 5, lookingFor: [], intro: '기획서-구현-문서화를 깔끔하게 맞추는 방향으로 진행합니다.', contact: { type: 'link', url: 'https://forms.gle/example4' }, createdAt: '2026-03-05T09:20:00+09:00' }
 ];
 
 // ─── Leaderboards ──────────────────────────────────────────
 export const leaderboards: Record<string, Leaderboard> = {
-  'aimers-8-model-lite': {
-    updatedAt: '2026-02-26T10:00:00+09:00',
-    entries: [
-      { teamName: 'Team Alpha', score: 0.7421, rank: 1, submittedAt: '2026-02-24T21:05:00+09:00' },
-      { teamName: 'Team Gamma', score: 0.7013, rank: 2, submittedAt: '2026-02-25T09:40:00+09:00' },
-    ],
-  },
-  'daker-handover-2026-03': {
-    updatedAt: '2026-04-17T10:00:00+09:00',
-    entries: [
-      { 
-        teamName: '404found', score: 87.5, rank: 1, submittedAt: '2026-04-13T09:58:00+09:00',
-        scoreBreakdown: { participant: 82, judge: 90 },
-      },
-      { 
-        teamName: 'LGTM', score: 84.2, rank: 2, submittedAt: '2026-04-13T09:40:00+09:00',
-        scoreBreakdown: { participant: 79, judge: 88 },
-      }
-    ]
-  }
+  'aimers-8-model-lite': { updatedAt: '2026-02-26T10:00:00+09:00', entries: [{ teamName: 'Team Alpha', score: 0.7421, rank: 1, submittedAt: '2026-02-24T21:05:00+09:00' }, { teamName: 'Team Gamma', score: 0.7013, rank: 2, submittedAt: '2026-02-25T09:40:00+09:00' }] },
+  'daker-handover-2026-03': { updatedAt: '2026-04-17T10:00:00+09:00', entries: [{ teamName: '404found', score: 87.5, rank: 1, submittedAt: '2026-04-13T09:58:00+09:00', scoreBreakdown: { participant: 82, judge: 90 } }, { teamName: 'LGTM', score: 84.2, rank: 2, submittedAt: '2026-04-13T09:40:00+09:00', scoreBreakdown: { participant: 79, judge: 88 } }] }
 };
 
-// ─── Rankings (유지) ──────────────────────────────────────
+// ─── Rankings ──────────────────────────────────────
 export const rankings: RankingUser[] = [
   { rank: 1, nickname: '김다커', points: 0, basePoints: 520, hackathonsJoined: 8, winsCount: 3, lastActiveAt: '2026-03-20T10:00:00Z' },
   { rank: 2, nickname: '이모델', points: 0, basePoints: 490, hackathonsJoined: 7, winsCount: 3, lastActiveAt: '2026-03-20T08:00:00Z' },
-  { rank: 3, nickname: '송딥러닝', points: 0, basePoints: 440, hackathonsJoined: 6, winsCount: 2, lastActiveAt: '2026-03-20T09:00:00Z' },
 ];
 
-// ─── Submissions (유지) ───────────────────────────────────
+// ─── Submissions ───────────────────────────────────
 export const submissions: Submission[] = [];
 
-// ─── Current User (🔥 강유진으로 업데이트!) ──────────────────
+// ─── Current User ──────────────────
 export const currentUser: CurrentUser = {
   id: 'user-001-yujin',
   nickname: '강유진',
   email: 'yujin.kang@daker.ai',
-  teamCodes: ['T-HANDOVER-01'], // 404found 팀 소속
+  teamCodes: ['T-HANDOVER-01'],
   joinedAt: '2026-01-15T10:00:00Z',
   bookmarkedSlugs: ['daker-handover-2026-03', 'aimers-8-model-lite'],
   role: '프론트엔드 개발자',
