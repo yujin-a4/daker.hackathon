@@ -6,7 +6,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Dna, Sun, Moon, LogIn, Megaphone, Trophy, Users } from 'lucide-react';
 
+// 🔥 시니어의 추가 마법: 팀과 해커톤 데이터를 불러오기 위해 스토어 추가 임포트
 import { useUserStore } from '@/store/useUserStore';
+import { useTeamStore } from '@/store/useTeamStore';
+import { useHackathonStore } from '@/store/useHackathonStore';
 import { useThemeStore } from '@/store/useThemeStore';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -24,17 +27,31 @@ const navLinks = [
 export default function Navbar() {
   const pathname = usePathname();
   const { currentUser } = useUserStore();
+  const { teams } = useTeamStore();
+  const { hackathons } = useHackathonStore();
   const { theme, setTheme } = useThemeStore();
+  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
-
   const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
 
-  // 🔥 유저 이름 동적 할당: 로그인 상태면 닉네임, 아니면 '참가자'로 표시
+  // 🔥 유저 이름과 참가 중인 해커톤 제목 동적 할당
   const notices = useMemo(() => {
     const userName = currentUser ? currentUser.nickname : '참가자';
+    let activeHackathonTitle = '진행 중인 해커톤';
+    
+    // 유저가 속한 팀을 찾고, 그 팀이 참여 중인 해커톤 제목을 동적으로 찾아냄
+    if (currentUser && currentUser.teamCodes.length > 0) {
+      const myTeam = teams.find(t => t.teamCode === currentUser.teamCodes[0]);
+      if (myTeam) {
+        const myHackathon = hackathons.find(h => h.slug === myTeam.hackathonSlug);
+        if (myHackathon) {
+          activeHackathonTitle = myHackathon.title;
+        }
+      }
+    }
     
     return [
       {
@@ -42,7 +59,7 @@ export default function Navbar() {
         type: '마감임박',
         icon: Megaphone,
         bgClass: 'bg-rose-500', 
-        text: `🚨 <span class="font-bold text-yellow-300">${userName}</span>님이 참가 중인 [긴급 인수인계 해커톤] 제출 마감이 <span class="font-bold text-yellow-300">D-3</span> 남았습니다!`
+        text: `🚨 <span class="font-bold text-yellow-300">${userName}</span>님이 참가 중인 [${activeHackathonTitle}] 제출 마감이 <span class="font-bold text-yellow-300">D-3</span> 남았습니다!`
       },
       {
         id: 'ranking',
@@ -59,7 +76,7 @@ export default function Navbar() {
         text: '🤝 새 팀들이 등록되었습니다! <span class="font-bold text-yellow-300">팀 찾기</span> 탭에서 지금 합류하세요.'
       }
     ];
-  }, [currentUser]);
+  }, [currentUser, teams, hackathons]);
 
   useEffect(() => setMounted(true), []);
 
