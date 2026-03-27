@@ -6,7 +6,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Dna, Sun, Moon, LogIn, Megaphone, Trophy, Users } from 'lucide-react';
 
-// 🔥 시니어의 추가 마법: 팀과 해커톤 데이터를 불러오기 위해 스토어 추가 임포트
 import { useUserStore } from '@/store/useUserStore';
 import { useTeamStore } from '@/store/useTeamStore';
 import { useHackathonStore } from '@/store/useHackathonStore';
@@ -37,10 +36,10 @@ export default function Navbar() {
   const [showBanner, setShowBanner] = useState(true);
   const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
 
-  // 🔥 유저 이름과 참가 중인 해커톤 제목 동적 할당
+  // 🔥 유저 이름과 참가 중인 해커톤 제목 동적 할당 + 빈 상태 예외 처리
   const notices = useMemo(() => {
     const userName = currentUser ? currentUser.nickname : '참가자';
-    let activeHackathonTitle = '진행 중인 해커톤';
+    let activeHackathonTitle = null; // 기본값을 null로 설정
     
     // 유저가 속한 팀을 찾고, 그 팀이 참여 중인 해커톤 제목을 동적으로 찾아냄
     if (currentUser && currentUser.teamCodes.length > 0) {
@@ -56,10 +55,13 @@ export default function Navbar() {
     return [
       {
         id: 'deadline',
-        type: '마감임박',
+        type: activeHackathonTitle ? '마감임박' : '해커톤모집', // 타이틀 유무에 따라 뱃지 텍스트 변경
         icon: Megaphone,
         bgClass: 'bg-rose-500', 
-        text: `🚨 <span class="font-bold text-yellow-300">${userName}</span>님이 참가 중인 [${activeHackathonTitle}] 제출 마감이 <span class="font-bold text-yellow-300">D-3</span> 남았습니다!`
+        // 🔥 참가 중인 대회가 있으면 마감 알림, 없으면 참여 유도 멘트로 분기 처리!
+        text: activeHackathonTitle 
+          ? `🚨 <span class="font-bold text-yellow-300">${userName}</span>님이 참가 중인 [${activeHackathonTitle}] 제출 마감이 <span class="font-bold text-yellow-300">D-3</span> 남았습니다!`
+          : `🔥 아직 참가 중인 해커톤이 없네요! 지금 바로 <span class="font-bold text-yellow-300">새로운 팀</span>에 합류해 보세요!`
       },
       {
         id: 'ranking',
@@ -80,7 +82,6 @@ export default function Navbar() {
 
   useEffect(() => setMounted(true), []);
 
-  // 4초마다 롤링
   useEffect(() => {
     if (!showBanner || notices.length <= 1) return;
 
@@ -100,7 +101,6 @@ export default function Navbar() {
 
   return (
     <>
-      {/* 🚀 상단 롤링 공지 배너 영역 */}
       <AnimatePresence>
         {showBanner && (
           <motion.div
@@ -150,7 +150,6 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* 🚀 메인 내비게이션 영역 */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 max-w-7xl items-center">
           <Link href="/" className="mr-6 flex items-center space-x-2">
@@ -213,7 +212,6 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* 🚀 모바일 사이드 메뉴 영역 */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
@@ -302,7 +300,6 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* 인증 모달 */}
       <AuthModal open={isAuthOpen} onOpenChange={setIsAuthOpen} />
     </>
   );
