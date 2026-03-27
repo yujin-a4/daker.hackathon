@@ -32,33 +32,38 @@ export default function Navbar() {
 
   const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
 
-  // 카테고리별 배경색(bgClass) 추가!
-  const notices = useMemo(() => [
-    {
-      id: 'deadline',
-      type: '마감임박',
-      icon: Megaphone,
-      bgClass: 'bg-rose-500', // 강렬한 레드
-      text: '🚨 긴급 인수인계 해커톤 제출 마감 <span class="font-bold text-yellow-300">D-3</span>! 늦기 전에 결과물을 제출하세요!'
-    },
-    {
-      id: 'ranking',
-      type: '랭킹업데이트',
-      icon: Trophy,
-      bgClass: 'bg-blue-600', // 신뢰의 블루
-      text: '🏆 현재 1위는 <span class="font-bold text-yellow-300">팀 시너지</span> (31 커밋)! 추격자가 나타날까요?'
-    },
-    {
-      id: 'recruitment',
-      type: '팀원모집',
-      icon: Users,
-      bgClass: 'bg-emerald-600', // 활력의 에메랄드
-      text: '🤝 새 팀들이 등록되었습니다! <span class="font-bold text-yellow-300">팀 찾기</span> 탭에서 지금 합류하세요.'
-    }
-  ], []);
+  // 🔥 유저 이름 동적 할당: 로그인 상태면 닉네임, 아니면 '참가자'로 표시
+  const notices = useMemo(() => {
+    const userName = currentUser ? currentUser.nickname : '참가자';
+    
+    return [
+      {
+        id: 'deadline',
+        type: '마감임박',
+        icon: Megaphone,
+        bgClass: 'bg-rose-500', 
+        text: `🚨 <span class="font-bold text-yellow-300">${userName}</span>님이 참가 중인 [긴급 인수인계 해커톤] 제출 마감이 <span class="font-bold text-yellow-300">D-3</span> 남았습니다!`
+      },
+      {
+        id: 'ranking',
+        type: '랭킹업데이트',
+        icon: Trophy,
+        bgClass: 'bg-blue-600', 
+        text: `🏆 <span class="font-bold text-yellow-300">${userName}</span>님의 소속 팀이 1위까지 3커밋 남았습니다! 추격해 볼까요?`
+      },
+      {
+        id: 'recruitment',
+        type: '팀원모집',
+        icon: Users,
+        bgClass: 'bg-emerald-600', 
+        text: '🤝 새 팀들이 등록되었습니다! <span class="font-bold text-yellow-300">팀 찾기</span> 탭에서 지금 합류하세요.'
+      }
+    ];
+  }, [currentUser]);
 
   useEffect(() => setMounted(true), []);
 
+  // 4초마다 롤링
   useEffect(() => {
     if (!showBanner || notices.length <= 1) return;
 
@@ -78,6 +83,7 @@ export default function Navbar() {
 
   return (
     <>
+      {/* 🚀 상단 롤링 공지 배너 영역 */}
       <AnimatePresence>
         {showBanner && (
           <motion.div
@@ -85,14 +91,12 @@ export default function Navbar() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0, overflow: 'hidden' }}
             transition={{ duration: 0.3 }}
-            // cn 함수를 이용해 bgClass를 동적으로 교체하고, transition-colors로 부드럽게 색 전환
             className={cn(
               "w-full overflow-hidden transition-colors duration-500",
               CurrentNotice.bgClass
             )}
           >
             <div className="container mx-auto flex h-10 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 relative">
-              
               <div className="flex-1 h-full flex items-center justify-center relative">
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -104,7 +108,6 @@ export default function Navbar() {
                     className="flex items-center space-x-2 text-white text-xs sm:text-sm font-medium absolute inset-0 justify-center"
                   >
                     <CurrentIcon className="h-4 w-4 shrink-0" />
-                    {/* 뱃지는 반투명한 화이트(글래스모피즘)로 둬서 어떤 배경색이든 찰떡같이 어울리게 함 */}
                     <span className="rounded-full bg-white/25 px-2 py-0.5 text-[10px] sm:text-xs font-bold backdrop-blur-md border border-white/30 shrink-0 shadow-sm">
                       {CurrentNotice.type}
                     </span>
@@ -130,6 +133,7 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
+      {/* 🚀 메인 내비게이션 영역 */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 max-w-7xl items-center">
           <Link href="/" className="mr-6 flex items-center space-x-2">
@@ -192,6 +196,7 @@ export default function Navbar() {
         </div>
       </header>
 
+      {/* 🚀 모바일 사이드 메뉴 영역 */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
@@ -280,6 +285,7 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
+      {/* 인증 모달 */}
       <AuthModal open={isAuthOpen} onOpenChange={setIsAuthOpen} />
     </>
   );
