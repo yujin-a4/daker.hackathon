@@ -7,6 +7,7 @@ import { useTeamStore } from '@/store/useTeamStore';
 import { useUserStore } from '@/store/useUserStore';
 import { Button } from '@/components/ui/button';
 import HackathonCard from '@/components/hackathon/HackathonCard';
+import { Badge } from '@/components/ui/badge';
 import EmptyState from '@/components/shared/EmptyState';
 import RecommendedSection from '@/components/hackathon/RecommendedSection';
 
@@ -41,7 +42,7 @@ export default function Home() {
   const myHackathons = myTeams.map(team => {
     const hackathon = hackathons.find(h => h.slug === team.hackathonSlug);
     return { team, hackathon };
-  }).filter(item => item.hackathon);
+  }).filter(item => item.hackathon && item.hackathon.status !== 'ended');
 
   return (
     <div>
@@ -93,37 +94,76 @@ export default function Home() {
 
       {/* 내 작전실 (참여중인 해커톤) */}
       {myHackathons.length > 0 && (
-        <section className="py-12 bg-primary/5 dark:bg-primary/10 border-y border-primary/10">
+        <section className="py-12 bg-slate-50/50 dark:bg-slate-950/50 border-y border-slate-200/60 dark:border-slate-800/60">
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-              <Rocket className="w-6 h-6 text-primary" />
-              나의 베이스캠프
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {myHackathons.map(({ team, hackathon }) => (
-                <div key={team.teamCode} className="bg-background rounded-xl p-6 border shadow-sm flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between hover:border-primary/30 transition-all">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
-                        진행 중
-                      </span>
-                      <span className="text-sm font-medium text-muted-foreground">{hackathon?.title}</span>
-                    </div>
-                    <h3 className="text-xl font-bold text-foreground mb-1">팀 {team.name}</h3>
-                    <p className="text-sm text-muted-foreground">현재 나의 팀과 함께 작전을 세워보세요.</p>
+            <div className="flex items-center justify-between mb-8">
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black text-foreground flex items-center gap-2.5 italic uppercase tracking-tight">
+                  <div className="p-2 bg-indigo-500 rounded-lg shadow-indigo-500/20 shadow-lg">
+                    <Rocket className="w-5 h-5 text-white" />
                   </div>
-                  <div className="flex gap-3 w-full sm:w-auto mt-4 sm:mt-0 flex-col sm:flex-row">
-                    <Button asChild variant="outline" className="w-full sm:w-auto">
-                      <Link href={`/hackathons/${hackathon?.slug}`}>
-                        해커톤 정보 보기
-                      </Link>
-                    </Button>
-                    <Button asChild className="w-full sm:w-auto gap-2">
-                      <Link href={`/basecamp/${team.teamCode}`}>
-                        <Rocket className="w-4 h-4" />
-                        작전실 입장
-                      </Link>
-                    </Button>
+                  My Basecamp
+                </h2>
+                <p className="text-sm text-muted-foreground font-medium ml-1">현재 활발히 빌딩 중인 프로젝트 작전실입니다.</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {myHackathons.map(({ team, hackathon }) => (
+                <div 
+                  key={team.teamCode}
+                  className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-1 flex flex-col shadow-sm hover:shadow-xl hover:border-indigo-500/30 transition-all duration-300"
+                >
+                  <div className="p-5 flex flex-col sm:flex-row gap-5 items-start sm:items-center justify-between">
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-center gap-2.5">
+                        <Badge variant="outline" className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20 px-2.5 py-0.5 rounded-full flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          진행 중
+                        </Badge>
+                        <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 line-clamp-1">{hackathon?.title}</span>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 transition-colors">
+                          Team {team.name}
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium italic">
+                          현재 팀과 함께 멋진 결과물을 만들어가는 중입니다!
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
+                      <Button asChild variant="ghost" className="h-10 px-4 text-xs font-bold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                        <Link href={`/hackathons/${hackathon?.slug}`}>
+                          정보 확인
+                        </Link>
+                      </Button>
+                      <Button asChild className="h-10 px-5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20 gap-2 text-xs font-bold transition-all">
+                        <Link href={`/basecamp/${team.teamCode}`}>
+                          <Rocket className="w-3.5 h-3.5" />
+                          작전실 입장
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Progress visualization */}
+                  <div className="mt-auto px-5 pb-5">
+                    <div className="flex justify-between items-center mb-1.5">
+                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                         <div className="w-1 h-1 rounded-full bg-indigo-400" />
+                         Project Progress
+                      </span>
+                      <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">{team.progressPercent || 40}%</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 transition-all duration-1000 ease-in-out" 
+                        style={{ width: `${team.progressPercent || 40}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
