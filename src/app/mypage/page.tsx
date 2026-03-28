@@ -15,6 +15,8 @@ import {
   LogOut,
   Shield,
   Target,
+  Globe,
+  ExternalLink,
 } from 'lucide-react';
 
 import HackathonTradingCard from '@/components/mypage/HackathonTradingCard';
@@ -402,7 +404,7 @@ export default function MyPage() {
         </Card>
       </motion.div>
 
-      {/* ── 제출 현황 ── */}
+      {/* ── 포트폴리오 아카이브 (Project Showcase) ── */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -411,49 +413,60 @@ export default function MyPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <FileText className="w-5 h-5 text-emerald-500" />
-              제출 현황
+              <Trophy className="w-5 h-5 text-yellow-500" />
+              포트폴리오 아카이브 (Project Showcase)
             </CardTitle>
-            <CardDescription>해커톤별 제출 상태</CardDescription>
+            <CardDescription>과거 해커톤에서 완성한 결과물과 코드를 보관하고 자랑하세요!</CardDescription>
           </CardHeader>
           <CardContent>
-            {mySubmissions.length === 0 ? (
+            {mySubmissions.filter(s => s.status === 'submitted').length === 0 ? (
               <div className="text-center py-8 text-muted-foreground text-sm">
-                아직 제출한 항목이 없습니다.
+                아직 완성된 포트폴리오가 없습니다.
               </div>
             ) : (
-              <div className="space-y-3">
-                {mySubmissions.map((sub) => {
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {mySubmissions.filter(s => s.status === 'submitted').map((sub) => {
                   const hackathon = hackathons.find(
                     (h) => h.slug === sub.hackathonSlug,
                   );
+                  const webLink = sub.artifacts.find(a => a.type === 'url')?.content;
+                  const docLink = sub.artifacts.find(a => a.type === 'pdf' || a.type === 'text');
+                  
                   return (
                     <div
                       key={sub.id}
-                      className="flex items-center justify-between p-4 rounded-lg border cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                      onClick={() =>
-                        router.push(`/hackathons/${sub.hackathonSlug}`)
-                      }
+                      className="flex flex-col rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden group hover:shadow-md transition-all bg-white dark:bg-slate-900"
                     >
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm truncate">
-                          {hackathon?.title || sub.hackathonSlug}
+                      <div className="h-28 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-950/50 dark:to-purple-950/50 relative overflow-hidden flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
+                        <h4 className="text-xl font-black text-indigo-900/40 dark:text-indigo-200/20 italic tracking-wider whitespace-nowrap opacity-50 transform -rotate-6 scale-150">
+                          {hackathon?.title || sub.hackathonSlug} 
+                        </h4>
+                        <Badge className="absolute top-3 left-3 bg-white/90 text-indigo-700 hover:bg-white shadow-sm dark:bg-slate-800/90 dark:text-indigo-300">
+                           {sub.teamName}
+                        </Badge>
+                      </div>
+                      
+                      <div className="p-4 flex-1 flex flex-col">
+                        <h3 className="font-bold text-lg leading-tight mb-2 line-clamp-1 group-hover:text-indigo-600 transition-colors">
+                          {hackathon?.title || 'Unknown Project'}
                         </h3>
-                        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                          <span>팀: {sub.teamName}</span>
-                          <span>
-                            아티팩트 {sub.artifacts.length}개
-                          </span>
-                          {sub.submittedAt && (
-                            <span>
-                              제출일 {formatDate(sub.submittedAt)}
-                            </span>
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
+                          {sub.notes || '프로젝트에 대한 설명이 없습니다.'}
+                        </p>
+                        
+                        <div className="flex items-center gap-2 mt-auto pt-4 border-t border-dashed">
+                          {webLink && (
+                            <Button size="sm" variant="default" className="w-full bg-slate-900 text-white hover:bg-slate-800 shadow-sm" onClick={() => window.open(webLink, '_blank')}>
+                              <Globe className="w-3.5 h-3.5 mr-1.5" /> 데모 보기
+                            </Button>
+                          )}
+                          {docLink && (
+                            <Button size="sm" variant="outline" className="w-full" onClick={() => alert('기획서 다운로드 뷰어 연동 예정')}>
+                              <FileText className="w-3.5 h-3.5 mr-1.5" /> 기획서 (PDF)
+                            </Button>
                           )}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-3 ml-4">
-                        {getSubmissionBadge(sub.status)}
-                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
                       </div>
                     </div>
                   );

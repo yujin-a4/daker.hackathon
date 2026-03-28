@@ -112,7 +112,27 @@ export default function TeamCard({ team, onEdit, onCardClick }: TeamCardProps) {
           </div>
         )}
 
-        <div className="border-t mt-3 pt-3 flex justify-between items-center">
+        {team.progressStatus && (
+          <div className="mt-4 pt-4 border-t border-dashed">
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                {team.progressStatus === 'planning' ? '📝 기획 중' : 
+                 team.progressStatus === 'designing' ? '🎨 디자인 중' : 
+                 team.progressStatus === 'developing' ? '💻 개발 중' : 
+                 '🚀 배포/완료'}
+              </span>
+              <span className="text-[11px] font-black text-primary">{team.progressPercent || 0}%</span>
+            </div>
+            <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div 
+                className={cn("h-full rounded-full transition-all duration-500", team.progressPercent === 100 ? "bg-emerald-500" : "bg-primary")} 
+                style={{ width: `${team.progressPercent || 0}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="mt-4 flex justify-between items-center">
            <span className="text-[10px] text-muted-foreground">{formatDate(team.createdAt).split(' ')[0]}</span>
            
            <div className="flex gap-1.5">

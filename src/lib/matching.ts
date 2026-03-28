@@ -22,7 +22,7 @@ export function calculateMatchScore(user: CurrentUser, team: Team): MatchingResu
 
   if (isLookingForMyRole) {
     score += 60;
-    matchReasons.push(`${user.role} 포지션을 간절히 찾고 있는 팀`);
+    matchReasons.push(`✨ ${user.role} 포지션을 간절히 찾고 있는 팀`);
   } else {
     // 서브 역할 매칭 (기타 등등)
     const isRelatedRole = team.lookingFor.some(lf => {
@@ -32,7 +32,7 @@ export function calculateMatchScore(user: CurrentUser, team: Team): MatchingResu
     });
     if (isRelatedRole) {
       score += 30;
-      matchReasons.push(`${user.role} 직무 역량을 발휘할 수 있는 팀`);
+      matchReasons.push(`🎯 ${user.role} 직무 역량을 200% 발휘할 수 있는 환경`);
     }
   }
 
@@ -46,7 +46,7 @@ export function calculateMatchScore(user: CurrentUser, team: Team): MatchingResu
   if (matchedSkills.length > 0) {
     const skillScore = Math.min(matchedSkills.length * 10, 20);
     score += skillScore;
-    matchReasons.push(`${matchedSkills.slice(0, 2).join(', ')} 등 보유 스택 활용 가능`);
+    matchReasons.push(`🛠️ 보유하신 ${matchedSkills.slice(0, 2).join(', ')} 기술 스택이 꼭 필요해요`);
   }
 
   // 3. 관심 분야 매칭 (15점)
@@ -57,14 +57,14 @@ export function calculateMatchScore(user: CurrentUser, team: Team): MatchingResu
 
   if (isPreferredType) {
     score += 15;
-    matchReasons.push('관심 분야의 해커톤 참가 팀');
+    matchReasons.push('🚀 관심 분야 해커톤에서 더 큰 성장을 도모하세요');
   }
 
   // 4. 활동성 및 팀 상태 (최대 5점)
   if (team.isOpen) {
     score += 5;
     if (team.memberCount >= team.maxTeamSize - 1) {
-      matchReasons.push('곧 모집 마감! 빠른 합류가 필요해요');
+      matchReasons.push('⏰ 곧 모집 마감! 마지막 한 자리를 선점하세요');
     }
   }
 
@@ -79,9 +79,9 @@ export function calculateMatchScore(user: CurrentUser, team: Team): MatchingResu
  */
 export function getRecommendedTeams(user: CurrentUser, allTeams: Team[], limit: number = 3): MatchingResult[] {
   return allTeams
-    .filter(t => !t.isSolo && t.isOpen)
+    .filter(t => !t.isSolo && t.isOpen && !user.teamCodes.includes(t.teamCode))
     .map(t => calculateMatchScore(user, t))
-    .filter(res => res.score >= 40) // 일정 점수 이상의 유의미한 팀만 추천
+    .filter(res => res.score >= 30) // 30점 이상이면 노출 가능하게 하향 조정
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
 }

@@ -11,6 +11,7 @@ import { useHackathonStore } from '@/store/useHackathonStore';
 import { useUserStore } from '@/store/useUserStore';
 import type { Team } from '@/types';
 import { getRecommendedTeams, MatchingResult } from '@/lib/matching';
+import RecommendedTeamSection from '@/components/camp/RecommendedTeamSection';
 
 import TeamFilters from '@/components/camp/TeamFilters';
 import TeamCard from '@/components/camp/TeamCard';
@@ -41,6 +42,7 @@ function CampContent() {
   const [hackathonFilter, setHackathonFilter] = useState(searchParams.get('hackathon') || 'all');
   const [showOpenOnly, setShowOpenOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [positionFilter, setPositionFilter] = useState('all');
   
   // 섹션별 전체 보기 상태
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
@@ -97,7 +99,11 @@ function CampContent() {
       const searchMatch = searchQuery === '' || 
                           team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           team.intro.toLowerCase().includes(searchQuery.toLowerCase());
-      return openMatch && searchMatch;
+      
+      const positionMatch = positionFilter === 'all' || 
+                            team.lookingFor.some(lf => lf.position.toLowerCase().includes(positionFilter.toLowerCase()));
+                            
+      return openMatch && searchMatch && positionMatch;
     });
 
     baseFiltered.forEach(team => {
@@ -123,40 +129,13 @@ function CampContent() {
       </header>
 
       <div className="space-y-10">
-        {/* ✨ AI 추천 섹션 (Subtle) */}
-        {recommendedTeams.length > 0 && !searchQuery && hackathonFilter === 'all' && (
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 px-1">
-              <Sparkles className="w-5 h-5 text-amber-500" />
-              <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">나를 위한 맞춤형 팀 추천</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {recommendedTeams.map((match: MatchingResult) => (
-                <div key={match.team.teamCode} className="flex flex-col gap-3">
-                  <div className="relative">
-                    <div className="absolute top-3 left-3 z-10">
-                      <Badge className="bg-amber-100/90 text-amber-700 border-amber-200 backdrop-blur-sm font-black px-2 py-1 shadow-sm">
-                        {match.score}% 매칭
-                      </Badge>
-                    </div>
-                    <TeamCard 
-                      team={match.team} 
-                      onEdit={handleEdit} 
-                      onCardClick={handleCardClick}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5 px-2">
-                    {match.matchReasons.slice(0, 2).map((reason: string, i: number) => (
-                      <div key={i} className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
-                        <div className="w-1 h-1 bg-indigo-500 rounded-full" />
-                        {reason}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+        {/* ✨ AI 추천 섹션 (Premium Upgrade) */}
+        {!searchQuery && (
+          <RecommendedTeamSection 
+            recommendations={recommendedTeams} 
+            onEdit={handleEdit} 
+            handleCardClick={handleCardClick} 
+          />
         )}
 
         {/* 🔍 필터 바 (Sticky & Minimal) */}
@@ -168,6 +147,8 @@ function CampContent() {
             setShowOpenOnly={setShowOpenOnly}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
+            positionFilter={positionFilter}
+            setPositionFilter={setPositionFilter}
             hackathons={hackathons}
           />
           <Button onClick={handleCreateNew} className="w-full md:w-auto shadow-sm">

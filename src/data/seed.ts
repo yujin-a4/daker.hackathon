@@ -439,6 +439,8 @@ export const teams: Team[] = [
     intro: '추론 최적화/경량화 실험을 함께 진행할 팀원을 찾습니다.',
     contact: { type: 'link', url: 'https://open.kakao.com/o/example1' },
     createdAt: '2026-02-20T11:00:00+09:00',
+    progressStatus: 'developing',
+    progressPercent: 65,
   },
   {
     teamCode: 'T-HANDOVER-01',
@@ -452,6 +454,23 @@ export const teams: Team[] = [
     intro: '명세서 기반으로 기본 기능을 빠르게 완성하고 UX 확장을 노립니다.',
     contact: { type: 'link', url: 'https://open.kakao.com/o/example3' },
     createdAt: '2026-03-04T11:00:00+09:00',
+    progressStatus: 'designing',
+    progressPercent: 40,
+  },
+  {
+    teamCode: 'T-VIBE-01',
+    hackathonSlug: 'monthly-vibe-coding-2026-02',
+    name: 'Vibe Enhancers',
+    isOpen: false,
+    leaderId: 'user-001-yujin',
+    memberCount: 4,
+    maxTeamSize: 4,
+    lookingFor: [],
+    intro: '바이브 코딩을 위한 최고의 팀이었습니다.',
+    contact: { type: 'link', url: 'https://open.kakao.com/o/example99' },
+    createdAt: '2026-01-20T11:00:00+09:00',
+    progressStatus: 'completed',
+    progressPercent: 100,
   },
   // --- daker-handover-2026-03 (20+ teams) ---
   ...Array.from({ length: 20 }).map((_, i) => ({
@@ -468,6 +487,8 @@ export const teams: Team[] = [
     intro: `우승을 목표로 하는 ${i + 2}번 팀입니다. 함께 가실 분!`,
     contact: { type: 'link', url: '#' },
     createdAt: new Date(2026, 2, 5 + i).toISOString(),
+    progressStatus: (i % 4 === 0 ? 'planning' : i % 4 === 1 ? 'designing' : i % 4 === 2 ? 'developing' : 'completed') as 'planning' | 'designing' | 'developing' | 'completed',
+    progressPercent: i % 4 === 0 ? 15 : i % 4 === 1 ? 40 : i % 4 === 2 ? 75 : 100,
   })),
   // --- gen-ai-startup-challenge (10+ teams) ---
   ...Array.from({ length: 12 }).map((_, i) => ({
@@ -484,6 +505,8 @@ export const teams: Team[] = [
     intro: `새로운 AI 시대를 열어갈 ${i + 2}번 팀입니다.`,
     contact: { type: 'link', url: '#' },
     createdAt: new Date(2026, 2, 21 + i).toISOString(),
+    progressStatus: (i % 2 === 0 ? 'planning' : 'developing') as 'planning' | 'designing' | 'developing' | 'completed',
+    progressPercent: i % 2 === 0 ? 25 : 60,
   })),
   // --- cloud-native-modernization (5+ teams) ---
   ...Array.from({ length: 8 }).map((_, i) => ({
@@ -500,6 +523,8 @@ export const teams: Team[] = [
     intro: `도전적인 클라우드 여정에 함께할 ${i + 2}번 팀입니다.`,
     contact: { type: 'link', url: '#' },
     createdAt: new Date(2026, 2, 26 + i).toISOString(),
+    progressStatus: 'completed' as 'planning' | 'designing' | 'developing' | 'completed',
+    progressPercent: 100,
   })),
 ];
 
@@ -592,15 +617,41 @@ export const rankings: RankingUser[] = [
   { rank: 53, nickname: '마탈', points: 0, basePoints: 1, hackathonsJoined: 1, winsCount: 0, lastActiveAt: '2026-02-03T10:45:00Z' },
 ];
 
-// ─── Submissions (유지) ───────────────────────────────────
-export const submissions: Submission[] = [];
+export const submissions: Submission[] = [
+  {
+    id: 'sub-001',
+    hackathonSlug: 'aimers-8-model-lite',
+    teamCode: 'T-ALPHA',
+    teamName: 'Team Alpha',
+    status: 'submitted',
+    artifacts: [
+      { type: 'pdf', fileName: 'model-optimization-report.pdf', uploadedAt: '2026-02-24T21:05:00+09:00' },
+      { type: 'url', content: 'https://github.com/daker-alpha/model-lite', uploadedAt: '2026-02-24T21:05:00+09:00' }
+    ],
+    notes: '모델 경량화 최종 제출물입니다.',
+    submittedAt: '2026-02-24T21:05:00+09:00',
+  },
+  {
+    id: 'sub-002',
+    hackathonSlug: 'monthly-vibe-coding-2026-02',
+    teamCode: 'T-VIBE-01', // Dummy team code for past event
+    teamName: 'Vibe Enhancers',
+    status: 'submitted',
+    artifacts: [
+      { type: 'text', content: '바이브 코딩 경험 개선을 위한 IDE 플러그인 제안서', uploadedAt: '2026-02-20T10:00:00+09:00' },
+      { type: 'url', content: 'https://example.com/vibe-enhancers-demo', uploadedAt: '2026-02-20T10:00:00+09:00' }
+    ],
+    notes: '오직 기획에만 집중했습니다.',
+    submittedAt: '2026-02-20T10:00:00+09:00',
+  }
+];
 
 // ─── Current User ──────────────────
 export const currentUser: CurrentUser = {
   id: 'user-001-yujin',
   nickname: '강유진',
   email: 'yujin.kang@daker.ai',
-  teamCodes: ['T-HANDOVER-01'],
+  teamCodes: ['T-HANDOVER-01', 'T-ALPHA', 'T-VIBE-01'],
   joinedAt: '2026-01-15T10:00:00Z',
   bookmarkedSlugs: ['daker-handover-2026-03', 'gen-ai-startup-challenge'],
   role: '프론트엔드 개발자',

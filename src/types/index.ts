@@ -96,6 +96,8 @@ export interface Team {
   intro: string;
   contact: { type: string; url: string };
   createdAt: string;
+  progressStatus?: 'planning' | 'designing' | 'developing' | 'completed';
+  progressPercent?: number;
 }
 
 export interface RankingUser {

@@ -19,6 +19,8 @@ export const useTeamStore = create<TeamState>()(
           ...teamData,
           teamCode: generateId('T'),
           createdAt: new Date().toISOString(),
+          progressStatus: 'planning',
+          progressPercent: 0,
         };
         set((state) => ({
           teams: [...state.teams, newTeam],
