@@ -168,9 +168,16 @@ export default function MyPage() {
 
           {/* 프로필 정보 */}
           <CardContent className="px-6 pt-3 pb-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <h1 className="text-2xl font-bold">{currentUser.nickname}</h1>
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl font-bold">{currentUser.nickname}</h1>
+                  {currentUser.role && (
+                    <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 border-transparent hover:bg-indigo-100">
+                      {currentUser.role}
+                    </Badge>
+                  )}
+                </div>
                 <div className="flex flex-wrap items-center gap-3 mt-1.5 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Mail className="w-3.5 h-3.5" />
@@ -181,12 +188,39 @@ export default function MyPage() {
                     가입일 {formatDate(currentUser.joinedAt)}
                   </span>
                 </div>
+
+                <div className="mt-5 space-y-3">
+                  {currentUser.preferredTypes && currentUser.preferredTypes.length > 0 && (
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-semibold text-muted-foreground w-16">선호 유형</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {currentUser.preferredTypes.map((type) => (
+                          <Badge key={type} variant="outline" className="text-xs font-medium">
+                            {type}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {currentUser.skills && currentUser.skills.length > 0 && (
+                    <div className="flex items-start gap-3">
+                      <span className="text-xs font-semibold text-muted-foreground w-16 pt-1">보유 스킬</span>
+                      <div className="flex flex-wrap gap-1.5 flex-1">
+                        {currentUser.skills.map((skill) => (
+                          <Badge key={skill} variant="secondary" className="text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => router.push('/mypage/profile')}
-                className="flex-shrink-0"
+                className="flex-shrink-0 mt-2 sm:mt-0"
               >
                 <Edit3 className="w-4 h-4 mr-1.5" />
                 프로필 수정

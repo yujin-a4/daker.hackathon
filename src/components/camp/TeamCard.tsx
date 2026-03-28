@@ -29,9 +29,10 @@ interface TeamCardProps {
   team: Team;
   onEdit: (team: Team) => void;
   onCardClick: (team: Team) => void;
+  className?: string;
 }
 
-export default function TeamCard({ team, onEdit, onCardClick }: TeamCardProps) {
+export default function TeamCard({ team, onEdit, onCardClick, className }: TeamCardProps) {
   const { hackathons } = useHackathonStore();
   const { currentUser } = useUserStore();
   const { updateTeam } = useTeamStore();
@@ -58,7 +59,8 @@ export default function TeamCard({ team, onEdit, onCardClick }: TeamCardProps) {
       className={cn(
         "flex flex-col h-full rounded-xl overflow-hidden shadow-sm border bg-card transition-all duration-200 cursor-pointer",
         "hover:border-slate-300 hover:shadow-md dark:hover:border-slate-700",
-        !team.isOpen && "opacity-70"
+        !team.isOpen && "opacity-70",
+        className
       )}
     >
       <CardHeader className="p-4 pb-3">

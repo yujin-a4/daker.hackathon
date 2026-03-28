@@ -500,9 +500,9 @@ export const teams: Team[] = [
     memberCount: (i % 2) + 1,
     maxTeamSize: 4,
     lookingFor: [
-      { position: i % 3 === 0 ? 'Planner' : 'Designer', description: '창의적 인재 모집' }
+      { position: i % 3 === 0 ? '서비스기획자' : 'UX 디자인', description: 'PM/PO 경험이나 서비스기획, 데이터기반의사결정 역량을 선호합니다.' }
     ],
-    intro: `새로운 AI 시대를 열어갈 ${i + 2}번 팀입니다.`,
+    intro: `사용자리서치를 바탕으로 새로운 AI 프로덕트를 기획할 ${i + 2}번 팀입니다. 최고의 UI/UX 역량을 환영합니다!`,
     contact: { type: 'link', url: '#' },
     createdAt: new Date(2026, 2, 21 + i).toISOString(),
     progressStatus: (i % 2 === 0 ? 'planning' : 'developing') as 'planning' | 'designing' | 'developing' | 'completed',

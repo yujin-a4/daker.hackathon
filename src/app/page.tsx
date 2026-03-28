@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, BarChart3, Trophy, Users, Boxes } from 'lucide-react';
+import { ArrowRight, BarChart3, Trophy, Users, Boxes, Rocket } from 'lucide-react';
 import { useHackathonStore } from '@/store/useHackathonStore';
 import { useTeamStore } from '@/store/useTeamStore';
+import { useUserStore } from '@/store/useUserStore';
 import { Button } from '@/components/ui/button';
 import HackathonCard from '@/components/hackathon/HackathonCard';
 import EmptyState from '@/components/shared/EmptyState';
@@ -29,11 +30,18 @@ function QuickCard({ icon: Icon, title, desc, link }: { icon: React.ElementType;
 }
 
 export default function Home() {
+  const { currentUser } = useUserStore();
   const { hackathons } = useHackathonStore();
   const { teams } = useTeamStore();
 
   const ongoingHackathons = hackathons.filter(h => h.status === 'ongoing');
   const openTeamsCount = teams.filter(t => t.isOpen).length;
+
+  const myTeams = currentUser ? teams.filter(t => currentUser.teamCodes.includes(t.teamCode)) : [];
+  const myHackathons = myTeams.map(team => {
+    const hackathon = hackathons.find(h => h.slug === team.hackathonSlug);
+    return { team, hackathon };
+  }).filter(item => item.hackathon);
 
   return (
     <div>
@@ -82,6 +90,47 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* 내 작전실 (참여중인 해커톤) */}
+      {myHackathons.length > 0 && (
+        <section className="py-12 bg-primary/5 dark:bg-primary/10 border-y border-primary/10">
+          <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+              <Rocket className="w-6 h-6 text-primary" />
+              나의 베이스캠프
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {myHackathons.map(({ team, hackathon }) => (
+                <div key={team.teamCode} className="bg-background rounded-xl p-6 border shadow-sm flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between hover:border-primary/30 transition-all">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                        진행 중
+                      </span>
+                      <span className="text-sm font-medium text-muted-foreground">{hackathon?.title}</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground mb-1">팀 {team.name}</h3>
+                    <p className="text-sm text-muted-foreground">현재 나의 팀과 함께 작전을 세워보세요.</p>
+                  </div>
+                  <div className="flex gap-3 w-full sm:w-auto mt-4 sm:mt-0 flex-col sm:flex-row">
+                    <Button asChild variant="outline" className="w-full sm:w-auto">
+                      <Link href={`/hackathons/${hackathon?.slug}`}>
+                        해커톤 정보 보기
+                      </Link>
+                    </Button>
+                    <Button asChild className="w-full sm:w-auto gap-2">
+                      <Link href={`/basecamp/${team.teamCode}`}>
+                        <Rocket className="w-4 h-4" />
+                        작전실 입장
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 개인화 추천 섹션 */}
       <section className="py-12 lg:py-16 bg-background">

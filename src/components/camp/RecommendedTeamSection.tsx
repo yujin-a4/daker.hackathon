@@ -44,16 +44,16 @@ export default function RecommendedTeamSection({
       </div>
 
       {/* Horizontal Carousel */}
-      <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x snap-mandatory px-1">
+      <div className="flex gap-6 overflow-x-auto pt-5 pb-6 scrollbar-hide snap-x snap-mandatory px-2">
         {recommendations.map((match, i) => (
           <motion.div
             key={match.team.teamCode}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="flex-shrink-0 w-[300px] sm:w-[350px] snap-center group"
+            className="flex-shrink-0 w-[300px] sm:w-[350px] snap-center group flex flex-col items-stretch"
           >
-            <div className="relative">
+            <div className="relative flex flex-col flex-1 h-full">
               {/* Match Score Badge */}
               <div className="absolute -top-3 -right-2 z-20">
                 <Badge className="bg-amber-500 hover:bg-amber-600 border-2 border-white dark:border-slate-950 text-white font-black px-2 py-1 shadow-lg transform group-hover:scale-110 transition-transform duration-300">
@@ -64,15 +64,18 @@ export default function RecommendedTeamSection({
               {/* Glowing Outline on Hover */}
               <div className="absolute inset-x-0 inset-y-0 rounded-2xl bg-amber-500/0 group-hover:bg-amber-500/20 blur-xl transition-all duration-300 -z-10" />
 
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-amber-500/30 group-hover:border-amber-500 transition-colors shadow-sm">
-                <TeamCard 
-                  team={match.team} 
-                  onEdit={onEdit} 
-                  onCardClick={handleCardClick}
-                />
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-amber-500/30 group-hover:border-amber-500 transition-colors shadow-sm flex flex-col flex-1 overflow-hidden h-full">
+                <div className="flex-1 shrink-0">
+                  <TeamCard 
+                    team={match.team} 
+                    onEdit={onEdit} 
+                    onCardClick={handleCardClick}
+                    className="border-0 shadow-none rounded-none hover:border-0 hover:shadow-none bg-transparent"
+                  />
+                </div>
                 
                 {/* AI Insights Bar */}
-                <div className="px-4 py-3 bg-amber-50/50 dark:bg-amber-900/10 rounded-b-[14px] border-t border-amber-100 dark:border-amber-900/40">
+                <div className="mt-auto px-4 py-3 bg-amber-50/50 dark:bg-amber-900/10 border-t border-amber-100 dark:border-amber-900/40 shrink-0">
                   <div className="flex flex-col gap-2">
                     <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-widest flex items-center gap-1">
                       <Zap className="w-3 h-3 fill-amber-500" /> AI Insight

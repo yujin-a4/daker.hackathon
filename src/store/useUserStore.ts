@@ -30,9 +30,13 @@ export const useUserStore = create<UserState>()(
         teamCodes: ['T-HANDOVER-01'], // 404found 팀 소속으로 세팅
         joinedAt: new Date().toISOString(),
         bookmarkedSlugs: ['daker-handover-2026-03'], // 해커톤 북마크
-        role: '프론트엔드 개발자',
-        preferredTypes: ['Web', 'VibeCoding'],
-        skills: ['React', 'Next.js', 'Tailwind CSS'],
+        role: '서비스기획자',
+        preferredTypes: ['서비스기획'],
+        skills: [
+          '서비스기획', 'PM', 'PO', '시장조사', '사용자리서치',
+          '경쟁분석', '데이터기반의사결정', '교육', '바이브코딩',
+          '스마트시티', 'AI', 'GenAI', 'UI/UX'
+        ],
       },
 
       register: (nickname: string, email: string) => {
@@ -64,9 +68,13 @@ export const useUserStore = create<UserState>()(
               teamCodes: ['T-HANDOVER-01'],
               joinedAt: new Date().toISOString(),
               bookmarkedSlugs: ['daker-handover-2026-03'],
-              role: '프론트엔드 개발자',
-              preferredTypes: ['Web', 'VibeCoding'],
-              skills: ['React', 'Next.js', 'Tailwind CSS'],
+              role: '서비스기획자',
+              preferredTypes: ['서비스기획'],
+              skills: [
+                '서비스기획', 'PM', 'PO', '시장조사', '사용자리서치',
+                '경쟁분석', '데이터기반의사결정', '교육', '바이브코딩',
+                '스마트시티', 'AI', 'GenAI', 'UI/UX'
+              ],
             },
           });
           return;
