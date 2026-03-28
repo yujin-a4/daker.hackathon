@@ -101,6 +101,7 @@ export interface Team {
 }
 
 export interface RankingUser {
+  id?: string;
   rank: number;
   nickname: string;
   points: number;
@@ -127,6 +128,13 @@ export interface Submission {
   submittedAt: string | null;
 }
 
+export interface PointLog {
+  id: string;
+  description: string;
+  points: number;
+  date: string;
+}
+
 export interface CurrentUser {
   id: string;
   nickname: string;
@@ -137,6 +145,7 @@ export interface CurrentUser {
   role?: string;
   preferredTypes?: string[];
   skills?: string[];
+  pointHistory?: PointLog[];
 }
 
 export interface UserProfile extends CurrentUser {}

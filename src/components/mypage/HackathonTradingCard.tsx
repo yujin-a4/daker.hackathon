@@ -14,6 +14,7 @@ interface Props {
   hackathon: Hackathon;
   team?: Team;
   submission?: Submission;
+  variant?: 'default' | 'small';
 }
 
 const getStatusBadge = (status: string) => {
@@ -37,7 +38,7 @@ const getSubmissionStatus = (status: string) => {
   }
 };
 
-export default function HackathonTradingCard({ hackathon, team, submission }: Props) {
+export default function HackathonTradingCard({ hackathon, team, submission, variant = 'default' }: Props) {
   const router = useRouter();
   const ref = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -110,7 +111,10 @@ export default function HackathonTradingCard({ hackathon, team, submission }: Pr
         initial={{ scale: 1 }}
         whileHover={{ scale: 1.05 }}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-        className="relative w-full aspect-[5/7] rounded-2xl overflow-hidden cursor-pointer group shadow-xl hover:shadow-2xl transition-shadow duration-300 border border-white/10"
+        className={cn(
+          "relative aspect-[5/7] rounded-2xl overflow-hidden cursor-pointer group shadow-xl hover:shadow-2xl transition-all duration-300 border border-white/10 w-full mx-auto",
+          variant === 'default' ? 'max-w-[300px]' : 'max-w-[220px]'
+        )}
       >
         {/* Background & Base Color Layer */}
         <div className={cn("absolute inset-0 bg-gradient-to-br opacity-90 transition-opacity", bgGradient)} />
@@ -156,50 +160,55 @@ export default function HackathonTradingCard({ hackathon, team, submission }: Pr
           {/* Top Header */}
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-2">
-              <div className="bg-black/30 backdrop-blur-md rounded-full px-3 py-1 text-[11px] font-bold tracking-wider w-fit border border-white/20 uppercase shadow-sm">
+              <div className="bg-black/30 backdrop-blur-md rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wider w-fit border border-white/20 uppercase shadow-sm">
                 {hackathon.type}
               </div>
               {getStatusBadge(hackathon.status)}
             </div>
-            <div className="w-11 h-11 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-              <Trophy className="w-5 h-5 text-yellow-300 drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]" />
+            <div className={cn(
+              "rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.2)]",
+              variant === 'default' ? "w-11 h-11" : "w-8 h-8"
+            )}>
+              <Trophy className={cn("text-yellow-300 drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]", variant === 'default' ? "w-5 h-5" : "w-4 h-4")} />
             </div>
           </div>
 
           {/* Center / Title */}
           <div className="flex-1 flex items-center py-4">
-            <h3 className="text-2xl font-black leading-snug drop-shadow-lg text-white">
+            <h3 className={cn("font-black leading-snug drop-shadow-lg text-white", variant === 'default' ? "text-2xl" : "text-lg")}>
               {hackathon.title}
             </h3>
           </div>
 
           {/* Footer Info */}
-          <div className="space-y-4">
-            <div className="bg-black/40 backdrop-blur-md rounded-xl p-3.5 border border-white/10 shadow-inner space-y-2.5">
+          <div className="space-y-3">
+            <div className="bg-black/40 backdrop-blur-md rounded-xl p-3 border border-white/10 shadow-inner space-y-2">
               <div className="flex justify-between items-center opacity-95">
-                <span className="flex items-center gap-1.5 text-[13px] font-medium text-slate-200">
-                  <Users className="w-4 h-4 text-pink-300" />
-                  {team ? team.name : '참여팀 없음'}
+                <span className={cn("flex items-center gap-1.5 font-medium text-slate-200 line-clamp-1", variant === 'default' ? "text-[13px]" : "text-[11px]")}>
+                  <Users className="w-3.5 h-3.5 text-pink-300 shrink-0" />
+                  <span className="truncate max-w-[100px]">{team ? team.name : '참여팀 없음'}</span>
                 </span>
-                <span className={cn('px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wide border border-white/10', subStatus.bg, subStatus.color)}>
+                <span className={cn('px-2 py-0.5 rounded-md font-bold tracking-wide border border-white/10 whitespace-nowrap shrink-0', subStatus.bg, subStatus.color, variant === 'default' ? 'text-[11px]' : 'text-[10px]')}>
                   {subStatus.text}
                 </span>
               </div>
               
               <div className="flex justify-between items-center opacity-95">
-                <span className="flex items-center gap-1.5 text-[13px] font-medium text-slate-200">
-                  <Calendar className="w-4 h-4 text-cyan-300" />
+                <span className={cn("flex items-center gap-1.5 font-medium text-slate-200", variant === 'default' ? "text-[13px]" : "text-[11px]")}>
+                  <Calendar className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
                   마감일
                 </span>
-                <span className={cn('font-bold text-[13px]', getDday(deadline).startsWith('D-') && parseInt(getDday(deadline).slice(2)) <= 7 ? 'text-rose-400' : 'text-slate-100')}>
+                <span className={cn('font-bold', getDday(deadline).startsWith('D-') && parseInt(getDday(deadline).slice(2)) <= 7 ? 'text-rose-400' : 'text-slate-100', variant === 'default' ? 'text-[13px]' : 'text-[11px]')}>
                   {getDday(deadline)}
                 </span>
               </div>
             </div>
             
-            <div className="flex items-center justify-center gap-1.5 text-[13px] font-bold text-white/70 group-hover:text-white transition-colors">
-              상세 페이지로 이동 <ChevronRight className="w-4 h-4" />
-            </div>
+            {variant === 'default' && (
+              <div className="flex items-center justify-center gap-1.5 text-[12px] font-bold text-white/70 group-hover:text-white transition-colors mt-2">
+                상세 페이지로 이동 <ChevronRight className="w-3.5 h-3.5" />
+              </div>
+            )}
           </div>
         </div>
       </motion.div>

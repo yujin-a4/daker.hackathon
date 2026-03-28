@@ -472,6 +472,22 @@ export const teams: Team[] = [
     progressStatus: 'completed',
     progressPercent: 100,
   },
+  {
+    teamCode: 'T-META-SOLO',
+    hackathonSlug: 'metaverse-creator-camp',
+    name: '강유진 (개인)',
+    isOpen: false,
+    isSolo: true,
+    leaderId: 'user-001-yujin',
+    memberCount: 1,
+    maxTeamSize: 1,
+    lookingFor: [],
+    intro: '메타버스 크리에이터스 아카데미 개인 출품작입니다.',
+    contact: { type: 'link', url: '' },
+    createdAt: '2026-01-11T11:00:00+09:00',
+    progressStatus: 'completed',
+    progressPercent: 100,
+  },
   // --- daker-handover-2026-03 (20+ teams) ---
   ...Array.from({ length: 20 }).map((_, i) => ({
     teamCode: `T-HANDOVER-AUTO-${i + 2}`,
@@ -558,11 +574,38 @@ export const leaderboards: Record<string, Leaderboard> = {
       { teamName: 'Team Gamma', score: 0.7013, rank: 2, submittedAt: '2026-02-25T09:40:00+09:00' },
     ],
   },
+  'metaverse-creator-camp': {
+    updatedAt: '2026-02-15T15:00:00+09:00',
+    entries: [
+      { teamName: '강유진 (개인)', score: 95.5, rank: 1, submittedAt: '2026-02-09T18:00:00+09:00', scoreBreakdown: { design: 95, ux: 96 } },
+      { teamName: 'Team Meta', score: 92.0, rank: 2, submittedAt: '2026-02-10T09:00:00+09:00' },
+    ],
+  },
+  'monthly-vibe-coding-2026-02': {
+    updatedAt: '2026-02-28T10:00:00+09:00',
+    entries: [
+      { teamName: 'Vibe Enhancers', score: 88.0, rank: 1, submittedAt: '2026-02-20T10:00:00+09:00' },
+      { teamName: 'Vibe Coders', score: 85.5, rank: 2, submittedAt: '2026-02-20T11:00:00+09:00' },
+    ],
+  },
 };
 
 // ─── Rankings (유지) ──────────────────────────────────────
 export const rankings: RankingUser[] = [
-  { rank: 1, nickname: '김다커', points: 0, basePoints: 1250, hackathonsJoined: 15, winsCount: 5, lastActiveAt: '2026-03-25T10:00:00Z' },
+  {
+    id: 'user-001-yujin',
+    rank: 0,
+    nickname: '강유진',
+    points: 0, // dynamically calculated
+    basePoints: 120,
+    hackathonsJoined: 3,
+    winsCount: 2,
+    lastActiveAt: new Date().toISOString(),
+  },
+  {
+    id: 'user-002',
+    rank: 0,
+    nickname: '코딩마스터', points: 0, basePoints: 1250, hackathonsJoined: 15, winsCount: 5, lastActiveAt: '2026-03-25T10:00:00Z' },
   { rank: 2, nickname: '이모델', points: 0, basePoints: 1120, hackathonsJoined: 12, winsCount: 4, lastActiveAt: '2026-03-26T08:00:00Z' },
   { rank: 3, nickname: '송딥러닝', points: 0, basePoints: 1050, hackathonsJoined: 10, winsCount: 3, lastActiveAt: '2026-03-27T09:00:00Z' },
   { rank: 4, nickname: '박클라우드', points: 0, basePoints: 980, hackathonsJoined: 8, winsCount: 2, lastActiveAt: '2026-03-24T15:00:00Z' },
@@ -643,6 +686,18 @@ export const submissions: Submission[] = [
     ],
     notes: '오직 기획에만 집중했습니다.',
     submittedAt: '2026-02-20T10:00:00+09:00',
+  },
+  {
+    id: 'sub-003',
+    hackathonSlug: 'metaverse-creator-camp',
+    teamCode: 'T-META-SOLO',
+    teamName: '강유진 (개인)',
+    status: 'submitted',
+    artifacts: [
+      { type: 'zip', fileName: 'metaverse-unity-project.zip', uploadedAt: '2026-02-09T18:00:00+09:00' }
+    ],
+    notes: '개인 출품작입니다. Unity 파일과 기획서를 첨부합니다.',
+    submittedAt: '2026-02-09T18:00:00+09:00',
   }
 ];
 
@@ -651,10 +706,38 @@ export const currentUser: CurrentUser = {
   id: 'user-001-yujin',
   nickname: '강유진',
   email: 'yujin.kang@daker.ai',
-  teamCodes: ['T-HANDOVER-01', 'T-ALPHA', 'T-VIBE-01'],
+  teamCodes: ['T-HANDOVER-01', 'T-ALPHA', 'T-VIBE-01', 'T-META-SOLO'],
   joinedAt: '2026-01-15T10:00:00Z',
   bookmarkedSlugs: ['daker-handover-2026-03', 'gen-ai-startup-challenge'],
-  role: '프론트엔드 개발자',
-  preferredTypes: ['VibeCoding', 'Web'],
-  skills: ['React', 'Next.js', 'Tailwind CSS'],
+  role: '서비스기획자',
+  preferredTypes: ['서비스기획', '데이터/AI'],
+  skills: [
+    'Figma', 'Notion', 'Miro', 'Jira',
+    '와이어프레이밍', 'PRD 작성', '사용자 인터뷰',
+    'Google Analytics', 'Amplitude', 'A/B 테스트',
+  ],
+  pointHistory: [
+    { id: 'ph-1', description: '회원가입 완료', points: 20, date: '2026-01-15T10:00:00Z' },
+    { id: 'ph-2', description: '프로필 상세 정보 입력', points: 100, date: '2026-01-15T10:15:00Z' },
+    { id: 'ph-3', description: '메타버스 캠프 (개인 출품작) 제출', points: 100, date: '2026-02-09T18:00:00+09:00' },
+    { id: 'ph-4', description: '메타버스 캠프 1위 달성! 🏆', points: 350, date: '2026-02-15T15:00:00+09:00' },
+    { id: 'ph-5', description: '바이브 코딩 대회 제출 완료', points: 100, date: '2026-02-20T10:00:00+09:00' },
+    { id: 'ph-6', description: '바이브 코딩 대회 1위 달성! 🏆', points: 350, date: '2026-02-28T10:00:00+09:00' },
+    { id: 'ph-7', description: '긴급 인수인계 해커톤 참가', points: 100, date: '2026-03-25T10:00:00+09:00' },
+  ],
 };
+
+// ─── War Room (Boards) ─────────────────────
+export const boards = [
+  // T-ALPHA 작전실 대화내역
+  { id: 'post-1', teamCode: 'T-ALPHA', authorNickname: '정머신', content: 'vLLM 세팅 완료했습니다! 생각보다 메모리가 빡세네요.', topic: '공지', color: 'bg-emerald-100', createdAt: '2026-02-21T15:00:00+09:00', likes: 2 },
+  { id: 'post-2', teamCode: 'T-ALPHA', authorNickname: '강유진', content: '고생하셨습니다! 제가 기획서랑 최종 발표 자료 초안 잡고 있을게요!', topic: '아이디어', color: 'bg-indigo-100', createdAt: '2026-02-22T11:00:00+09:00', likes: 3 },
+  { id: 'post-3', teamCode: 'T-ALPHA', authorNickname: '이모델', content: '리포트 작성 중인데, 성능 최적화 파트 결과 데이터 주실 수 있나요?', topic: '일반', color: 'bg-yellow-100', createdAt: '2026-02-23T09:00:00+09:00', likes: 1 },
+  // T-VIBE-01 작전실 대화내역
+  { id: 'post-4', teamCode: 'T-VIBE-01', authorNickname: '김프론트', content: '플러그인 UI 버그 잡느라 밤샜습니다 😇', topic: '일반', color: 'bg-red-100', createdAt: '2026-02-18T23:45:00+09:00', likes: 4 },
+  { id: 'post-5', teamCode: 'T-VIBE-01', authorNickname: '강유진', content: '바이브 코딩 진짜 재밌네요 ㅋㅋㅋ 아이디어 막 생각나서 정리해뒀습니다. 문서 확인해주세요!', topic: '아이디어', color: 'bg-yellow-100', createdAt: '2026-02-19T09:00:00+09:00', likes: 5 },
+  { id: 'post-6', teamCode: 'T-VIBE-01', authorNickname: '강유진', content: '드디어 서버 배포 성공!! 제안서 최종 검토 완료했고 바로 제출하겠습니다.', topic: '공지', color: 'bg-emerald-100', createdAt: '2026-02-20T09:30:00+09:00', likes: 7 },
+  // T-HANDOVER-01 현재 작전실 대화내역
+  { id: 'post-7', teamCode: 'T-HANDOVER-01', authorNickname: '강유진', content: '오늘 회의록 정리해서 디스코드에 올렸어요! 다들 확인 부탁드립니다~', topic: '공지', color: 'bg-emerald-100', createdAt: '2026-03-25T14:00:00Z', likes: 2 },
+  { id: 'post-8', teamCode: 'T-HANDOVER-01', authorNickname: '박디자인', content: '피그마 시안 1차본 나왔습니다. 피드백 주세요!', topic: '아이디어', color: 'bg-indigo-100', createdAt: '2026-03-26T10:00:00Z', likes: 1 },
+];

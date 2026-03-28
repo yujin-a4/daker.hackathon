@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { CurrentUser } from '@/types';
 import { generateId } from '@/lib/utils';
+import { currentUser as seedUser } from '@/data/seed';
 
 interface UserState {
   currentUser: CurrentUser | null;
@@ -23,21 +24,7 @@ export const useUserStore = create<UserState>()(
   persist(
     (set, get) => ({
       // 🔥 시니어의 매직: 초기 접속 시 '강유진' 님으로 자동 로그인 상태 세팅
-      currentUser: {
-        id: 'dummy-user-yujin-001',
-        nickname: '강유진',
-        email: 'yujin.kang@daker.ai',
-        teamCodes: ['T-HANDOVER-01'], // 404found 팀 소속으로 세팅
-        joinedAt: new Date().toISOString(),
-        bookmarkedSlugs: ['daker-handover-2026-03'], // 해커톤 북마크
-        role: '서비스기획자',
-        preferredTypes: ['서비스기획'],
-        skills: [
-          '서비스기획', 'PM', 'PO', '시장조사', '사용자리서치',
-          '경쟁분석', '데이터기반의사결정', '교육', '바이브코딩',
-          '스마트시티', 'AI', 'GenAI', 'UI/UX'
-        ],
-      },
+      currentUser: seedUser,
 
       register: (nickname: string, email: string) => {
         const newUser: CurrentUser = {
@@ -61,21 +48,7 @@ export const useUserStore = create<UserState>()(
         // 시드 데이터의 '강유진' 유저인 경우 원래 데이터 복원
         if (nickname === '강유진') {
           set({
-            currentUser: {
-              id: 'dummy-user-yujin-001',
-              nickname: '강유진',
-              email: 'yujin.kang@daker.ai',
-              teamCodes: ['T-HANDOVER-01'],
-              joinedAt: new Date().toISOString(),
-              bookmarkedSlugs: ['daker-handover-2026-03'],
-              role: '서비스기획자',
-              preferredTypes: ['서비스기획'],
-              skills: [
-                '서비스기획', 'PM', 'PO', '시장조사', '사용자리서치',
-                '경쟁분석', '데이터기반의사결정', '교육', '바이브코딩',
-                '스마트시티', 'AI', 'GenAI', 'UI/UX'
-              ],
-            },
+            currentUser: seedUser,
           });
           return;
         }

@@ -55,8 +55,11 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
   const { currentUser } = useUserStore();
   const { teams } = useTeamStore();
   const { submissions, addSubmission, updateSubmission } = useSubmissionStore();
-  const { addLeaderboardEntry, updateLeaderboardEntryTimestamp } = useHackathonStore();
+  const { hackathons, addLeaderboardEntry, updateLeaderboardEntryTimestamp } = useHackathonStore();
   const { rankings, recalculateRankings } = useRankingStore();
+
+  const hackathon = useMemo(() => hackathons.find(h => h.slug === hackathonSlug), [hackathons, hackathonSlug]);
+  const isEnded = hackathon?.status === 'ended';
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -232,7 +235,7 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
         </ul>
       </div>
 
-      {submitInfo.submissionItems && (
+      {submitInfo.submissionItems && submitInfo.submissionItems.length > 0 ? (
         <div>
           <h3 className="text-lg font-bold mb-4">제출 현황</h3>
           <div className="bg-card border rounded-lg divide-y">
@@ -276,10 +279,28 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
             })}
           </div>
         </div>
-      )}
+      ) : currentSubmission && currentSubmission.artifacts.length > 0 ? (
+        <div>
+          <h3 className="text-lg font-bold mb-4">제출 현황</h3>
+          <div className="bg-card border rounded-lg divide-y">
+            {currentSubmission.artifacts.map((a, idx) => (
+              <div key={idx} className="p-4 flex justify-between items-center">
+                <div>
+                  <p className="font-medium">{a.fileName || a.content || `제출 항목 #${idx + 1}`}</p>
+                  <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1.5 mt-1">
+                    <CheckCircle className="w-4 h-4" />
+                    제출 완료 ({formatDateTime(a.uploadedAt)})
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
-      <div>
-        <h3 className="text-lg font-bold mb-4">새 제출</h3>
+      {!isEnded && (
+        <div>
+          <h3 className="text-lg font-bold mb-4">새 제출</h3>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-6 bg-card border rounded-lg">
           {submitInfo.submissionItems && (
             <Controller
@@ -332,6 +353,7 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
           </div>
         </form>
       </div>
+      )}
     </div>
   );
 }

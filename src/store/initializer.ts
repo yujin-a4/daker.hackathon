@@ -5,6 +5,7 @@ import { useUserStore } from '@/store/useUserStore';
 import { useTeamStore } from '@/store/useTeamStore';
 import { useRankingStore } from '@/store/useRankingStore';
 import { useSubmissionStore } from '@/store/useSubmissionStore';
+import { useBoardStore } from '@/store/useBoardStore';
 import {
   hackathons,
   hackathonDetails,
@@ -12,9 +13,11 @@ import {
   teams,
   rankings,
   submissions,
+  boards,
+  currentUser as seedUser,
 } from '@/data/seed';
 
-export const SEED_VERSION = 'v3.6';
+export const SEED_VERSION = 'v4.0';
 
 export function initializeStore() {
   const detailsRecord = hackathonDetails.reduce((acc, detail) => {
@@ -27,11 +30,12 @@ export function initializeStore() {
   useTeamStore.setState({ teams });
   useSubmissionStore.setState({ submissions });
   useRankingStore.setState({ rankings });
+  useBoardStore.setState({ posts: boards });
 
-  // 유저: 비로그인 상태로 시작 (함수를 건드리지 않도록 currentUser만 설정)
+  // 유저: 시드 유저(강유진)이거나 비로그인이면 시드 데이터로 강제 업데이트
   const existingUser = useUserStore.getState().currentUser;
-  if (!existingUser) {
-    useUserStore.setState({ currentUser: null }, false);
+  if (!existingUser || existingUser.id === 'user-001-yujin') {
+    useUserStore.setState({ currentUser: seedUser });
   }
 
   // 랭킹 포인트 계산

@@ -17,7 +17,17 @@ import {
   Target,
   Globe,
   ExternalLink,
+  Coins,
+  History,
 } from 'lucide-react';
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 import HackathonTradingCard from '@/components/mypage/HackathonTradingCard';
 
@@ -45,6 +55,7 @@ export default function MyPage() {
   const { hackathons, hackathonDetails, leaderboards } = useHackathonStore();
   const { submissions } = useSubmissionStore();
 
+  const [isPointModalOpen, setIsPointModalOpen] = useState(false);
 
   if (!currentUser) {
     return (
@@ -52,18 +63,18 @@ export default function MyPage() {
         <EmptyState
           icon={User}
           title="로그인 정보가 없습니다"
-          description="서비스를 이용하려면 유저 정보가 필요합니다."
+          description="로그인 후 사용하세요. 마이페이지 정보가 필요합니다"
         />
       </div>
     );
   }
 
-  // ── 내 팀 목록 ──
+  // 내 팀 목록 조회
   const myTeams = teams.filter((t) =>
     currentUser.teamCodes.includes(t.teamCode),
   );
 
-  // ── 내가 참여 중인 해커톤 (팀의 hackathonSlug 기반) ──
+  // 내 팀이 참여 중인 해커톤 목록(팀의 hackathonSlug 기준) 조회
   const myHackathonSlugs = [
     ...new Set(
       myTeams
@@ -78,17 +89,20 @@ export default function MyPage() {
     (h) => myHackathonSlugs.includes(h.slug) && h.status === 'ended',
   );
 
-  // ── 북마크한 해커톤 ──
+  // 북마크한 해커톤 조회
   const bookmarkedHackathons = hackathons.filter((h) =>
     currentUser.bookmarkedSlugs?.includes(h.slug),
   );
 
-  // ── 내 제출 현황 ──
+  // 총 포인트 계산
+  const totalPoints = currentUser.pointHistory?.reduce((acc, log) => acc + log.points, 0) || 0;
+
+  // 내 제출물 조회
   const mySubmissions = submissions.filter((s) =>
     currentUser.teamCodes.includes(s.teamCode),
   );
 
-  // ── D-day 계산 ──
+  // D-day 계산 함수
   const getDday = (dateStr: string) => {
     const target = new Date(dateStr);
     const now = new Date();
@@ -100,15 +114,13 @@ export default function MyPage() {
     return `D+${Math.abs(diff)}`;
   };
 
-
-
-  // ── 상태 배지 색상 ──
+  // 상태 뱃지 렌더링 함수
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ongoing':
         return (
           <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
-            진행중
+            진행 중
           </Badge>
         );
       case 'upcoming':
@@ -147,17 +159,17 @@ export default function MyPage() {
 
   return (
     <div className="container mx-auto py-8 space-y-8">
-      {/* ── 프로필 카드 ── */}
+      {/* 프로필 카드 섹션 */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
         <Card className="overflow-hidden">
-          {/* 그라데이션 배경 */}
+          {/* 배너 이미지 배경 */}
           <div className="h-32 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
 
-          {/* 아바타: 그라데이션과 겹치게 배치 */}
+          {/* 아바타: 배너이미지에서 유저 이름 첫글자 */}
           <div className="px-6">
             <div className="w-20 h-20 -mt-10 rounded-full bg-white dark:bg-slate-800 border-4 border-white dark:border-slate-800 shadow-lg flex items-center justify-center">
               <span className="text-3xl font-bold text-indigo-600">
@@ -177,6 +189,16 @@ export default function MyPage() {
                       {currentUser.role}
                     </Badge>
                   )}
+                  {currentUser.pointHistory && (
+                    <Badge
+                      variant="outline"
+                      onClick={() => setIsPointModalOpen(true)}
+                      className="ml-auto flex items-center gap-1.5 px-3 py-1 text-sm font-bold bg-amber-50 text-amber-700 border-amber-200 shadow-sm cursor-pointer hover:bg-amber-100 transition-colors"
+                    >
+                      <Coins className="w-4 h-4 text-amber-500" />
+                      {totalPoints.toLocaleString()} P
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex flex-wrap items-center gap-3 mt-1.5 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
@@ -192,7 +214,7 @@ export default function MyPage() {
                 <div className="mt-5 space-y-3">
                   {currentUser.preferredTypes && currentUser.preferredTypes.length > 0 && (
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-semibold text-muted-foreground w-16">선호 유형</span>
+                      <span className="text-xs font-semibold text-muted-foreground w-16">선호 분야</span>
                       <div className="flex flex-wrap gap-1.5">
                         {currentUser.preferredTypes.map((type) => (
                           <Badge key={type} variant="outline" className="text-xs font-medium">
@@ -223,11 +245,11 @@ export default function MyPage() {
                 className="flex-shrink-0 mt-2 sm:mt-0"
               >
                 <Edit3 className="w-4 h-4 mr-1.5" />
-                프로필 수정
+                프로필 설정
               </Button>
             </div>
 
-            {/* 통계 카드 */}
+            {/* 요약 통계 */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
               <div className="text-center p-4 rounded-xl bg-indigo-50 dark:bg-indigo-950/30">
                 <p className="text-2xl font-bold text-indigo-600">
@@ -258,10 +280,7 @@ export default function MyPage() {
         </Card>
       </motion.div>
 
-
-
-
-      {/* ── 참여 중인 해커톤 ── */}
+      {/* 내 팀이 참여 중인 해커톤 목록 */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -273,7 +292,7 @@ export default function MyPage() {
               <Trophy className="w-5 h-5 text-indigo-500" />
               참여 중인 해커톤
             </CardTitle>
-            <CardDescription>내가 팀으로 참가한 해커톤 목록</CardDescription>
+            <CardDescription>내 팀으로 참여한 해커톤 목록</CardDescription>
           </CardHeader>
           <CardContent>
             {myHackathons.length === 0 ? (
@@ -289,7 +308,7 @@ export default function MyPage() {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 py-4 px-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 py-4 px-2">
                 {myHackathons.map((h) => {
                   const submission = mySubmissions.find(
                     (s) => s.hackathonSlug === h.slug,
@@ -313,7 +332,7 @@ export default function MyPage() {
         </Card>
       </motion.div>
 
-      {/* ── 지난 해커톤 (종료) ── */}
+      {/* 지난 해커톤(종료) 섹션 */}
       {myEndedHackathons.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -326,10 +345,10 @@ export default function MyPage() {
                 <Shield className="w-5 h-5 text-slate-400" />
                 지난 해커톤
               </CardTitle>
-              <CardDescription>종료된 해커톤 참여 이력</CardDescription>
+              <CardDescription>종료된 해커톤 참여 기록</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 py-4 px-2 opacity-75">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 py-4 px-2 opacity-75">
                 {myEndedHackathons.map((h) => {
                   const submission = mySubmissions.find(
                     (s) => s.hackathonSlug === h.slug,
@@ -344,6 +363,7 @@ export default function MyPage() {
                       hackathon={h}
                       team={team}
                       submission={submission}
+                      variant="small"
                     />
                   );
                 })}
@@ -353,7 +373,7 @@ export default function MyPage() {
         </motion.div>
       )}
 
-      {/* ── 내 팀 목록 ── */}
+      {/* 내 팀 목록 섹션 */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -394,7 +414,7 @@ export default function MyPage() {
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-semibold text-sm">{team.name}</h3>
                         <Badge variant={team.isOpen ? 'default' : 'secondary'}>
-                          {team.isOpen ? '모집중' : '모집마감'}
+                          {team.isOpen ? '모집 중' : '모집 마감'}
                         </Badge>
                       </div>
                       <div className="space-y-1 text-xs text-muted-foreground">
@@ -416,7 +436,7 @@ export default function MyPage() {
                           </p>
                         )}
                         {!linkedHackathon && team.hackathonSlug === null && (
-                          <p className="text-slate-400">자유 모집 팀</p>
+                          <p className="text-slate-400">미연결 팀</p>
                         )}
                       </div>
                       <div className="mt-4 pt-3 border-t">
@@ -426,7 +446,7 @@ export default function MyPage() {
                           className="w-full bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 shadow-sm"
                           onClick={() => router.push(`/basecamp/${team.teamCode}`)}
                         >
-                          <Target className="w-4 h-4 mr-2" /> 작전실 입장
+                          <Target className="w-4 h-4 mr-2" /> 베이스캠프 이동
                         </Button>
                       </div>
                     </div>
@@ -438,7 +458,7 @@ export default function MyPage() {
         </Card>
       </motion.div>
 
-      {/* ── 포트폴리오 아카이브 (Project Showcase) ── */}
+      {/* 포트폴리오 쇼케이스 (Project Showcase) 섹션 */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -448,9 +468,9 @@ export default function MyPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <Trophy className="w-5 h-5 text-yellow-500" />
-              포트폴리오 아카이브 (Project Showcase)
+              포트폴리오 쇼케이스 (Project Showcase)
             </CardTitle>
-            <CardDescription>과거 해커톤에서 완성한 결과물과 코드를 보관하고 자랑하세요!</CardDescription>
+            <CardDescription>완료된 해커톤에서 만든 성과물을 공개하고 세상에 알리세요</CardDescription>
           </CardHeader>
           <CardContent>
             {mySubmissions.filter(s => s.status === 'submitted').length === 0 ? (
@@ -465,7 +485,7 @@ export default function MyPage() {
                   );
                   const webLink = sub.artifacts.find(a => a.type === 'url')?.content;
                   const docLink = sub.artifacts.find(a => a.type === 'pdf' || a.type === 'text');
-                  
+
                   return (
                     <div
                       key={sub.id}
@@ -474,30 +494,30 @@ export default function MyPage() {
                       <div className="h-28 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-950/50 dark:to-purple-950/50 relative overflow-hidden flex items-center justify-center p-4">
                         <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
                         <h4 className="text-xl font-black text-indigo-900/40 dark:text-indigo-200/20 italic tracking-wider whitespace-nowrap opacity-50 transform -rotate-6 scale-150">
-                          {hackathon?.title || sub.hackathonSlug} 
+                          {hackathon?.title || sub.hackathonSlug}
                         </h4>
                         <Badge className="absolute top-3 left-3 bg-white/90 text-indigo-700 hover:bg-white shadow-sm dark:bg-slate-800/90 dark:text-indigo-300">
                            {sub.teamName}
                         </Badge>
                       </div>
-                      
+
                       <div className="p-4 flex-1 flex flex-col">
                         <h3 className="font-bold text-lg leading-tight mb-2 line-clamp-1 group-hover:text-indigo-600 transition-colors">
                           {hackathon?.title || 'Unknown Project'}
                         </h3>
                         <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
-                          {sub.notes || '프로젝트에 대한 설명이 없습니다.'}
+                          {sub.notes || '프로젝트 설명이 없습니다.'}
                         </p>
-                        
+
                         <div className="flex items-center gap-2 mt-auto pt-4 border-t border-dashed">
                           {webLink && (
                             <Button size="sm" variant="default" className="w-full bg-slate-900 text-white hover:bg-slate-800 shadow-sm" onClick={() => window.open(webLink, '_blank')}>
-                              <Globe className="w-3.5 h-3.5 mr-1.5" /> 데모 보기
+                              <Globe className="w-3.5 h-3.5 mr-1.5" /> 사이트 방문
                             </Button>
                           )}
                           {docLink && (
-                            <Button size="sm" variant="outline" className="w-full" onClick={() => alert('기획서 다운로드 뷰어 연동 예정')}>
-                              <FileText className="w-3.5 h-3.5 mr-1.5" /> 기획서 (PDF)
+                            <Button size="sm" variant="outline" className="w-full" onClick={() => alert('문서 다운로드 기능 예정')}>
+                              <FileText className="w-3.5 h-3.5 mr-1.5" /> 문서(PDF)
                             </Button>
                           )}
                         </div>
@@ -511,7 +531,7 @@ export default function MyPage() {
         </Card>
       </motion.div>
 
-      {/* ── 북마크 해커톤 ── */}
+      {/* 북마크한 해커톤 섹션 */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -531,18 +551,18 @@ export default function MyPage() {
                 북마크한 해커톤이 없습니다.
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {bookmarkedHackathons.map((h) => (
                   <div
                     key={h.slug}
-                    className="flex items-center justify-between p-4 rounded-lg border cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    className="p-4 rounded-lg border hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
                     onClick={() => router.push(`/hackathons/${h.slug}`)}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="font-semibold text-sm line-clamp-1">{h.title}</h3>
                       {getStatusBadge(h.status)}
-                      <h3 className="font-semibold text-sm">{h.title}</h3>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground line-clamp-2">{h.description}</p>
                   </div>
                 ))}
               </div>
@@ -551,7 +571,48 @@ export default function MyPage() {
         </Card>
       </motion.div>
 
+      {/* 포인트 내역 모달 */}
+      <Dialog open={isPointModalOpen} onOpenChange={setIsPointModalOpen}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <History className="w-5 h-5 text-indigo-500" />
+              포인트 내역
+            </DialogTitle>
+            <DialogDescription>지금까지 포인트를 획득한 내역을 확인합니다.</DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 rounded-xl p-5 mb-2 text-center border border-indigo-100 dark:border-indigo-800/30">
+              <span className="text-sm font-medium text-slate-500 dark:text-slate-400">현재 보유 포인트</span>
+              <p className="text-4xl font-black text-indigo-600 dark:text-indigo-400 flex items-center justify-center gap-2 mt-2">
+                <Coins className="w-7 h-7 text-amber-500" />
+                {totalPoints.toLocaleString()}
+                <span className="text-xl font-bold text-slate-400">P</span>
+              </p>
+            </div>
 
+            {currentUser.pointHistory && currentUser.pointHistory.length > 0 ? (
+              <div className="space-y-2">
+                {[...currentUser.pointHistory].reverse().map((log) => (
+                  <div key={log.id} className="flex justify-between items-center p-3 rounded-lg border bg-card hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <div className="space-y-0.5">
+                      <p className="font-semibold text-sm">{log.description}</p>
+                      <p className="text-xs text-muted-foreground">{formatDate(log.date)}</p>
+                    </div>
+                    <div className="shrink-0 ml-4 px-3 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-full font-bold text-sm">
+                      +{log.points}P
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                아직 포인트 내역이 없습니다.
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
