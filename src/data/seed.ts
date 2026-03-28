@@ -453,19 +453,54 @@ export const teams: Team[] = [
     contact: { type: 'link', url: 'https://open.kakao.com/o/example3' },
     createdAt: '2026-03-04T11:00:00+09:00',
   },
-  {
-    teamCode: 'T-GENAI-01',
+  // --- daker-handover-2026-03 (20+ teams) ---
+  ...Array.from({ length: 20 }).map((_, i) => ({
+    teamCode: `T-HANDOVER-AUTO-${i + 2}`,
+    hackathonSlug: 'daker-handover-2026-03',
+    name: `Team Handover #${i + 2}`,
+    isOpen: i % 5 !== 0,
+    leaderId: `user-gen-${i}`,
+    memberCount: (i % 3) + 1,
+    maxTeamSize: 5,
+    lookingFor: [
+      { position: i % 2 === 0 ? 'Frontend' : 'Backend', description: '빠른 구현 선호' }
+    ],
+    intro: `우승을 목표로 하는 ${i + 2}번 팀입니다. 함께 가실 분!`,
+    contact: { type: 'link', url: '#' },
+    createdAt: new Date(2026, 2, 5 + i).toISOString(),
+  })),
+  // --- gen-ai-startup-challenge (10+ teams) ---
+  ...Array.from({ length: 12 }).map((_, i) => ({
+    teamCode: `T-GENAI-AUTO-${i + 2}`,
     hackathonSlug: 'gen-ai-startup-challenge',
-    name: 'AI-Ventures',
+    name: `GenAI Innovators #${i + 2}`,
     isOpen: true,
-    leaderId: 'user-003-startup',
-    memberCount: 2,
+    leaderId: `user-gen-ai-${i}`,
+    memberCount: (i % 2) + 1,
     maxTeamSize: 4,
-    lookingFor: [{ position: 'Planner', description: '비즈니스 모델링 가능자' }],
-    intro: 'B2B 생성형 AI 솔루션을 기획 중인 팀입니다.',
-    contact: { type: 'link', url: 'https://open.kakao.com/o/example4' },
-    createdAt: '2026-03-20T10:00:00+09:00',
-  },
+    lookingFor: [
+      { position: i % 3 === 0 ? 'Planner' : 'Designer', description: '창의적 인재 모집' }
+    ],
+    intro: `새로운 AI 시대를 열어갈 ${i + 2}번 팀입니다.`,
+    contact: { type: 'link', url: '#' },
+    createdAt: new Date(2026, 2, 21 + i).toISOString(),
+  })),
+  // --- cloud-native-modernization (5+ teams) ---
+  ...Array.from({ length: 8 }).map((_, i) => ({
+    teamCode: `T-CLOUD-AUTO-${i + 2}`,
+    hackathonSlug: 'cloud-native-modernization',
+    name: `Cloud Cloud #${i + 2}`,
+    isOpen: true,
+    leaderId: `user-gen-cloud-${i}`,
+    memberCount: (i % 2) + 1,
+    maxTeamSize: 3,
+    lookingFor: [
+      { position: 'Backend', description: 'K8S/Cloud 전문가' }
+    ],
+    intro: `도전적인 클라우드 여정에 함께할 ${i + 2}번 팀입니다.`,
+    contact: { type: 'link', url: '#' },
+    createdAt: new Date(2026, 2, 26 + i).toISOString(),
+  })),
 ];
 
 // ─── AI Matching User Pool ─────────────────────────────────

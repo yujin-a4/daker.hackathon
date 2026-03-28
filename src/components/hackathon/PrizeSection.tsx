@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import type { HackathonDetail } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -10,56 +11,57 @@ type PrizeSectionProps = {
 };
 
 const getPlaceInfo = (place: string) => {
-  switch (place) {
-    case '1st':
-      return { emoji: '🥇', rank: 1, styles: 'bg-white ring-2 ring-amber-400 md:scale-110 z-10' };
-    case '2nd':
-      return { emoji: '🥈', rank: 2, styles: 'bg-white ring-1 ring-slate-300' };
-    case '3rd':
-      return { emoji: '🥉', rank: 3, styles: 'bg-white ring-1 ring-orange-300' };
-    default:
-      return { emoji: '🏆', rank: 4, styles: 'bg-slate-50' };
+  const p = place.toLowerCase();
+  if (p.includes('1') || p.includes('대상') || p.includes('최우수') || p.includes('top 1') || p.includes('1st')) {
+    return { emoji: '🥇', rank: 1, styles: 'bg-white border-amber-200 shadow-sm' };
   }
+  if (p.includes('2') || p.includes('우수') || p.includes('2nd')) {
+    return { emoji: '🥈', rank: 2, styles: 'bg-white border-slate-200 shadow-sm' };
+  }
+  if (p.includes('3') || p.includes('장려') || p.includes('3rd')) {
+    return { emoji: '🥉', rank: 3, styles: 'bg-white border-slate-200 shadow-sm' };
+  }
+  return { emoji: '🏆', rank: 4, styles: 'bg-slate-50 border-dashed border-slate-200 shadow-none' };
 };
 
 export default function PrizeSection({ prize }: PrizeSectionProps) {
-  const sortedPrizes = [...prize.items].sort((a, b) => parseInt(a.place) - parseInt(b.place));
-  const totalPrize = prize.items.reduce((sum, item) => sum + item.amountKRW, 0);
+  const sortedPrizes = useMemo(() => {
+    return [...prize.items].sort((a, b) => {
+      const rankA = getPlaceInfo(a.place).rank;
+      const rankB = getPlaceInfo(b.place).rank;
+      return rankA - rankB;
+    });
+  }, [prize.items]);
+
+  type PrizeItem = HackathonDetail['sections']['prize']['items'][number];
+  const totalPrize = prize.items.reduce((sum: number, item: PrizeItem) => sum + item.amountKRW, 0);
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="w-full max-w-4xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-4 items-end">
+    <div className="flex flex-col items-center py-2">
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {sortedPrizes.map((item) => {
-            const { emoji, rank, styles } = getPlaceInfo(item.place);
-            const isFirst = rank === 1;
+            const { emoji, styles } = getPlaceInfo(item.place);
 
             return (
-              <div key={item.place} className={cn(
-                'flex justify-center', 
-                { 'md:order-2': rank === 1, 'md:order-1': rank === 2, 'md:order-3': rank === 3 }
-              )}>
-                <Card className={cn('w-full max-w-xs text-center rounded-xl shadow-sm transition-all duration-300', styles)}>
-                  <CardContent className={cn('p-6', isFirst ? 'md:py-8' : 'md:py-6')}>
-                    <div className="text-5xl mb-3">{emoji}</div>
-                    <h4 className="text-lg font-bold text-slate-800">{item.place}</h4>
-                    <p className={cn(
-                      'font-bold text-indigo-600 mt-1',
-                      isFirst ? 'text-3xl' : 'text-2xl'
-                    )}>
+              <Card key={item.place} className={cn('overflow-hidden rounded-xl border transition-all duration-300', styles)}>
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="text-3xl shrink-0">{emoji}</div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase truncate tracking-tight">{item.place}</p>
+                    <p className="text-base font-black text-slate-900 dark:text-slate-100 truncate tracking-tight">
                       {formatKRW(item.amountKRW)}
                     </p>
-                  </CardContent>
-                </Card>
-              </div>
+                  </div>
+                </CardContent>
+              </Card>
             );
           })}
         </div>
       </div>
-      <div className="text-center mt-12">
-        <p className="text-lg font-semibold text-slate-700">
-          총 상금: <span className="font-bold text-indigo-600">{formatKRW(totalPrize)}</span>
-        </p>
+      <div className="mt-8 flex items-center gap-2 text-sm text-muted-foreground">
+        <span>총 상금 규모:</span>
+        <span className="font-bold text-slate-800 dark:text-slate-200">{formatKRW(totalPrize)}</span>
       </div>
     </div>
   );

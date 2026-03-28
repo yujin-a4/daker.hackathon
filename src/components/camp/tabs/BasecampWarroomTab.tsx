@@ -84,7 +84,7 @@ export default function BasecampWarroomTab({
           </p>
         </div>
         <Button 
-          onClick={() => router.push(`/hackathons/${hackathon.slug}#submit`)}
+          onClick={() => router.push(`/hackathons/${hackathon.slug}?tab=submit`)}
           className="bg-blue-600 hover:bg-blue-700 text-white shadow-md w-full sm:w-auto"
         >
           해커톤 최종 제출 페이지 <ArrowRight className="w-4 h-4 ml-1 flex-shrink-0" />
@@ -152,7 +152,7 @@ export default function BasecampWarroomTab({
                   <Button 
                     variant="link" 
                     className="p-0 h-auto font-semibold text-blue-600"
-                    onClick={() => router.push(`/hackathons/${hackathon.slug}#submit`)}
+                    onClick={() => router.push(`/hackathons/${hackathon.slug}?tab=submit`)}
                   >
                     작성하기 &rarr;
                   </Button>

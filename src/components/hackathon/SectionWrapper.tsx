@@ -11,14 +11,16 @@ type SectionWrapperProps = {
 
 const SectionWrapper = ({ id, icon: Icon, title, children, className }: SectionWrapperProps) => {
   return (
-    <section id={id} className={cn("py-8 md:py-10 scroll-mt-20", className)}>
-      <div className="mb-8 pb-4 border-b">
-        <h2 className="flex items-center gap-3 text-xl font-bold text-slate-800">
-          <Icon className="w-6 h-6 text-indigo-500" />
+    <section id={id} className={cn("py-6 md:py-8 scroll-mt-20", className)}>
+      <div className="mb-6 pb-3 border-b border-slate-100 dark:border-slate-800">
+        <h2 className="flex items-center gap-2.5 text-lg font-bold text-slate-800 dark:text-slate-100">
+          <Icon className="w-5 h-5 text-indigo-500" />
           <span>{title}</span>
         </h2>
       </div>
-      {children}
+      <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+        {children}
+      </div>
     </section>
   );
 };

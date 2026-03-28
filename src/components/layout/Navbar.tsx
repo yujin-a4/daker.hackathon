@@ -18,7 +18,7 @@ import UserDropdown from '@/components/auth/UserDropdown';
 
 const navLinks = [
   { href: '/hackathons', label: '해커톤' },
-  { href: '/camp', label: '팀 찾기' },
+  { href: '/camp', label: '팀 빌딩' },
   { href: '/rankings', label: '랭킹' },
   { href: '/mypage', label: '마이페이지' },
 ];
@@ -99,7 +99,7 @@ export default function Navbar() {
       type: '팀원모집',
       icon: Users,
       bgClass: 'bg-emerald-600', 
-      text: `🤝 현재 <span class="font-bold text-yellow-300">${openTeamCount}개 팀</span>이 팀원을 모집 중입니다! <span class="font-bold text-yellow-300">팀 찾기</span> 탭에서 합류하세요.`
+      text: `🤝 현재 <span class="font-bold text-yellow-300">${openTeamCount}개 팀</span>이 팀원을 모집 중입니다! <span class="font-bold text-yellow-300">팀 빌딩</span> 탭에서 합류하세요.`
     });
     
     return dynamicNotices;
@@ -127,7 +127,7 @@ export default function Navbar() {
   return (
     <>
       <AnimatePresence>
-        {showBanner && (
+        {mounted && showBanner && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}

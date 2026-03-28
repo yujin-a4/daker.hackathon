@@ -19,16 +19,19 @@ import {
   FileText,
   HelpCircle,
   Heart,
+  Clock,
 } from 'lucide-react';
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useToast } from '@/hooks/use-toast';
+import { useSearchParams } from 'next/navigation';
 import { formatDate } from '@/lib/date';
 import { getStatusColor, cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import ErrorState from '@/components/shared/ErrorState';
 import LoadingState from '@/components/shared/LoadingState';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import SectionNav from '@/components/hackathon/SectionNav';
 import SectionWrapper from '@/components/hackathon/SectionWrapper';
 import OverviewSection from '@/components/hackathon/OverviewSection';
@@ -67,74 +70,28 @@ export default function HackathonDetailPage() {
   const isBookmarked = currentUser?.bookmarkedSlugs?.includes(slug);
 
   const isMobile = useIsMobile();
+  const searchParams = useSearchParams();
 
-  // ── Scroll Spy ──
-  const [activeSection, setActiveSection] = useState('overview');
-  const isClickScrolling = useRef(false);
-  const rafId = useRef<number>(0);
-
-  // getBoundingClientRect 기반 — offsetTop 부모 기준 문제 완전 회피
-  const updateActiveSection = useCallback(() => {
-    if (isClickScrolling.current) return;
-
-    const TRIGGER_LINE = 120; // 뷰포트 상단에서 120px 아래를 기준선으로 사용
-
-    // 페이지 맨 아래 도달 시 마지막 섹션
-    const scrollBottom = window.scrollY + window.innerHeight;
-    const docHeight = document.documentElement.scrollHeight;
-    if (scrollBottom >= docHeight - 20) {
-      setActiveSection(sections[sections.length - 1].id);
-      return;
-    }
-
-    // 각 섹션의 뷰포트 기준 top을 계산
-    let current = sections[0].id;
-    for (let i = sections.length - 1; i >= 0; i--) {
-      const el = document.getElementById(sections[i].id);
-      if (!el) continue;
-      const rect = el.getBoundingClientRect();
-      if (rect.top <= TRIGGER_LINE) {
-        current = sections[i].id;
-        break;
-      }
-    }
-
-    setActiveSection(current);
-  }, []);
+  // ── Tab State ──
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'info');
 
   useEffect(() => {
-    const handleScroll = () => {
-      cancelAnimationFrame(rafId.current);
-      rafId.current = requestAnimationFrame(updateActiveSection);
-    };
+    const tab = searchParams.get('tab');
+    if (tab && (tab === 'info' || tab === 'teams' || tab === 'submit')) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
-    // 초기 상태 설정 (DOM 렌더 후)
-    const initTimer = setTimeout(updateActiveSection, 300);
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      cancelAnimationFrame(rafId.current);
-      clearTimeout(initTimer);
-    };
-  }, [updateActiveSection, slug, details]);
-
-  // ── Nav 클릭 시 스크롤 ──
+  // ── Nav 클릭 시 스크롤 (Info 탭 내에서만 작동) ──
   const handleNavClick = useCallback((id: string) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-
-    isClickScrolling.current = true;
-    setActiveSection(id);
-
-    // scroll-mt-20 = 80px이므로 약간의 여유를 두고 스크롤
-    const rect = el.getBoundingClientRect();
-    const scrollTo = window.scrollY + rect.top - 90;
-    window.scrollTo({ top: scrollTo, behavior: 'smooth' });
-
+    setActiveTab('info');
     setTimeout(() => {
-      isClickScrolling.current = false;
-    }, 800);
+      const el = document.getElementById(id);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const scrollTo = window.scrollY + rect.top - 100;
+      window.scrollTo({ top: scrollTo, behavior: 'smooth' });
+    }, 50);
   }, []);
 
   // ── Bookmark ──
@@ -182,147 +139,161 @@ export default function HackathonDetailPage() {
     ? schedule.milestones[schedule.milestones.length - 1]
     : undefined;
 
+  const milestones = details.sections.schedule.milestones || [];
+  const deadlineAt = hackathon.period.submissionDeadlineAt;
+
+  // D-Day 계산
+  const diffTime = new Date(deadlineAt).getTime() - new Date().getTime();
+  const dDay = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const dDayText = dDay > 0 ? `D-${dDay}` : dDay === 0 ? 'D-Day' : '종료';
+
+  const stats = [
+    { label: '총 상금', value: hackathon.prizeTotal || '자세히 보기', icon: Trophy, color: 'text-amber-500' },
+    { label: '마감일', value: dDayText, icon: Clock, color: 'text-rose-500' },
+    { label: '참가자', value: `${hackathon.participantCount}명`, icon: Users, color: 'text-blue-500' },
+    { label: '분야', value: hackathon.type || '일반', icon: BookOpen, color: 'text-indigo-500' },
+  ];
+
+  const infoSections = [
+    { id: 'overview', label: '개요', icon: BookOpen },
+    { id: 'info', label: '안내', icon: Info },
+    { id: 'eval', label: '평가', icon: BarChart },
+    { id: 'schedule', label: '일정', icon: CalendarIcon },
+    { id: 'prize', label: '상금', icon: Trophy },
+  ];
+
   return (
-    <div className="container mx-auto py-8">
-      {isMobile && (
-        <SectionNav
-          sections={sections}
-          activeSection={activeSection}
-          onNavClick={handleNavClick}
-        />
-      )}
-
-      <div className="flex flex-col md:flex-row md:gap-12 lg:gap-16">
-        {!isMobile && (
-          <div className="w-56 flex-shrink-0 sticky top-20 h-fit hidden md:flex flex-col gap-6">
-            <SectionNav
-              sections={sections}
-              activeSection={activeSection}
-              onNavClick={handleNavClick}
-            />
-            <DeadlineWidget
-              deadlineAt={hackathon.period.submissionDeadlineAt}
-              milestones={details.sections.schedule.milestones || []}
-              timezone={details.sections.schedule.timezone}
-            />
-          </div>
-        )}
-
-        <div className="flex-1 min-w-0">
-          <header className="mb-8 md:mb-12">
+    <div className="container mx-auto py-8 lg:py-12">
+      <div className="flex flex-col gap-8">
+        {/* 공통 헤더: 제목, 통계 바 */}
+        <header className="space-y-6">
+          <div className="flex flex-col gap-4">
             <Button
               variant="link"
               onClick={() => router.back()}
-              className="p-0 h-auto mb-4 text-muted-foreground hover:text-foreground"
+              className="p-0 h-auto w-fit text-muted-foreground hover:text-foreground no-underline"
             >
-              <ArrowLeft className="mr-1 h-4 w-4" />
+              <ArrowLeft className="mr-1 h-3.5 w-3.5" />
               목록으로
             </Button>
-            <div className="flex items-center gap-3 mb-3">
-              <Badge
-                className={cn('font-semibold', getStatusColor(hackathon.status))}
-              >
-                {statusText}
-              </Badge>
+            
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="space-y-4 max-w-3xl">
+                <div className="flex items-center gap-3">
+                  <Badge className={cn('px-2.5 py-0.5 rounded-full font-bold', getStatusColor(hackathon.status))}>
+                    {statusText}
+                  </Badge>
+                  <div className="flex gap-2">
+                    {hackathon.tags.slice(0, 3).map((tag) => (
+                      <span key={tag} className="text-xs text-muted-foreground bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                  <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+                    {details.title}
+                  </h1>
+                  <motion.button
+                    whileTap={{ scale: 1.2 }}
+                    onClick={handleBookmarkClick}
+                    className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <Heart className={cn('w-7 h-7 text-slate-300 dark:text-slate-600', isBookmarked && 'fill-rose-500 text-rose-500')} />
+                  </motion.button>
+                </div>
+                
+                {firstMilestone && lastMilestone && (
+                  <p className="text-muted-foreground flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4" />
+                    <span className="font-semibold">{formatDate(firstMilestone.at)}</span>
+                    <span className="opacity-50">—</span>
+                    <span className="font-semibold">{formatDate(lastMilestone.at)}</span>
+                  </p>
+                )}
+              </div>
+
+              <div className="flex gap-3">
+                <Button asChild variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800">
+                  <Link href={details.sections.info.links.rules} target="_blank"><FileText className="w-4 h-4 mr-1.5" /> 규정</Link>
+                </Button>
+                <Button asChild variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800">
+                  <Link href={details.sections.info.links.faq} target="_blank"><HelpCircle className="w-4 h-4 mr-1.5" /> FAQ</Link>
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold tracking-tight">
-                {details.title}
-              </h1>
-              <motion.button
-                whileTap={{ scale: 1.2 }}
-                onClick={handleBookmarkClick}
-                aria-label="Bookmark hackathon"
-              >
-                <Heart
-                  className={cn(
-                    'w-6 h-6 text-slate-300 dark:text-slate-600 transition-colors',
-                    isBookmarked && 'fill-red-500 text-red-500',
-                  )}
+          </div>
+
+          {/* 퀵 스탯 바 (가독성 포인트) */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {stats.map((stat) => (
+              <div key={stat.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm group hover:border-indigo-500/30 transition-all">
+                <div className="flex items-center gap-3">
+                  <div className={cn("p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20 transition-colors", stat.color)}>
+                    <stat.icon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{stat.label}</p>
+                    <p className="text-base font-extrabold text-slate-800 dark:text-slate-200">{stat.value}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </header>
+
+        {/* 탭 구조 */}
+        <Tabs defaultValue="info" value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="w-full justify-start h-12 bg-transparent p-0 border-b rounded-none mb-8">
+            <TabsTrigger value="info" className="h-12 px-8 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-base">홈 / 정보</TabsTrigger>
+            <TabsTrigger value="teams" className="h-12 px-8 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-base">팀 빌딩</TabsTrigger>
+            <TabsTrigger value="submit" className="h-12 px-8 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-base">제출 & 결과</TabsTrigger>
+          </TabsList>
+
+          <div className="flex flex-col md:flex-row md:gap-12 lg:gap-16">
+            {!isMobile && activeTab === 'info' && (
+              <div className="w-52 flex-shrink-0 sticky top-24 h-fit hidden md:flex flex-col gap-6">
+                <SectionNav
+                  sections={infoSections}
+                  activeSection={activeTab === 'info' ? 'overview' : ''} // simple mock
+                  onNavClick={handleNavClick}
                 />
-              </motion.button>
-            </div>
-            <div className="flex flex-wrap gap-2 my-4">
-              {hackathon.tags.map((tag) => (
-                <Badge key={tag} variant="secondary">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-            {firstMilestone && lastMilestone && (
-            <div className="text-muted-foreground text-sm flex items-center gap-2 mb-5">
-              <CalendarIcon className="w-4 h-4" />
-              <span>
-                {formatDate(firstMilestone.at)} ~ {formatDate(lastMilestone.at)}
-              </span>
-              <span className="text-slate-400 dark:text-slate-500">
-                ({schedule.timezone})
-              </span>
-            </div>
+                <DeadlineWidget
+                  deadlineAt={deadlineAt}
+                  milestones={milestones}
+                  timezone={details.sections.schedule.timezone}
+                />
+              </div>
             )}
-            <div className="flex gap-2">
-              <Button asChild variant="outline" size="sm">
-                <Link
-                  href={details.sections.info.links.rules}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <FileText className="mr-1.5" /> 규정
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="sm">
-                <Link
-                  href={details.sections.info.links.faq}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <HelpCircle className="mr-1.5" /> FAQ
-                </Link>
-              </Button>
+
+            <div className="flex-1 min-w-0">
+              <TabsContent value="info" className="mt-0 space-y-0">
+                <SectionWrapper id="overview" title="개요" icon={BookOpen}><OverviewSection overview={details.sections.overview} /></SectionWrapper>
+                <SectionWrapper id="info" title="안내" icon={Info}><InfoSection info={details.sections.info} /></SectionWrapper>
+                <SectionWrapper id="eval" title="평가" icon={BarChart}><EvalSection evalData={details.sections.eval} /></SectionWrapper>
+                <SectionWrapper id="schedule" title="일정" icon={CalendarIcon}><ScheduleSection schedule={details.sections.schedule} /></SectionWrapper>
+                <SectionWrapper id="prize" title="상금" icon={Trophy}><PrizeSection prize={details.sections.prize} /></SectionWrapper>
+              </TabsContent>
+
+              <TabsContent value="teams" className="mt-0">
+                <SectionWrapper id="teams" title="팀 찾기" icon={Users} className="py-0">
+                  <TeamsSection hackathonSlug={slug} teamPolicy={details.sections.overview.teamPolicy} />
+                </SectionWrapper>
+              </TabsContent>
+
+              <TabsContent value="submit" className="mt-0 space-y-8">
+                <SectionWrapper id="submit" title="제출" icon={Upload} className="py-0">
+                  <SubmitSection hackathonSlug={slug} hackathonDetail={details} />
+                </SectionWrapper>
+                <SectionWrapper id="leaderboard" title="리더보드 및 결과" icon={Medal} className="py-10 border-t">
+                  <LeaderboardSection leaderboard={leaderboard} hackathonDetail={details} status={hackathon.status} />
+                </SectionWrapper>
+              </TabsContent>
             </div>
-          </header>
-
-          <main>
-            <SectionWrapper id="overview" title="개요" icon={BookOpen}>
-              <OverviewSection overview={details.sections.overview} />
-            </SectionWrapper>
-
-            <SectionWrapper id="info" title="안내" icon={Info}>
-              <InfoSection info={details.sections.info} />
-            </SectionWrapper>
-
-            <SectionWrapper id="eval" title="평가" icon={BarChart}>
-              <EvalSection evalData={details.sections.eval} />
-            </SectionWrapper>
-
-            <SectionWrapper id="schedule" title="일정" icon={CalendarIcon}>
-              <ScheduleSection schedule={details.sections.schedule} />
-            </SectionWrapper>
-
-            <SectionWrapper id="prize" title="상금" icon={Trophy}>
-              <PrizeSection prize={details.sections.prize} />
-            </SectionWrapper>
-
-            <SectionWrapper id="teams" title="팀" icon={Users}>
-              <TeamsSection
-                hackathonSlug={slug}
-                teamPolicy={details.sections.overview.teamPolicy}
-              />
-            </SectionWrapper>
-
-            <SectionWrapper id="submit" title="제출" icon={Upload}>
-              <SubmitSection hackathonSlug={slug} hackathonDetail={details} />
-            </SectionWrapper>
-
-            <SectionWrapper id="leaderboard" title="리더보드" icon={Medal}>
-              <LeaderboardSection
-                leaderboard={leaderboard}
-                hackathonDetail={details}
-                status={hackathon.status}
-              />
-            </SectionWrapper>
-          </main>
-        </div>
+          </div>
+        </Tabs>
       </div>
     </div>
   );
