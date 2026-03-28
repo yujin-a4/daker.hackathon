@@ -7,7 +7,8 @@ export interface BoardPost {
   teamCode: string;
   authorNickname: string;
   content: string;
-  color: string; // Tailwind color classes e.g. 'bg-yellow-200'
+  topic: string;       // 컨럼(theme) 식별자 e.g. '아이디어'
+  color: string;       // Tailwind color classes e.g. 'bg-yellow-200'
   createdAt: string;
   likes: number;
 }

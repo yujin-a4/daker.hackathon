@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -18,6 +18,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { User, Users } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const positions = ['Frontend', 'Backend', 'Designer', 'PM', 'ML Engineer', 'Data Analyst', '기타'];
 
@@ -47,6 +49,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
   const { addTeam, updateTeam } = useTeamStore();
   const { addTeamCode } = useUserStore();
   const { hackathons, hackathonDetails } = useHackathonStore();
+  const [isSolo, setIsSolo] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(FormSchema),
@@ -68,6 +71,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
   useEffect(() => {
     if (isOpen) {
       if (editingTeam) {
+        setIsSolo(editingTeam.isSolo ?? false);
         form.reset({
           name: editingTeam.name,
           intro: editingTeam.intro,
@@ -77,6 +81,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
           contact: editingTeam.contact.url,
         });
       } else {
+        setIsSolo(false);
         form.reset({
           name: '',
           intro: '',
@@ -95,11 +100,14 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
 
   const onSubmit = (data: FormData) => {
     try {
-      const finalHackathonSlug = data.hackathonSlug === 'none' ? undefined : data.hackathonSlug;
+      const finalHackathonSlug: string | null = data.hackathonSlug === 'none' ? null : (data.hackathonSlug ?? null);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { hackathonSlug: _hs, ...restData } = data;
       const teamData = {
-        ...data,
+        ...restData,
         hackathonSlug: finalHackathonSlug,
-        lookingFor: data.lookingFor || [],
+        isSolo,
+        lookingFor: isSolo ? [] : (data.lookingFor || []),
         contact: { type: 'link', url: data.contact },
       };
 
@@ -109,11 +117,11 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
       } else {
         const newTeam = addTeam({
           ...teamData,
-          isOpen: true,
+          isOpen: !isSolo, // 개인 참가는 모집 안 함
           memberCount: 1,
         });
         addTeamCode(newTeam.teamCode);
-        toast({ title: '팀 모집글이 등록되었습니다.' });
+        toast({ title: isSolo ? '개인 참가로 등록되었습니다.' : '팀 모집글이 등록되었습니다.' });
       }
       onOpenChange(false);
     } catch (error) {
@@ -129,11 +137,46 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{editingTeam ? '팀 정보 수정' : '새 팀 모집글 작성'}</DialogTitle>
+          <DialogTitle>{editingTeam ? '팀 정보 수정' : '새 모집글 / 개인 참가 등록'}</DialogTitle>
           <DialogDescription>
-            {editingTeam ? '팀 정보를 수정합니다.' : '함께 할 멋진 팀원을 찾아보세요.'}
+            {editingTeam ? '팀 정보를 수정합니다.' : '팀 참가 또는 개인 참가 방식을 선택하세요.'}
           </DialogDescription>
         </DialogHeader>
+
+        {/* 참가 유형 선택 토글 */}
+        {!editingTeam && (
+          <div className="grid grid-cols-2 gap-2 rounded-xl border bg-muted/50 p-1.5">
+            <button
+              type="button"
+              onClick={() => setIsSolo(false)}
+              className={cn(
+                'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-200',
+                !isSolo
+                  ? 'bg-white dark:bg-slate-800 text-primary shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Users className="w-4 h-4" /> 팀 참가 (팀원 모집)
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsSolo(true)}
+              className={cn(
+                'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-200',
+                isSolo
+                  ? 'bg-white dark:bg-slate-800 text-primary shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <User className="w-4 h-4" /> 개인 참가
+            </button>
+          </div>
+        )}
+        {isSolo && !editingTeam && (
+          <p className="text-xs text-muted-foreground bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2">
+            💡 개인 참가는 <strong>팀 찾기 목록에 노출되지 않습니다.</strong> 나만의 작전실(Basecamp)이 생성됩니다.
+          </p>
+        )}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
             <FormField
@@ -196,6 +239,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
                 </FormItem>
               )}
             />
+            {!isSolo && (
             <FormField
               control={form.control}
               name="lookingFor"
@@ -260,6 +304,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
                 </FormItem>
               )}
             />
+            )}
             <FormField
               control={form.control}
               name="contact"
@@ -273,7 +318,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
             />
             <DialogFooter className="pt-4">
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>취소</Button>
-              <Button type="submit">{editingTeam ? '수정하기' : '모집글 등록하기'}</Button>
+              <Button type="submit">{editingTeam ? '수정하기' : isSolo ? '개인 참가 등록' : '모집글 등록하기'}</Button>
             </DialogFooter>
           </form>
         </Form>

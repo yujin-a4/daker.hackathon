@@ -72,15 +72,18 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">{team.name}</DialogTitle>
-          <DialogDescription className="flex items-center gap-4 pt-1">
+          <DialogDescription className="sr-only">
+            {team.name} 팀의 상세 정보와 모집 현황입니다.
+          </DialogDescription>
+          <div className="flex items-center gap-4 pt-1 text-sm text-muted-foreground">
             <Badge className={cn(team.isOpen ? "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300" : "bg-muted text-muted-foreground", "font-medium")}>
               {team.isOpen ? '모집중' : '모집마감'}
             </Badge>
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5">
               <Users className="w-4 h-4" />
               <span>{team.memberCount}/{team.maxTeamSize}</span>
             </div>
-          </DialogDescription>
+          </div>
         </DialogHeader>
 
         <div className="py-4 space-y-6 max-h-[60vh] overflow-y-auto pr-2">

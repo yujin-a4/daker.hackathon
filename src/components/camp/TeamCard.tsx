@@ -56,17 +56,17 @@ export default function TeamCard({ team, onEdit, onCardClick }: TeamCardProps) {
     <Card 
       onClick={() => onCardClick(team)}
       className={cn(
-        "flex flex-col h-full rounded-2xl overflow-hidden shadow-sm border bg-card transition-all duration-200 cursor-pointer",
+        "flex flex-col h-full rounded-xl overflow-hidden shadow-sm border bg-card transition-all duration-200 cursor-pointer",
         "hover:border-slate-300 hover:shadow-md dark:hover:border-slate-700",
         !team.isOpen && "opacity-70"
       )}
     >
-      <CardHeader>
+      <CardHeader className="p-4 pb-3">
         <div className="flex justify-between items-start gap-2">
-          <CardTitle className="text-lg">{team.name}</CardTitle>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {isMyTeam && <Badge variant="outline" className="border-primary/50 text-primary">내 팀</Badge>}
-            <Badge className={cn(team.isOpen ? "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300" : "bg-muted text-muted-foreground", "font-medium")}>
+          <CardTitle className="text-base leading-tight">{team.name}</CardTitle>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {isMyTeam && <Badge variant="outline" className="border-primary/50 text-primary px-1.5 py-0 text-[10px]">내 팀</Badge>}
+            <Badge className={cn(team.isOpen ? "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300" : "bg-muted text-muted-foreground", "font-medium text-[10px] px-1.5 py-0")}>
               {team.isOpen ? '모집중' : '모집마감'}
             </Badge>
           </div>
@@ -79,10 +79,10 @@ export default function TeamCard({ team, onEdit, onCardClick }: TeamCardProps) {
         </div>
       </CardHeader>
       
-      <CardContent className="flex-grow flex flex-col">
+      <CardContent className="flex-grow flex flex-col p-4 pt-0">
         {hackathon ? (
-          <Link href={`/hackathons/${hackathon.slug}`} onClick={handleActionClick} className="text-sm text-primary hover:underline flex items-center gap-1.5 mb-3 group">
-            <Trophy className="w-4 h-4 text-primary/70" />
+          <Link href={`/hackathons/${hackathon.slug}`} onClick={handleActionClick} className="text-xs text-primary hover:underline flex items-center gap-1.5 mb-2 group">
+            <Trophy className="w-3.5 h-3.5 text-primary/70" />
             <span className="font-medium">{hackathon.title}</span>
           </Link>
         ) : (
@@ -92,11 +92,11 @@ export default function TeamCard({ team, onEdit, onCardClick }: TeamCardProps) {
           </div>
         )}
         
-        <p className="text-sm text-secondary-foreground/80 line-clamp-3 flex-grow">{team.intro}</p>
+        <p className="text-xs text-secondary-foreground/80 line-clamp-3 flex-grow leading-relaxed">{team.intro}</p>
 
         {team.isOpen && team.lookingFor && team.lookingFor.length > 0 && (
-          <div className="mt-4">
-            <h5 className="text-xs font-semibold text-muted-foreground mb-2">찾는 포지션</h5>
+          <div className="mt-3">
+            <h5 className="text-[11px] font-semibold text-muted-foreground mb-1.5">찾는 포지션</h5>
             <TooltipProvider>
               <div className="flex flex-wrap items-center gap-1.5">
                 {team.lookingFor.map(lf => (
@@ -112,17 +112,17 @@ export default function TeamCard({ team, onEdit, onCardClick }: TeamCardProps) {
           </div>
         )}
 
-        <div className="border-t mt-4 pt-4 flex justify-between items-center">
-           <span className="text-xs text-muted-foreground">{formatDate(team.createdAt)} 생성</span>
+        <div className="border-t mt-3 pt-3 flex justify-between items-center">
+           <span className="text-[10px] text-muted-foreground">{formatDate(team.createdAt).split(' ')[0]}</span>
            
-           <div className="flex gap-2">
+           <div className="flex gap-1.5">
             {isMyTeam ? (
               <>
-                <Button size="sm" variant="outline" onClick={handleEditClick}><Edit /> 수정</Button>
+                <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={handleEditClick}><Edit className="w-3 h-3 mr-1" /> 수정</Button>
                 {team.isOpen && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button size="sm" variant="outline" onClick={handleActionClick}><LogOut /> 모집마감</Button>
+                      <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={handleActionClick}><LogOut className="w-3 h-3 mr-1" /> 모집마감</Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
@@ -140,8 +140,8 @@ export default function TeamCard({ team, onEdit, onCardClick }: TeamCardProps) {
             ) : (
               team.isOpen && (
                 <a href={team.contact.url} target="_blank" rel="noopener noreferrer" onClick={handleActionClick}>
-                    <Button size="sm" variant="secondary">
-                        연락하기 <ExternalLink/>
+                    <Button size="sm" variant="secondary" className="h-7 px-2 text-xs">
+                        연락하기 <ExternalLink className="w-3 h-3 ml-1" />
                     </Button>
                 </a>
               )

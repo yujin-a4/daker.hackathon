@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Collapsible,
   CollapsibleContent,
@@ -21,6 +21,12 @@ export default function RankingsPage() {
   const { rankings, getRankingsByPeriod, recalculateRankings } = useRankingStore();
   const [activeFilter, setActiveFilter] = useState<'all' | '30d' | '7d'>('all');
   const [isOpen, setIsOpen] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  // 마운트 체크 (Hydration 오류 방지)
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   // 최초 진입 시 포인트 계산
   useMemo(() => {
@@ -52,11 +58,17 @@ export default function RankingsPage() {
           </Button>
         ))}
         <span className="text-sm text-muted-foreground ml-2">
-          {filteredRankings.length}명
+          {hasMounted ? `${filteredRankings.length}명` : '--명'}
         </span>
       </div>
 
-      <RankingTable rankings={filteredRankings} />
+      {hasMounted ? (
+        <RankingTable rankings={filteredRankings} />
+      ) : (
+        <div className="h-96 w-full animate-pulse bg-muted/20 rounded-2xl border border-dashed flex items-center justify-center">
+          <p className="text-muted-foreground">랭킹 데이터를 불러오는 중...</p>
+        </div>
+      )}
 
       <Collapsible
         open={isOpen}

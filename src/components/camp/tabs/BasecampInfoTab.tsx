@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import TeamMemberManager from '../TeamMemberManager';
 
 export default function BasecampInfoTab({
   team,
@@ -99,6 +100,9 @@ export default function BasecampInfoTab({
           )}
         </div>
       </div>
+
+      {/* 팀장 전용: 이메일 초대 및 AI 코파운더 매칭 */}
+      <TeamMemberManager team={team} />
     </div>
   );
 }

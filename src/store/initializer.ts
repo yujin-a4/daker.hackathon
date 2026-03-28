@@ -14,7 +14,7 @@ import {
   submissions,
 } from '@/data/seed';
 
-export const SEED_VERSION = 'v3.4';
+export const SEED_VERSION = 'v3.5';
 
 export function initializeStore() {
   const detailsRecord = hackathonDetails.reduce((acc, detail) => {

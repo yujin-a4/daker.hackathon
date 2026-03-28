@@ -1,10 +1,11 @@
 'use client';
 
 import { useSubmissionStore } from '@/store/useSubmissionStore';
+import { useUserStore } from '@/store/useUserStore';
 import type { Team, Hackathon } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { CheckCircle, Clock, FileText, Globe, Presentation, ArrowRight } from 'lucide-react';
+import { CheckCircle, Clock, FileText, Globe, Presentation, ArrowRight, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { formatDate } from '@/lib/date';
 
@@ -17,6 +18,9 @@ export default function BasecampWarroomTab({
 }) {
   const router = useRouter();
   const { submissions } = useSubmissionStore();
+  const { currentUser } = useUserStore();
+  
+  const role = currentUser?.role || '팀원';
 
   const mySubmission = submissions.find(
     (s) => s.teamCode === team.teamCode && s.hackathonSlug === hackathon.slug
@@ -55,6 +59,21 @@ export default function BasecampWarroomTab({
     },
   ];
 
+  const sortedCards = [...cards].sort((a, b) => {
+    const r = role.toLowerCase();
+    if (r.includes('개발') || r.includes('엔지니어') || r.includes('프론트') || r.includes('백엔드')) {
+      if (a.id === 'web') return -1;
+      if (b.id === 'web') return 1;
+    } else if (r.includes('기획') || r.includes('planner') || r.includes('pm')) {
+      if (a.id === 'plan') return -1;
+      if (b.id === 'plan') return 1;
+    } else if (r.includes('디자이너') || r.includes('디자인') || r.includes('designer')) {
+      if (a.id === 'ppt') return -1;
+      if (b.id === 'ppt') return 1;
+    }
+    return 0;
+  });
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -72,27 +91,42 @@ export default function BasecampWarroomTab({
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mt-8">
-        {cards.map((card) => {
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-lg p-4 border flex gap-3 items-center mt-6">
+        <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+        <p className="text-sm font-medium text-blue-900 dark:text-blue-300">
+          <strong className="font-bold">{currentUser?.nickname}</strong>님의 역할({role})에 맞춰 가장 우선순위가 높은 작업업무를 상단에 배치했습니다.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mt-6">
+        {sortedCards.map((card, index) => {
           const Icon = card.icon;
           const isDone = Boolean(card.isSubmitted);
+          const isPriority = index === 0;
           
           return (
-            <Card key={card.id} className={`p-5 lg:p-6 flex flex-col h-full border ${isDone ? 'border-blue-500/50 bg-blue-50/10' : 'border-border'}`}>
+            <Card key={card.id} className={`p-5 lg:p-6 flex flex-col h-full border ${isDone ? 'border-blue-500/50 bg-blue-50/10' : (isPriority ? 'border-blue-400 dark:border-blue-700 shadow-md ring-1 ring-blue-400/20' : 'border-border')}`}>
               <div className="flex items-start justify-between mb-4">
-                <div className={`p-2.5 rounded-lg ${isDone ? 'bg-blue-100 text-blue-600' : 'bg-muted text-muted-foreground'}`}>
+                <div className={`p-2.5 rounded-lg ${isDone ? 'bg-blue-100 text-blue-600' : (isPriority ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400' : 'bg-muted text-muted-foreground')}`}>
                   <Icon className="w-6 h-6" />
                 </div>
-                <div className="flex items-center gap-1.5 text-xs font-medium">
-                  {isDone ? (
-                    <span className="text-emerald-600 flex items-center gap-1.5">
-                      <CheckCircle className="w-3.5 h-3.5" /> 제출 완료
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5" /> 미작성
-                    </span>
+                <div className="flex items-center gap-2">
+                  {isPriority && !isDone && (
+                     <span className="text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-1 rounded-full">
+                       추천 우선작업
+                     </span>
                   )}
+                  <div className="flex items-center gap-1.5 text-xs font-medium">
+                    {isDone ? (
+                      <span className="text-emerald-600 flex items-center gap-1.5">
+                        <CheckCircle className="w-3.5 h-3.5" /> 제출 완료
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" /> 미작성
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
               

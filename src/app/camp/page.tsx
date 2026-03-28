@@ -70,6 +70,7 @@ function CampContent() {
   
   const filteredTeams = useMemo(() => {
     return teams.filter(team => {
+      if (team.isSolo) return false; // 개인 참가 팀은 목록에서 제외
       const hackathonMatch = hackathonFilter === 'all' || team.hackathonSlug === hackathonFilter;
       const openMatch = !showOpenOnly || team.isOpen;
       const searchMatch = searchQuery === '' || 

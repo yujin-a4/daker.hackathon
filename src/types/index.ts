@@ -88,6 +88,8 @@ export interface Team {
   hackathonSlug: string | null;
   name: string;
   isOpen: boolean;
+  isSolo?: boolean; // 개인 참가 여부 — true이면 팀 찾기 목록에 노출 안 됨
+  leaderId: string; // 팀장을 식별하는 ID
   memberCount: number;
   maxTeamSize: number;
   lookingFor: { position: string; description: string }[];
@@ -134,3 +136,5 @@ export interface CurrentUser {
   preferredTypes?: string[];
   skills?: string[];
 }
+
+export interface UserProfile extends CurrentUser {}
