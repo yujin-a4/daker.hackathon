@@ -20,6 +20,8 @@ import {
   HelpCircle,
   Heart,
   Clock,
+  Rocket,
+  ArrowRight,
 } from 'lucide-react';
 
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -43,6 +45,8 @@ import TeamsSection from '@/components/hackathon/TeamsSection';
 import SubmitSection from '@/components/hackathon/SubmitSection';
 import LeaderboardSection from '@/components/hackathon/LeaderboardSection';
 import DeadlineWidget from '@/components/hackathon/DeadlineWidget';
+import ApplyModal from '@/components/hackathon/ApplyModal';
+import { useTeamStore } from '@/store/useTeamStore';
 
 const sections = [
   { id: 'overview', label: '개요', icon: BookOpen },
@@ -71,6 +75,16 @@ export default function HackathonDetailPage() {
 
   const isMobile = useIsMobile();
   const searchParams = useSearchParams();
+  const { teams } = useTeamStore();
+
+  // ── Participation State ──
+  const myTeam = teams.find(t => t.hackathonSlug === slug && currentUser?.teamCodes.includes(t.teamCode));
+  const isParticipating = !!myTeam;
+
+  // ── Apply Modal State ──
+  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const teamsSectionRef = useRef<HTMLDivElement>(null);
 
   // ── Tab State ──
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'info');
@@ -265,6 +279,34 @@ export default function HackathonDetailPage() {
                   milestones={milestones}
                   timezone={details.sections.schedule.timezone}
                 />
+
+                {/* Desktop Apply Card */}
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Participation</p>
+                    <h4 className="font-bold text-slate-800 dark:text-slate-200">
+                      {isParticipating ? "이미 참가 중인 대회입니다" : "지금 바로 도전하세요!"}
+                    </h4>
+                  </div>
+                  
+                  {isParticipating ? (
+                    <Button asChild className="w-full bg-indigo-600 hover:bg-indigo-700 h-11 font-bold shadow-lg shadow-indigo-600/20">
+                      <Link href={`/basecamp/${myTeam.teamCode}`}>나의 베이스캠프 가기</Link>
+                    </Button>
+                  ) : (
+                    <Button 
+                      onClick={() => setIsApplyModalOpen(true)} 
+                      disabled={hackathon.status === 'ended'}
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 h-11 font-bold shadow-lg shadow-indigo-600/20"
+                    >
+                      참가 신청하기
+                    </Button>
+                  )}
+                  
+                  <p className="text-[11px] text-slate-400 text-center">
+                    {hackathon.status === 'ended' ? "이 대회는 종료되었습니다." : "현재 많은 분석가들이 참여하고 있습니다."}
+                  </p>
+                </div>
               </div>
             )}
 
@@ -295,6 +337,67 @@ export default function HackathonDetailPage() {
           </div>
         </Tabs>
       </div>
+
+      {/* Mobile Fixed Bottom Bar */}
+      {isMobile && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-50 animate-in fade-in slide-in-from-bottom-5 duration-500">
+          <div className="container mx-auto max-w-lg flex gap-3">
+            {isParticipating ? (
+              <Button asChild className="flex-1 bg-indigo-600 hover:bg-indigo-700 h-12 rounded-xl font-bold text-base shadow-lg shadow-indigo-600/20">
+                <Link href={`/basecamp/${myTeam.teamCode}`}>
+                  <Rocket className="w-5 h-5 mr-2" /> 나의 베이스캠프
+                </Link>
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => setIsApplyModalOpen(true)}
+                disabled={hackathon.status === 'ended'}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 h-12 rounded-xl font-bold text-base shadow-lg shadow-indigo-600/20"
+              >
+                참가 신청하기 <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            )}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleBookmarkClick}
+              className={cn(
+                "w-12 h-12 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 transition-colors",
+                isBookmarked ? "bg-rose-50 border-rose-100 text-rose-500" : "bg-white dark:bg-slate-900 text-slate-400"
+              )}
+            >
+              <Heart className={cn("w-6 h-6", isBookmarked && "fill-current")} />
+            </motion.button>
+          </div>
+        </div>
+      )}
+
+      {/* Apply Modal */}
+      <ApplyModal
+        isOpen={isApplyModalOpen}
+        onOpenChange={setIsApplyModalOpen}
+        hackathonSlug={slug}
+        hackathonTitle={hackathon.title}
+        teamPolicy={details.sections.overview.teamPolicy}
+        onSwitchToTeams={() => {
+          setActiveTab('teams');
+          router.replace(`/hackathons/${slug}?tab=teams`, { scroll: false });
+          setTimeout(() => {
+            const el = document.getElementById('teams');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }}
+        onCreateTeam={() => {
+          setActiveTab('teams');
+          router.replace(`/hackathons/${slug}?tab=teams&action=create-team`, { scroll: false });
+          setTimeout(() => {
+            const el = document.getElementById('teams');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }, 100);
+        }}
+      />
+
+      {/* Padding for mobile fixed bar */}
+      {isMobile && <div className="h-20" />}
     </div>
   );
 }

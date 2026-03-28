@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState, useMemo } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useMemo, useEffect } from 'react';
 import { Users, Plus, Sparkles, LayoutDashboard } from 'lucide-react';
 import type { HackathonDetail, Team } from '@/types';
 import { useTeamStore } from '@/store/useTeamStore';
@@ -34,6 +34,22 @@ export default function TeamsSection({ hackathonSlug, teamPolicy }: TeamsSection
     if (!currentUser) return null;
     return teams.find(t => t.hackathonSlug === hackathonSlug && currentUser.teamCodes.includes(t.teamCode));
   }, [teams, hackathonSlug, currentUser]);
+
+  const searchParams = useSearchParams();
+
+  // 0. URL 파라미터 감지 (참가 신청 모달에서 온 요청)
+  useEffect(() => {
+    const action = searchParams.get('action');
+    if (action === 'create-team' && !myTeam) {
+      setSelectedTeam(null);
+      setIsCreateModalOpen(true);
+      
+      // 파라미터 제거 (뒤로가기 시 다시 열리지 않도록)
+      const newParams = new URLSearchParams(searchParams.toString());
+      newParams.delete('action');
+      router.replace(`${window.location.pathname}?${newParams.toString()}`, { scroll: false });
+    }
+  }, [searchParams, myTeam, router]);
 
   // 2. 다른 팀들 매칭 점수로 정렬 (내 팀 제외)
   const otherTeamsWithScores = useMemo(() => {
@@ -121,20 +137,12 @@ export default function TeamsSection({ hackathonSlug, teamPolicy }: TeamsSection
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {otherTeamsWithScores.map((match: MatchingResult) => (
               <div key={match.team.teamCode} className="flex flex-col gap-3">
-                <div className="relative">
-                  {match.score > 0 && (
-                    <div className="absolute top-3 left-3 z-10">
-                      <Badge className="bg-amber-100/90 text-amber-700 border-amber-200 backdrop-blur-sm font-black px-2 py-1 shadow-sm">
-                        {match.score}% 매칭
-                      </Badge>
-                    </div>
-                  )}
-                  <TeamCard 
-                    team={match.team} 
-                    onEdit={handleEdit} 
-                    onCardClick={handleCardClick}
-                  />
-                </div>
+                <TeamCard 
+                  team={match.team} 
+                  onEdit={handleEdit} 
+                  onCardClick={handleCardClick}
+                  matchScore={match.score}
+                />
               </div>
             ))}
           </div>

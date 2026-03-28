@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Trophy, Users, Edit, LogOut, MessageSquare, ExternalLink } from 'lucide-react';
+import { Trophy, Users, Edit, LogOut, MessageSquare, ExternalLink, Sparkles } from 'lucide-react';
 import type { Team } from '@/types';
 import { useHackathonStore } from '@/store/useHackathonStore';
 import { useUserStore } from '@/store/useUserStore';
@@ -30,9 +30,10 @@ interface TeamCardProps {
   onEdit: (team: Team) => void;
   onCardClick: (team: Team) => void;
   className?: string;
+  matchScore?: number;
 }
 
-export default function TeamCard({ team, onEdit, onCardClick, className }: TeamCardProps) {
+export default function TeamCard({ team, onEdit, onCardClick, className, matchScore }: TeamCardProps) {
   const { hackathons } = useHackathonStore();
   const { currentUser } = useUserStore();
   const { updateTeam } = useTeamStore();
@@ -64,11 +65,21 @@ export default function TeamCard({ team, onEdit, onCardClick, className }: TeamC
       )}
     >
       <CardHeader className="p-4 pb-3">
+        {matchScore !== undefined && matchScore > 0 && (
+          <div className="flex items-center gap-2 mb-3">
+            <div className="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 font-black px-3 py-1.5 rounded-lg text-sm shadow-sm border border-amber-200 dark:border-amber-500/30 flex items-center gap-1.5 animate-in fade-in slide-in-from-left-2 duration-500">
+              <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500/20" />
+              {matchScore}% 매칭
+            </div>
+          </div>
+        )}
         <div className="flex justify-between items-start gap-2">
-          <CardTitle className="text-base leading-tight">{team.name}</CardTitle>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {isMyTeam && <Badge variant="outline" className="border-primary/50 text-primary px-1.5 py-0 text-[10px]">내 팀</Badge>}
-            <Badge className={cn(team.isOpen ? "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300" : "bg-muted text-muted-foreground", "font-medium text-[10px] px-1.5 py-0")}>
+          <CardTitle className="text-xl font-black leading-tight tracking-tight text-slate-800 dark:text-slate-100">
+            {team.name}
+          </CardTitle>
+          <div className="flex items-center gap-1.5 flex-shrink-0 pt-0.5">
+            {isMyTeam && <Badge variant="outline" className="border-primary/50 text-primary px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider">내 팀</Badge>}
+            <Badge className={cn(team.isOpen ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300" : "bg-muted text-muted-foreground", "font-bold text-[10px] px-2 py-0.5 uppercase tracking-wider")}>
               {team.isOpen ? '모집중' : '모집마감'}
             </Badge>
           </div>
