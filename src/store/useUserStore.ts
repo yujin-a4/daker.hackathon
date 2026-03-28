@@ -17,6 +17,7 @@ interface UserState {
   
   // 기존
   addTeamCode: (teamCode: string) => void;
+  removeTeamCode: (teamCode: string) => void;
   toggleBookmark: (slug: string) => void;
 }
 
@@ -87,6 +88,20 @@ export const useUserStore = create<UserState>()(
               currentUser: {
                 ...state.currentUser,
                 teamCodes: [...state.currentUser.teamCodes, teamCode],
+              },
+            };
+          }
+          return state;
+        });
+      },
+
+      removeTeamCode: (teamCode: string) => {
+        set((state) => {
+          if (state.currentUser && state.currentUser.teamCodes.includes(teamCode)) {
+            return {
+              currentUser: {
+                ...state.currentUser,
+                teamCodes: state.currentUser.teamCodes.filter((code) => code !== teamCode),
               },
             };
           }

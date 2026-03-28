@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 
 import AuthModal from '@/components/auth/AuthModal';
 import UserDropdown from '@/components/auth/UserDropdown';
+import NotificationCenter from './NotificationCenter';
 
 const navLinks = [
   { href: '/hackathons', label: '해커톤' },
@@ -210,7 +211,10 @@ export default function Navbar() {
 
             {mounted && (
               currentUser ? (
-                <UserDropdown />
+                <div className="flex items-center space-x-2">
+                  <NotificationCenter />
+                  <UserDropdown />
+                </div>
               ) : (
                 <Button
                     variant="default"

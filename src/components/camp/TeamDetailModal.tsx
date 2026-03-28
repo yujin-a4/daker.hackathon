@@ -129,31 +129,42 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
         <DialogFooter className="sm:justify-between pt-4 border-t !mt-0">
           <div className="flex-grow flex items-center">
             {isMyTeam ? (
-              <div className="flex gap-2">
-                <Button variant="secondary" onClick={handleEditClick}>
-                    <Edit /> 수정하기
-                </Button>
-                {team.isOpen && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive" className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800">
-                        <LogOut /> 모집마감하기
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>모집을 마감하시겠습니까?</AlertDialogTitle>
-                        <AlertDialogDescription>더 이상 새로운 팀원을 받을 수 없게 됩니다. 이 작업은 되돌릴 수 없습니다.</AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>취소</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleCloseRecruitment} className="bg-red-600 hover:bg-red-700">마감하기</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+              <div className="flex flex-wrap gap-2">
+                <Link href={`/basecamp/${team.teamCode}`} className="flex-grow sm:flex-grow-0" onClick={() => onOpenChange(false)}>
+                  <Button variant="outline" className="w-full bg-indigo-50 hover:bg-indigo-100 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 dark:border-indigo-800 dark:text-indigo-300">
+                    <ExternalLink /> 팀 작전실 바로가기
+                  </Button>
+                </Link>
+
+                {currentUser?.id === team.leaderId && (
+                  <>
+                    <Button variant="secondary" onClick={handleEditClick}>
+                        <Edit /> 수정하기
+                    </Button>
+                    {team.isOpen && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800">
+                            <LogOut /> 모집마감하기
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>모집을 마감하시겠습니까?</AlertDialogTitle>
+                            <AlertDialogDescription>더 이상 새로운 팀원을 받을 수 없게 됩니다. 이 작업은 되돌릴 수 없습니다.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>취소</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleCloseRecruitment} className="bg-red-600 hover:bg-red-700">마감하기</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </>
                 )}
               </div>
             ) : (
+              // ... Rest of the logic for non-members (Contact button)
               team.isOpen ? (
                 <a href={team.contact.url} target="_blank" rel="noopener noreferrer">
                     <Button>
