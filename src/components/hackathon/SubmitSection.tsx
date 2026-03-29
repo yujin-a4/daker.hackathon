@@ -13,14 +13,17 @@ import { useHackathonStore } from '@/store/useHackathonStore';
 import { useRankingStore } from '@/store/useRankingStore';
 import { useToast } from '@/hooks/use-toast';
 import { useTeamStore } from '@/store/useTeamStore';
+import { getHackathonPhase } from '@/lib/hackathon-utils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CheckCircle, XCircle, Upload, AlertTriangle, Target } from 'lucide-react';
+import { CheckCircle, XCircle, Upload, AlertTriangle, Target, Clock } from 'lucide-react';
 import { formatDateTime } from '@/lib/date';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,6 +64,11 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
   const hackathon = useMemo(() => hackathons.find(h => h.slug === hackathonSlug), [hackathons, hackathonSlug]);
   const isEnded = hackathon?.status === 'ended';
 
+  // ─── 0. Phase Logic ───
+  const currentPhase = useMemo(() => getHackathonPhase(hackathonDetail), [hackathonDetail]);
+  const isSubmissionPhase = currentPhase.type === 'SUBMISSION';
+  const activeItemKey = currentPhase.itemKey;
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const userTeam = useMemo(() => {
@@ -78,13 +86,20 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
   const form = useForm<FormData>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      itemKey: submitInfo.submissionItems?.[0]?.key,
+      itemKey: activeItemKey || submitInfo.submissionItems?.[0]?.key,
       inputType: 'text',
       content: '',
       fileName: '',
       notes: '',
     },
   });
+
+  // phase가 변경되면 자동 선택된 itemKey 업데이트
+  React.useEffect(() => {
+    if (activeItemKey) {
+      form.setValue('itemKey', activeItemKey);
+    }
+  }, [activeItemKey, form]);
 
   const selectedItemKey = form.watch('itemKey');
   const selectedItem = submitInfo.submissionItems?.find(item => item.key === selectedItemKey);
@@ -299,9 +314,30 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
       ) : null}
 
       {!isEnded && (
-        <div>
-          <h3 className="text-lg font-bold mb-4">새 제출</h3>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-6 bg-card border rounded-lg">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold">새 제출</h3>
+            <Badge variant={isSubmissionPhase ? "default" : "secondary"} className={cn(isSubmissionPhase ? "bg-emerald-500 text-white" : "")}>
+              {currentPhase.name} {isSubmissionPhase ? "진행 중" : "준비/심사 중"}
+            </Badge>
+          </div>
+          
+          {!isSubmissionPhase ? (
+            <div className="p-8 border-2 border-dashed rounded-xl bg-slate-50 dark:bg-slate-900/50 text-center flex flex-col items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-500">
+                <Clock className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="font-bold text-slate-600">현재는 제출 기간이 아닙니다.</p>
+                <p className="text-sm text-slate-400 mt-1">
+                  {currentPhase.endDate 
+                    ? `${formatDateTime(currentPhase.endDate.toISOString())}에 다음 단계가 시작됩니다.`
+                    : "대회 일정을 확인해 주세요."}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-6 bg-card border rounded-lg shadow-sm">
           {submitInfo.submissionItems && (
             <Controller
               control={form.control}
@@ -352,6 +388,7 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
             <Button type="submit">제출하기</Button>
           </div>
         </form>
+      )}
       </div>
       )}
     </div>

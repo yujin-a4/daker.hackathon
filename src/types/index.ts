@@ -43,7 +43,16 @@ export interface HackathonDetail {
     };
     schedule: {
       timezone: string;
-      milestones: { name: string; at: string }[];
+      milestones: { 
+        name: string; 
+        at: string; 
+        type?: 'submission' | 'voting' | 'judging' | 'result';
+        itemKey?: string; // Links to submission.artifacts.key
+        step?: number; // 1, 2, 3...
+        votingEnabled?: boolean;
+        judgingEnabled?: boolean;
+        galleryEnabled?: boolean;
+      }[];
     };
     prize: {
       items: { place: string; amountKRW: number }[];
@@ -56,7 +65,7 @@ export interface HackathonDetail {
       allowedArtifactTypes: string[];
       submissionUrl: string;
       guide: string[];
-      submissionItems?: { key: string; title: string; format: string }[];
+      submissionItems?: { key: string; title: string; format: string; deadline?: string }[];
     };
     leaderboard: {
       publicLeaderboardUrl: string;
@@ -69,6 +78,7 @@ export interface LeaderboardEntry {
   rank: number | null;
   teamName: string;
   score: number | null;
+  votes?: number; // Real-time user votes during voting phase
   submittedAt: string | null;
   scoreBreakdown?: Record<string, number>;
   artifacts?: {

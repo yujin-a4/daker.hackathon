@@ -24,7 +24,7 @@ export const hackathons: Hackathon[] = [
       submissionDeadlineAt: '2026-03-30T10:00:00+09:00',
       endAt: '2026-04-27T10:00:00+09:00',
     },
-    participantCount: 358,
+    participantCount: 41,
     prizeTotal: '100만원',
     links: {
       detail: '/hackathons/daker-handover-2026-03',
@@ -221,24 +221,26 @@ export const hackathonDetails: HackathonDetail[] = [
         },
       },
       eval: {
-        metricName: 'FinalScore',
-        description: '참가팀/심사위원 투표 점수를 가중치로 합산한 최종 점수',
-        scoreSource: 'vote',
+        metricName: '명세 충족도',
+        description: '제공된 명세서의 요구사항을 얼마나 정확하고 효율적으로 구현했는가?',
         scoreDisplay: {
-          label: '투표 점수',
+          label: 'Total Score',
           breakdown: [
-            { key: 'participant', label: '참가자', weightPercent: 30 },
-            { key: 'judge', label: '심사위원', weightPercent: 70 },
-          ],
-        },
+            { key: 'spec', label: '명세 준수', weightPercent: 40 },
+            { key: 'tech', label: '기술 스택 활용', weightPercent: 30 },
+            { key: 'ui', label: 'UI/UX 완성도', weightPercent: 30 },
+          ]
+        }
       },
       schedule: {
         timezone: 'Asia/Seoul',
         milestones: [
-          { name: '접수/기획서 제출 기간', at: '2026-03-04T10:00:00+09:00' },
-          { name: '접수/기획서 제출 마감', at: '2026-03-30T10:00:00+09:00' },
-          { name: '최종 웹링크 제출 마감', at: '2026-04-06T10:00:00+09:00' },
-          { name: '최종 결과 발표', at: '2026-04-27T10:00:00+09:00' },
+          { name: '대회 시작 및 팀 빌딩', at: '2026-03-04T10:00:00+09:00', type: 'submission', step: 1, itemKey: 'general' },
+          { name: '1차 기획서 제출 마감', at: '2026-03-25T10:00:00+09:00', type: 'submission', step: 1, itemKey: 'plan', galleryEnabled: false },
+          { name: '최종 웹 구현 및 투표 시작', at: '2026-03-30T10:00:00+09:00', type: 'submission', step: 2, itemKey: 'web', votingEnabled: true, galleryEnabled: true },
+          { name: '최종 제출 마감 및 2차 투표', at: '2026-04-06T10:00:00+09:00', type: 'voting', step: 2, itemKey: 'web', votingEnabled: true },
+          { name: '최종 투표 마감 및 심사위원 심사', at: '2026-04-10T10:00:00+09:00', type: 'judging', step: 3, judgingEnabled: true },
+          { name: '최종 결과 발표', at: '2026-04-27T10:00:00+09:00', type: 'result', step: 3, judgingEnabled: true },
         ],
       },
       teams: { campEnabled: true, listUrl: '/camp?hackathon=daker-handover-2026-03' },
@@ -247,8 +249,9 @@ export const hackathonDetails: HackathonDetail[] = [
         submissionUrl: '/hackathons/daker-handover-2026-03#submit',
         guide: ['기획서 → 웹링크 → PDF를 단계별로 제출합니다.'],
         submissionItems: [
-          { key: 'plan', title: '기획서(1차 제출)', format: 'text_or_url' },
-          { key: 'web', title: '최종 웹링크 제출', format: 'url' },
+          { key: 'plan', title: '기획서(1차 제출)', format: 'text_or_url', deadline: '2026-03-30T10:00:00+09:00' },
+          { key: 'web', title: '최종 웹링크 제출', format: 'url', deadline: '2026-04-06T10:00:00+09:00' },
+          { key: 'ppt', title: '최종 솔루션 PPT 제출', format: 'pdf', deadline: '2026-04-27T10:00:00+09:00' },
         ],
       },
       leaderboard: { publicLeaderboardUrl: '/hackathons/daker-handover-2026-03#leaderboard', note: '투표 기반 점수' },
@@ -372,9 +375,10 @@ export const hackathonDetails: HackathonDetail[] = [
       schedule: {
         timezone: 'Asia/Seoul',
         milestones: [
-          { name: '캠프 시작', at: '2026-01-10T10:00:00+09:00' },
-          { name: '작품 제출 마감', at: '2026-02-10T10:00:00+09:00' },
-          { name: '시상 및 전시', at: '2026-02-15T14:00:00+09:00' },
+          { name: '캠프 시작 및 팀 빌딩', at: '2026-01-10T10:00:00+09:00', type: 'submission', step: 1, itemKey: 'general' },
+          { name: '공간 디자인 제출 마감', at: '2026-02-10T10:00:00+09:00', type: 'submission', step: 1, itemKey: 'design' },
+          { name: '참가자 상호 투표', at: '2026-02-10T10:00:01+09:00', type: 'voting', step: 1, itemKey: 'design', votingEnabled: true },
+          { name: '시상 및 전시 기간', at: '2026-02-15T14:00:00+09:00', type: 'result', step: 2, judgingEnabled: true },
         ],
       },
       teams: { campEnabled: true, listUrl: '/camp?hackathon=metaverse-creator-camp' },
@@ -393,8 +397,9 @@ export const hackathonDetails: HackathonDetail[] = [
       schedule: {
         timezone: 'Asia/Seoul',
         milestones: [
-          { name: '리더보드 제출 마감', at: '2026-02-25T10:00:00+09:00' },
-          { name: '대회 종료', at: '2026-03-10T10:00:00+09:00' },
+          { name: '오프라인 예선 종료', at: '2026-01-20T10:00:00+09:00', type: 'submission', step: 1, itemKey: 'pre' },
+          { name: '리더보드 제출 마감', at: '2026-02-25T10:00:00+09:00', type: 'submission', step: 2, itemKey: 'lite' },
+          { name: '대회 종료 및 결과 발표', at: '2026-03-10T10:00:00+09:00', type: 'result', step: 3, judgingEnabled: true },
         ],
       },
       teams: { campEnabled: true, listUrl: '/camp?hackathon=aimers-8-model-lite' },
@@ -413,9 +418,9 @@ export const hackathonDetails: HackathonDetail[] = [
       schedule: {
         timezone: 'Asia/Seoul',
         milestones: [
-          { name: '아이디어 접수', at: '2026-01-25T10:00:00+09:00' },
-          { name: '투표 마감', at: '2026-02-20T10:00:00+09:00' },
-          { name: '결과 발표', at: '2026-02-28T10:00:00+09:00' },
+          { name: '아이디어 접수 시작', at: '2026-01-25T10:00:00+09:00', type: 'submission', step: 1, itemKey: 'idea' },
+          { name: '아이디어 접수 마감 및 투표', at: '2026-02-20T10:00:00+09:00', type: 'voting', step: 1, itemKey: 'idea', votingEnabled: true },
+          { name: '최종 결과 발표', at: '2026-02-28T10:00:00+09:00', type: 'result', step: 1, judgingEnabled: true },
         ],
       },
       teams: { campEnabled: true, listUrl: '/camp?hackathon=monthly-vibe-coding-2026-02' },
@@ -442,12 +447,13 @@ export const teams: Team[] = [
     progressStatus: 'developing',
     progressPercent: 65,
   },
+  // --- daker-handover-2026-03 (41 entries: 26 Teams + 15 Solos) ---
   {
     teamCode: 'T-HANDOVER-01',
     hackathonSlug: 'daker-handover-2026-03',
     name: '404found',
     isOpen: true,
-    leaderId: 'user-001-yujin', // 강유진이 리더임
+    leaderId: 'user-001-yujin',
     memberCount: 3,
     maxTeamSize: 5,
     lookingFor: [{ position: 'Frontend', description: '' }, { position: 'Designer', description: '' }],
@@ -457,56 +463,49 @@ export const teams: Team[] = [
     progressStatus: 'designing',
     progressPercent: 40,
   },
-  {
-    teamCode: 'T-VIBE-01',
-    hackathonSlug: 'monthly-vibe-coding-2026-02',
-    name: 'Vibe Enhancers',
-    isOpen: false,
-    leaderId: 'user-001-yujin',
-    memberCount: 4,
-    maxTeamSize: 4,
+  // --- Teams (25) ---
+  ...[
+    '명세서 저격수', '바이브 장인들', '인수인계 마스터', '코드 도둑', '빛나는 구현', 
+    '버그 사냥꾼', '비트 마법사', '도커 탈출기', '인수합병', '시크릿 명세', 
+    '구현의 끝', '알고리즘 요정', '프론트 전사', '백엔드 대가', '풀스택 특공대', 
+    '디자인 일급', '기획 천재', '코드 마에스트로', '해커톤 빌런', '명세서 파괴자', 
+    '에러 해결사', '데이터 술사', '클라우드 거인', '웹의 정석', '제로 버그'
+  ].map((name, i) => ({
+    teamCode: `T-HANDOVER-TEAM-${i + 1}`,
+    hackathonSlug: 'daker-handover-2026-03',
+    name,
+    isOpen: i % 3 === 0,
+    leaderId: `user-team-leader-${i}`,
+    memberCount: (i % 4) + 2,
+    maxTeamSize: 5,
     lookingFor: [],
-    intro: '바이브 코딩을 위한 최고의 팀이었습니다.',
-    contact: { type: 'link', url: 'https://open.kakao.com/o/example99' },
-    createdAt: '2026-01-20T11:00:00+09:00',
-    progressStatus: 'completed',
-    progressPercent: 100,
-  },
-  {
-    teamCode: 'T-META-SOLO',
-    hackathonSlug: 'metaverse-creator-camp',
-    name: '강유진 (개인)',
+    intro: `${name} 팀입니다. 목표는 우승!`,
+    contact: { type: 'link', url: '#' },
+    createdAt: new Date(2026, 2, 5 + (i % 10)).toISOString(),
+    progressStatus: (i % 2 === 0 ? 'developing' : 'designing') as any,
+    progressPercent: (i * 7) % 100,
+  })),
+  // --- Solos (15) ---
+  ...[
+    '이단풍', '김코딩', '박해커', '최개발', '정깃', '윤코드', '임구현', 
+    '오웹', '한스크립트', '성리액트', '지뷰', '조넥스트', '신노드', '고바이브', '안명세'
+  ].map((name, i) => ({
+    teamCode: `T-HANDOVER-SOLO-${i + 1}`,
+    hackathonSlug: 'daker-handover-2026-03',
+    name,
     isOpen: false,
     isSolo: true,
-    leaderId: 'user-001-yujin',
+    leaderId: `user-solo-leader-${i}`,
     memberCount: 1,
     maxTeamSize: 1,
     lookingFor: [],
-    intro: '메타버스 크리에이터스 아카데미 개인 출품작입니다.',
-    contact: { type: 'link', url: '' },
-    createdAt: '2026-01-11T11:00:00+09:00',
-    progressStatus: 'completed',
-    progressPercent: 100,
-  },
-  // --- daker-handover-2026-03 (20+ teams) ---
-  ...Array.from({ length: 20 }).map((_, i) => ({
-    teamCode: `T-HANDOVER-AUTO-${i + 2}`,
-    hackathonSlug: 'daker-handover-2026-03',
-    name: `Team Handover #${i + 2}`,
-    isOpen: i % 5 !== 0,
-    leaderId: `user-gen-${i}`,
-    memberCount: (i % 3) + 1,
-    maxTeamSize: 5,
-    lookingFor: [
-      { position: i % 2 === 0 ? 'Frontend' : 'Backend', description: '빠른 구현 선호' }
-    ],
-    intro: `우승을 목표로 하는 ${i + 2}번 팀입니다. 함께 가실 분!`,
+    intro: '개인 참가자입니다.',
     contact: { type: 'link', url: '#' },
-    createdAt: new Date(2026, 2, 5 + i).toISOString(),
-    progressStatus: (i % 4 === 0 ? 'planning' : i % 4 === 1 ? 'designing' : i % 4 === 2 ? 'developing' : 'completed') as 'planning' | 'designing' | 'developing' | 'completed',
-    progressPercent: i % 4 === 0 ? 15 : i % 4 === 1 ? 40 : i % 4 === 2 ? 75 : 100,
+    createdAt: new Date(2026, 2, 7 + (i % 5)).toISOString(),
+    progressStatus: 'developing' as any,
+    progressPercent: 30,
   })),
-  // --- gen-ai-startup-challenge (10+ teams) ---
+  // --- gen-ai-startup-challenge (12 teams) ---
   ...Array.from({ length: 12 }).map((_, i) => ({
     teamCode: `T-GENAI-AUTO-${i + 2}`,
     hackathonSlug: 'gen-ai-startup-challenge',
@@ -524,7 +523,7 @@ export const teams: Team[] = [
     progressStatus: (i % 2 === 0 ? 'planning' : 'developing') as 'planning' | 'designing' | 'developing' | 'completed',
     progressPercent: i % 2 === 0 ? 25 : 60,
   })),
-  // --- cloud-native-modernization (5+ teams) ---
+  // --- cloud-native-modernization (8 teams) ---
   ...Array.from({ length: 8 }).map((_, i) => ({
     teamCode: `T-CLOUD-AUTO-${i + 2}`,
     hackathonSlug: 'cloud-native-modernization',
@@ -540,6 +539,54 @@ export const teams: Team[] = [
     contact: { type: 'link', url: '#' },
     createdAt: new Date(2026, 2, 26 + i).toISOString(),
     progressStatus: 'completed' as 'planning' | 'designing' | 'developing' | 'completed',
+    progressPercent: 100,
+  })),
+  // --- historical hackathons teams ---
+  ...Array.from({ length: 12 }).map((_, i) => ({
+    teamCode: `T-AIMERS-AUTO-${i + 1}`,
+    hackathonSlug: 'aimers-8-model-lite',
+    name: i === 0 ? 'Team Alpha' : i === 1 ? 'Team Gamma' : `Aimers Team #${i + 1}`,
+    isOpen: false,
+    leaderId: `user-aimers-${i}`,
+    memberCount: (i % 3) + 2,
+    maxTeamSize: 5,
+    lookingFor: [],
+    intro: '모델 경량화 챌린지 참가 팀입니다.',
+    contact: { type: 'link', url: '#' },
+    createdAt: '2026-01-15T10:00:00Z',
+    progressStatus: 'completed' as const,
+    progressPercent: 100,
+  })),
+  ...Array.from({ length: 12 }).map((_, i) => ({
+    teamCode: `T-META-AUTO-${i + 1}`,
+    hackathonSlug: 'metaverse-creator-camp',
+    name: i === 0 ? '강유진 (개인)' : i === 1 ? 'Team Meta' : `Meta Creator #${i + 1}`,
+    isOpen: false,
+    isSolo: i === 0,
+    leaderId: `user-meta-${i}`,
+    memberCount: i === 0 ? 1 : (i % 2) + 2,
+    maxTeamSize: 3,
+    lookingFor: [],
+    intro: '메타버스 공간 창조를 위한 팀입니다.',
+    contact: { type: 'link', url: '#' },
+    createdAt: '2026-01-12T10:00:00Z',
+    progressStatus: 'completed' as const,
+    progressPercent: 100,
+  })),
+  ...Array.from({ length: 10 }).map((_, i) => ({
+    teamCode: `T-VIBE-AUTO-${i + 1}`,
+    hackathonSlug: 'monthly-vibe-coding-2026-02',
+    name: i === 0 ? 'Vibe Enhancers' : i === 1 ? 'Vibe Coders' : `Solo Runner #${i + 1}`,
+    isOpen: false,
+    isSolo: i >= 2,
+    leaderId: `user-vibe-${i}`,
+    memberCount: i < 2 ? 3 : 1,
+    maxTeamSize: 4,
+    lookingFor: [],
+    intro: '월간 바이브 코딩 참가자입니다.',
+    contact: { type: 'link', url: '#' },
+    createdAt: '2026-01-28T10:00:00Z',
+    progressStatus: 'completed' as const,
     progressPercent: 100,
   })),
 ];
@@ -561,10 +608,20 @@ export const users: UserProfile[] = [
 // ─── Leaderboards ──────────────────────────────────────────
 export const leaderboards: Record<string, Leaderboard> = {
   'daker-handover-2026-03': {
-    updatedAt: '2026-03-28T12:00:00+09:00',
+    updatedAt: '2026-03-29T11:00:00+09:00',
     entries: [
-      { teamName: '404found', score: 87.5, rank: 1, submittedAt: '2026-03-25T09:58:00+09:00', scoreBreakdown: { participant: 82, judge: 90 } },
-      { teamName: 'LGTM', score: 84.2, rank: 2, submittedAt: '2026-03-24T09:40:00+09:00', scoreBreakdown: { participant: 79, judge: 88 } },
+      { rank: 1, teamName: '명세서 저격수', score: 98.5, votes: 342, submittedAt: '2026-03-28T15:00:00Z' },
+      { rank: 2, teamName: '바이브 장인들', score: 96.2, votes: 212, submittedAt: '2026-03-25T14:30:00Z' },
+      { rank: 3, teamName: '404found', score: 94.8, votes: 198, submittedAt: '2026-03-25T09:58:00Z' },
+      { rank: 4, teamName: '이단풍', score: 89.1, votes: 152, submittedAt: '2026-03-26T10:15:00Z' },
+      { rank: 5, teamName: '코드 도둑', score: 85.5, votes: 98, submittedAt: '2026-03-28T11:10:00Z' },
+      ...Array.from({ length: 15 }).map((_, i) => ({
+        rank: i + 6,
+        teamName: `Handover Team #${i + 5}`,
+        score: 80 - i,
+        votes: 50 - i,
+        submittedAt: '2026-03-20T10:00:00Z'
+      }))
     ],
   },
   'aimers-8-model-lite': {
@@ -572,13 +629,25 @@ export const leaderboards: Record<string, Leaderboard> = {
     entries: [
       { teamName: 'Team Alpha', score: 0.7421, rank: 1, submittedAt: '2026-02-24T21:05:00+09:00' },
       { teamName: 'Team Gamma', score: 0.7013, rank: 2, submittedAt: '2026-02-25T09:40:00+09:00' },
+      ...Array.from({ length: 10 }).map((_, i) => ({
+        teamName: `Aimers Team #${i + 3}`,
+        score: 0.65 - (i * 0.01),
+        rank: i + 3,
+        submittedAt: '2026-02-24T10:00:00Z'
+      }))
     ],
   },
   'metaverse-creator-camp': {
     updatedAt: '2026-02-15T15:00:00+09:00',
     entries: [
-      { teamName: '강유진 (개인)', score: 95.5, rank: 1, submittedAt: '2026-02-09T18:00:00+09:00', scoreBreakdown: { design: 95, ux: 96 } },
+      { teamName: '강유진 (개인)', score: 95.5, rank: 1, submittedAt: '2022-02-09T18:00:00+09:00' },
       { teamName: 'Team Meta', score: 92.0, rank: 2, submittedAt: '2026-02-10T09:00:00+09:00' },
+      ...Array.from({ length: 8 }).map((_, i) => ({
+        teamName: `Meta Creator #${i + 2}`,
+        score: 85 - i,
+        rank: i + 3,
+        submittedAt: '2026-02-08T10:00:00Z'
+      }))
     ],
   },
   'monthly-vibe-coding-2026-02': {
@@ -586,6 +655,12 @@ export const leaderboards: Record<string, Leaderboard> = {
     entries: [
       { teamName: 'Vibe Enhancers', score: 88.0, rank: 1, submittedAt: '2026-02-20T10:00:00+09:00' },
       { teamName: 'Vibe Coders', score: 85.5, rank: 2, submittedAt: '2026-02-20T11:00:00+09:00' },
+      ...Array.from({ length: 8 }).map((_, i) => ({
+        teamName: `Solo Runner #${i + 1}`,
+        score: 80 - i,
+        rank: i + 3,
+        submittedAt: '2026-02-19T10:00:00Z'
+      }))
     ],
   },
 };
@@ -698,7 +773,96 @@ export const submissions: Submission[] = [
     ],
     notes: '개인 출품작입니다. Unity 파일과 기획서를 첨부합니다.',
     submittedAt: '2026-02-09T18:00:00+09:00',
-  }
+  },
+  // --- daker-handover-2026-03 submissions ---
+  {
+    id: 'sub-handover-01',
+    hackathonSlug: 'daker-handover-2026-03',
+    teamCode: 'T-HANDOVER-01',
+    teamName: '404found',
+    status: 'submitted',
+    artifacts: [
+      { type: 'url', key: 'plan', content: 'https://notion.com/404found-plan', uploadedAt: '2026-03-20T10:00:00Z' },
+      { type: 'url', key: 'web', content: 'https://vibe-handover-404.vercel.app', uploadedAt: '2026-03-25T09:58:00Z' }
+    ],
+    notes: '기획서와 웹링크 제출합니다.',
+    submittedAt: '2026-03-25T09:58:00Z',
+  },
+  ...[
+    { code: 'T-HANDOVER-TEAM-1', name: '명세서 저격수', date: '2026-03-21' },
+    { code: 'T-HANDOVER-TEAM-2', name: '바이브 장인들', date: '2026-03-22' },
+    { code: 'T-HANDOVER-TEAM-3', name: '인수인계 마스터', date: '2026-03-23' },
+    { code: 'T-HANDOVER-TEAM-4', name: '코드 도둑', date: '2026-03-24' },
+    { code: 'T-HANDOVER-SOLO-1', name: '이단풍', date: '2026-03-24' },
+    { code: 'T-HANDOVER-SOLO-2', name: '김코딩', date: '2026-03-21' },
+  ].map((t, i) => ({
+    id: `sub-handover-manual-${i}`,
+    hackathonSlug: 'daker-handover-2026-03',
+    teamCode: t.code,
+    teamName: t.name,
+    status: 'submitted' as const,
+    artifacts: [
+      { type: 'url', key: 'plan', content: 'https://notion.com/plan', uploadedAt: `${t.date}T10:00:00Z` },
+      // LGTM/명세서저격수는 2단계도 미리 제출한 것으로 처리 (소수만)
+      ...(t.name === '명세서 저격수' ? [{ type: 'url', key: 'web', content: 'https://sniper.dev', uploadedAt: '2026-03-28T15:00:00Z' }] : [])
+    ],
+    notes: '기획서 제출합니다.',
+    submittedAt: t.name === '명세서 저격수' ? '2026-03-28T15:00:00Z' : `${t.date}T10:00:00Z`,
+  })),
+  // 나머지 자동 생성 (1단계만 완료)
+  ...Array.from({ length: 20 }).map((_, i) => ({
+    id: `sub-handover-extra-${i}`,
+    hackathonSlug: 'daker-handover-2026-03',
+    teamCode: i < 15 ? `T-HANDOVER-TEAM-${i + 5}` : `T-HANDOVER-SOLO-${i - 12}`,
+    teamName: i < 15 ? `Handover Team #${i + 5}` : `Solo Runner #${i - 12}`,
+    status: 'submitted' as const,
+    artifacts: [
+      { type: 'url', key: 'plan', content: 'https://notion.com/plan', uploadedAt: new Date(2026, 2, 15 + (i % 10)).toISOString() }
+    ],
+    notes: '기획안 제출.',
+    submittedAt: new Date(2026, 2, 15 + (i % 10)).toISOString(),
+  })),
+  {
+    id: 'sub-handover-today-1',
+    hackathonSlug: 'daker-handover-2026-03',
+    teamCode: 'T-HANDOVER-EXTRA-9',
+    teamName: 'Team Success #9',
+    status: 'submitted',
+    artifacts: [{ type: 'url', key: 'plan', content: 'https://plan.com', uploadedAt: new Date().toISOString() }],
+    notes: '방금 제출했습니다!',
+    submittedAt: new Date().toISOString(),
+  },
+  // --- historical hackathons submissions ---
+  ...Array.from({ length: 12 }).map((_, i) => ({
+    id: `sub-aimers-auto-${i + 1}`,
+    hackathonSlug: 'aimers-8-model-lite',
+    teamCode: `T-AIMERS-AUTO-${i + 1}`,
+    teamName: i === 0 ? 'Team Alpha' : i === 1 ? 'Team Gamma' : `Aimers Team #${i + 1}`,
+    status: 'submitted' as const,
+    artifacts: [{ type: 'zip', key: 'lite', uploadedAt: '2026-02-24T10:00:00Z' }],
+    notes: '모델 경량화 최종 결과물입니다.',
+    submittedAt: '2026-02-24T10:00:00Z',
+  })),
+  ...Array.from({ length: 12 }).map((_, i) => ({
+    id: `sub-meta-auto-${i + 1}`,
+    hackathonSlug: 'metaverse-creator-camp',
+    teamCode: `T-META-AUTO-${i + 1}`,
+    teamName: i === 0 ? '강유진 (개인)' : i === 1 ? 'Team Meta' : `Meta Creator #${i + 1}`,
+    status: 'submitted' as const,
+    artifacts: [{ type: 'zip', key: 'design', uploadedAt: '2026-02-09T10:00:00Z' }],
+    notes: '메타버스 공간 디자인 제출.',
+    submittedAt: '2026-02-09T10:00:00Z',
+  })),
+  ...Array.from({ length: 10 }).map((_, i) => ({
+    id: `sub-vibe-auto-${i + 1}`,
+    hackathonSlug: 'monthly-vibe-coding-2026-02',
+    teamCode: `T-VIBE-AUTO-${i + 1}`,
+    teamName: i === 0 ? 'Vibe Enhancers' : i === 1 ? 'Vibe Coders' : `Solo Runner #${i + 1}`,
+    status: 'submitted' as const,
+    artifacts: [{ type: 'text', key: 'idea', content: '아이디어 제안서입니다.', uploadedAt: '2026-01-30T10:00:00Z' }],
+    notes: '공모전 아이디어 제출.',
+    submittedAt: '2026-01-30T10:00:00Z',
+  })),
 ];
 
 // ─── Current User ──────────────────

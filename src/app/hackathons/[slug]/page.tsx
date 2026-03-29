@@ -43,10 +43,12 @@ import ScheduleSection from '@/components/hackathon/ScheduleSection';
 import PrizeSection from '@/components/hackathon/PrizeSection';
 import TeamsSection from '@/components/hackathon/TeamsSection';
 import SubmitSection from '@/components/hackathon/SubmitSection';
+import GallerySection from '@/components/hackathon/GallerySection';
 import LeaderboardSection from '@/components/hackathon/LeaderboardSection';
 import DeadlineWidget from '@/components/hackathon/DeadlineWidget';
 import ApplyModal from '@/components/hackathon/ApplyModal';
 import { useTeamStore } from '@/store/useTeamStore';
+import { useSubmissionStore } from '@/store/useSubmissionStore';
 
 const sections = [
   { id: 'overview', label: '개요', icon: BookOpen },
@@ -56,6 +58,7 @@ const sections = [
   { id: 'prize', label: '상금', icon: Trophy },
   { id: 'teams', label: '팀', icon: Users },
   { id: 'submit', label: '제출', icon: Upload },
+  { id: 'gallery', label: '갤러리', icon: Rocket },
   { id: 'leaderboard', label: '리더보드', icon: Medal },
 ];
 
@@ -76,6 +79,9 @@ export default function HackathonDetailPage() {
   const isMobile = useIsMobile();
   const searchParams = useSearchParams();
   const { teams } = useTeamStore();
+  const { submissions: allSubmissions } = useSubmissionStore();
+  
+  const hackathonSubmissions = allSubmissions.filter(s => s.hackathonSlug === slug);
 
   // ── Participation State ──
   const myTeam = teams.find(t => t.hackathonSlug === slug && currentUser?.teamCodes.includes(t.teamCode));
@@ -91,7 +97,8 @@ export default function HackathonDetailPage() {
 
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab && (tab === 'info' || tab === 'teams' || tab === 'submit')) {
+    const validTabs = ['info', 'teams', 'submit', 'gallery', 'leaderboard'];
+    if (tab && validTabs.includes(tab)) {
       setActiveTab(tab);
     }
   }, [searchParams]);
@@ -260,11 +267,15 @@ export default function HackathonDetailPage() {
 
         {/* 탭 구조 */}
         <Tabs defaultValue="info" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full justify-start h-12 bg-transparent p-0 border-b rounded-none mb-8">
-            <TabsTrigger value="info" className="h-12 px-8 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-base">홈 / 정보</TabsTrigger>
-            <TabsTrigger value="teams" className="h-12 px-8 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-base">팀 빌딩</TabsTrigger>
-            <TabsTrigger value="submit" className="h-12 px-8 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-base">제출 & 결과</TabsTrigger>
-          </TabsList>
+          <div className="w-full overflow-x-auto no-scrollbar border-b mb-8">
+            <TabsList className="inline-flex w-auto md:w-full justify-start h-12 bg-transparent p-0 rounded-none border-none">
+              <TabsTrigger value="info" className="h-12 px-6 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-sm md:text-base whitespace-nowrap">홈 / 정보</TabsTrigger>
+              <TabsTrigger value="teams" className="h-12 px-6 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-sm md:text-base whitespace-nowrap">팀 빌딩</TabsTrigger>
+              <TabsTrigger value="submit" className="h-12 px-6 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-sm md:text-base whitespace-nowrap">제출</TabsTrigger>
+              <TabsTrigger value="gallery" className="h-12 px-6 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-sm md:text-base whitespace-nowrap text-indigo-600 dark:text-indigo-400">갤러리/투표</TabsTrigger>
+              <TabsTrigger value="leaderboard" className="h-12 px-6 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-sm md:text-base whitespace-nowrap font-mono">RANKING</TabsTrigger>
+            </TabsList>
+          </div>
 
           <div className="flex flex-col md:flex-row md:gap-12 lg:gap-16">
             {!isMobile && activeTab === 'info' && (
@@ -325,12 +336,30 @@ export default function HackathonDetailPage() {
                 </SectionWrapper>
               </TabsContent>
 
-              <TabsContent value="submit" className="mt-0 space-y-8">
+              <TabsContent value="submit" className="mt-0">
                 <SectionWrapper id="submit" title="제출" icon={Upload} className="py-0">
                   <SubmitSection hackathonSlug={slug} hackathonDetail={details} />
                 </SectionWrapper>
-                <SectionWrapper id="leaderboard" title="리더보드 및 결과" icon={Medal} className="py-10 border-t">
-                  <LeaderboardSection leaderboard={leaderboard} hackathonDetail={details} status={hackathon.status} />
+              </TabsContent>
+
+              <TabsContent value="gallery" className="mt-0">
+                <SectionWrapper id="gallery" title="갤러리" icon={Rocket} className="py-0">
+                  <GallerySection 
+                    leaderboard={leaderboard} 
+                    hackathonDetail={details} 
+                    submissions={hackathonSubmissions} 
+                  />
+                </SectionWrapper>
+              </TabsContent>
+
+              <TabsContent value="leaderboard" className="mt-0">
+                <SectionWrapper id="leaderboard" title="리더보드" icon={Medal} className="py-0">
+                  <LeaderboardSection 
+                    leaderboard={leaderboard} 
+                    hackathonDetail={details} 
+                    status={hackathon.status} 
+                    submissions={hackathonSubmissions}
+                  />
                 </SectionWrapper>
               </TabsContent>
             </div>

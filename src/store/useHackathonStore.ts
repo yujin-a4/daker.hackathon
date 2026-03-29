@@ -11,6 +11,7 @@ interface HackathonState {
   hackathons: Hackathon[];
   hackathonDetails: Record<string, HackathonDetail>;
   leaderboards: Record<string, Leaderboard>;
+  votes: Record<string, Record<string, number>>; // { hackathonSlug: { teamName: votes } }
 
   // 리더보드 조작
   addLeaderboardEntry: (hackathonSlug: string, entry: LeaderboardEntry) => void;
@@ -19,6 +20,7 @@ interface HackathonState {
     teamName: string,
     submittedAt: string | null
   ) => void;
+  incrementVote: (hackathonSlug: string, teamName: string) => void;
 }
 
 export const useHackathonStore = create<HackathonState>()(
@@ -27,6 +29,25 @@ export const useHackathonStore = create<HackathonState>()(
       hackathons: [],
       hackathonDetails: {},
       leaderboards: {},
+      votes: {},
+
+      // ── 투표 처리 ──
+      incrementVote: (hackathonSlug, teamName) => {
+        set((state) => {
+          const hackathonVotes = state.votes[hackathonSlug] || {};
+          const currentVotes = hackathonVotes[teamName] || 0;
+          
+          return {
+            votes: {
+              ...state.votes,
+              [hackathonSlug]: {
+                ...hackathonVotes,
+                [teamName]: currentVotes + 1,
+              },
+            },
+          };
+        });
+      },
 
       // ── 리더보드 엔트리 추가 ──
       addLeaderboardEntry: (hackathonSlug, entry) => {
