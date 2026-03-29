@@ -19,6 +19,8 @@ import {
   ExternalLink,
   Coins,
   History,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -56,6 +58,7 @@ export default function MyPage() {
   const { submissions } = useSubmissionStore();
 
   const [isPointModalOpen, setIsPointModalOpen] = useState(false);
+  const [showPastTeams, setShowPastTeams] = useState(false);
 
   if (!currentUser) {
     return (
@@ -373,7 +376,7 @@ export default function MyPage() {
         </motion.div>
       )}
 
-      {/* 내 팀 목록 섹션 */}
+      {/* 내 팀 목록 (진행 중) 섹션 */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -383,80 +386,175 @@ export default function MyPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <Users className="w-5 h-5 text-purple-500" />
-              내 팀
+              내 팀 (활동 중)
             </CardTitle>
-            <CardDescription>내가 속한 팀 목록</CardDescription>
+            <CardDescription>현재 소속되어 활동 중인 팀 목록</CardDescription>
           </CardHeader>
           <CardContent>
-            {myTeams.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                아직 소속된 팀이 없습니다.
-                <br />
-                <Button
-                  variant="link"
-                  className="mt-2"
-                  onClick={() => router.push('/camp')}
-                >
-                  팀 찾기
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {myTeams.map((team) => {
-                  const linkedHackathon = hackathons.find(
-                    (h) => h.slug === team.hackathonSlug,
-                  );
-                  return (
-                    <div
-                      key={team.teamCode}
-                      className="p-4 rounded-lg border hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+            {(() => {
+              const activeTeams = myTeams.filter((team) => {
+                const linkedHackathon = hackathons.find((h) => h.slug === team.hackathonSlug);
+                return !linkedHackathon || linkedHackathon.status !== 'ended';
+              });
+
+              if (activeTeams.length === 0) {
+                return (
+                  <div className="text-center py-8 text-muted-foreground text-sm">
+                    현재 활동 중인 팀이 없습니다.
+                    <br />
+                    <Button
+                      variant="link"
+                      className="mt-2"
+                      onClick={() => router.push('/camp')}
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-sm">{team.name}</h3>
-                        <Badge variant={team.isOpen ? 'default' : 'secondary'}>
-                          {team.isOpen ? '모집 중' : '모집 마감'}
-                        </Badge>
-                      </div>
-                      <div className="space-y-1 text-xs text-muted-foreground">
-                        <p className="flex items-center gap-1">
-                          <Users className="w-3 h-3" />
-                          {team.memberCount}/{team.maxTeamSize}명
-                        </p>
-                        {linkedHackathon && (
-                          <p
-                            className="flex items-center gap-1 text-indigo-600 cursor-pointer hover:underline"
-                            onClick={() =>
-                              router.push(
-                                `/hackathons/${linkedHackathon.slug}`,
-                              )
-                            }
-                          >
-                            <Trophy className="w-3 h-3" />
-                            {linkedHackathon.title}
+                      팀 찾기
+                    </Button>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {activeTeams.map((team) => {
+                    const linkedHackathon = hackathons.find(
+                      (h) => h.slug === team.hackathonSlug,
+                    );
+                    return (
+                      <div
+                        key={team.teamCode}
+                        className="p-4 rounded-lg border hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="font-semibold text-sm">{team.name}</h3>
+                          <Badge variant={team.isOpen ? 'default' : 'secondary'}>
+                            {team.isOpen ? '모집 중' : '모집 마감'}
+                          </Badge>
+                        </div>
+                        <div className="space-y-1 text-xs text-muted-foreground">
+                          <p className="flex items-center gap-1">
+                            <Users className="w-3 h-3" />
+                            {team.memberCount}/{team.maxTeamSize}명
                           </p>
-                        )}
-                        {!linkedHackathon && team.hackathonSlug === null && (
-                          <p className="text-slate-400">미연결 팀</p>
-                        )}
+                          {linkedHackathon && (
+                            <p
+                              className="flex items-center gap-1 text-indigo-600 cursor-pointer hover:underline"
+                              onClick={() =>
+                                router.push(
+                                  `/hackathons/${linkedHackathon.slug}`,
+                                )
+                              }
+                            >
+                              <Trophy className="w-3 h-3" />
+                              {linkedHackathon.title}
+                            </p>
+                          )}
+                          {!linkedHackathon && team.hackathonSlug === null && (
+                            <p className="text-slate-400">미연결 팀</p>
+                          )}
+                        </div>
+                        <div className="mt-4 pt-3 border-t">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="w-full bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 shadow-sm"
+                            onClick={() => router.push(`/basecamp/${team.teamCode}`)}
+                          >
+                            <Target className="w-4 h-4 mr-2" /> 베이스캠프 이동
+                          </Button>
+                        </div>
                       </div>
-                      <div className="mt-4 pt-3 border-t">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="w-full bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 shadow-sm"
-                          onClick={() => router.push(`/basecamp/${team.teamCode}`)}
-                        >
-                          <Target className="w-4 h-4 mr-2" /> 베이스캠프 이동
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* 과거 팀 목록 섹션 */}
+      {(() => {
+        const pastTeams = myTeams.filter((team) => {
+          const linkedHackathon = hackathons.find((h) => h.slug === team.hackathonSlug);
+          return linkedHackathon && linkedHackathon.status === 'ended';
+        });
+
+        if (pastTeams.length === 0) return null;
+
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.25 }}
+          >
+            <Card>
+              <div 
+                className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                onClick={() => setShowPastTeams(!showPastTeams)}
+              >
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2 text-lg text-slate-500">
+                        <History className="w-5 h-5" />
+                        과거 활동 팀 <Badge variant="secondary" className="ml-1 text-xs">{pastTeams.length}</Badge>
+                      </CardTitle>
+                      <CardDescription>종료된 해커톤에서 활동했던 팀 기록</CardDescription>
+                    </div>
+                    {showPastTeams ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
+                  </div>
+                </CardHeader>
+              </div>
+              
+              {showPastTeams && (
+                <CardContent className="pt-0">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 opacity-80">
+                    {pastTeams.map((team) => {
+                      const linkedHackathon = hackathons.find(
+                        (h) => h.slug === team.hackathonSlug,
+                      );
+                      return (
+                        <div
+                          key={team.teamCode}
+                          className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        >
+                          <div className="flex items-center justify-between mb-1.5">
+                            <h3 className="font-semibold text-sm text-slate-700 dark:text-slate-300">{team.name}</h3>
+                            <Badge variant="outline" className="text-xs">
+                              활동 종료
+                            </Badge>
+                          </div>
+                          <div className="space-y-1 text-xs text-muted-foreground mb-3">
+                            {linkedHackathon && (
+                              <p className="flex items-center gap-1 line-clamp-1">
+                                <Trophy className="w-3 h-3" />
+                                {linkedHackathon.title}
+                              </p>
+                            )}
+                          </div>
+                          <div className="pt-2 border-t">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full h-8 text-xs text-slate-500 hover:text-slate-700"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/basecamp/${team.teamCode}`);
+                              }}
+                            >
+                              과거 베이스캠프 보기
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+          </motion.div>
+        );
+      })()}
 
       {/* 포트폴리오 쇼케이스 (Project Showcase) 섹션 */}
       <motion.div
@@ -562,7 +660,7 @@ export default function MyPage() {
                       <h3 className="font-semibold text-sm line-clamp-1">{h.title}</h3>
                       {getStatusBadge(h.status)}
                     </div>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{h.description}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{h.tags.join(' · ')}</p>
                   </div>
                 ))}
               </div>
