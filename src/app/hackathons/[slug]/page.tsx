@@ -22,6 +22,7 @@ import {
   Clock,
   Rocket,
   ArrowRight,
+  Sparkles,
 } from 'lucide-react';
 
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -47,6 +48,8 @@ import GallerySection from '@/components/hackathon/GallerySection';
 import LeaderboardSection from '@/components/hackathon/LeaderboardSection';
 import DeadlineWidget from '@/components/hackathon/DeadlineWidget';
 import ApplyModal from '@/components/hackathon/ApplyModal';
+import MatchAnalysisCard from '@/components/hackathon/MatchAnalysisCard';
+import { getHackathonPhase } from '@/lib/hackathon-utils';
 import { useTeamStore } from '@/store/useTeamStore';
 import { useSubmissionStore } from '@/store/useSubmissionStore';
 
@@ -183,8 +186,45 @@ export default function HackathonDetailPage() {
     { id: 'prize', label: '상금', icon: Trophy },
   ];
 
+  const currentPhase = getHackathonPhase(details);
+  const phases = [
+    { key: 'PREPARATION', label: '모집' },
+    { key: 'SUBMISSION', label: '제출' },
+    { key: 'VOTING', label: '투표' },
+    { key: 'JUDGING', label: '심사' },
+    { key: 'RESULT', label: '발표' },
+  ];
+
   return (
     <div className="container mx-auto py-8 lg:py-12">
+      {/* Phase Tracker (Live Tracking) */}
+      <div className="mb-10 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-wrap md:flex-nowrap items-center justify-between shadow-sm overflow-hidden">
+        {phases.map((p, i) => {
+          const isActive = currentPhase.type === p.key;
+          const isDone = phases.findIndex(ph => ph.key === currentPhase.type) > i;
+          
+          return (
+            <div key={p.key} className="flex flex-1 items-center gap-0 min-w-[80px]">
+              <div className={cn(
+                "flex-1 flex items-center justify-center p-3 sm:p-4 rounded-xl transition-all duration-300 gap-2.5",
+                isActive ? "bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm" : "text-slate-400 dark:text-slate-600"
+              )}>
+                <div className={cn(
+                  "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border-2 transition-colors",
+                  isActive ? "bg-indigo-600 border-indigo-600 text-white" : isDone ? "bg-indigo-100 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800 text-indigo-500" : "bg-transparent border-slate-200 dark:border-slate-800"
+                )}>
+                  {isDone ? "✓" : i + 1}
+                </div>
+                <span className={cn("text-xs font-black uppercase tracking-widest", isActive && "text-slate-900 dark:text-slate-100")}>{p.label}</span>
+              </div>
+              {i < phases.length - 1 && (
+                <div className="hidden md:block w-px h-6 bg-slate-200 dark:bg-slate-800" />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
       <div className="flex flex-col gap-8">
         {/* 공통 헤더: 제목, 통계 바 */}
         <header className="space-y-6">
@@ -290,6 +330,12 @@ export default function HackathonDetailPage() {
                   milestones={milestones}
                   timezone={details.sections.schedule.timezone}
                 />
+                
+                {/* AI Matcher Section */}
+                <MatchAnalysisCard
+                  hackathon={hackathon}
+                  currentUser={currentUser}
+                />
 
                 {/* Desktop Apply Card */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
@@ -322,6 +368,15 @@ export default function HackathonDetailPage() {
             )}
 
             <div className="flex-1 min-w-0">
+              {/* Mobile Match Analysis (Only on Home/Info tab) */}
+              {isMobile && activeTab === 'info' && (
+                <div className="mb-8">
+                  <MatchAnalysisCard
+                    hackathon={hackathon}
+                    currentUser={currentUser}
+                  />
+                </div>
+              )}
               <TabsContent value="info" className="mt-0 space-y-0">
                 <SectionWrapper id="overview" title="개요" icon={BookOpen}><OverviewSection overview={details.sections.overview} /></SectionWrapper>
                 <SectionWrapper id="info" title="안내" icon={Info}><InfoSection info={details.sections.info} /></SectionWrapper>

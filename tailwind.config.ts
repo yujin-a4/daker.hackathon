@@ -21,8 +21,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['Pretendard', 'Inter', 'sans-serif'],
-        headline: ['Pretendard', 'Inter', 'sans-serif'],
+        body: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+        headline: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {

@@ -47,100 +47,100 @@ export default function HackathonListItem({ hackathon }: HackathonListItemProps)
   return (
     <div
       onClick={() => router.push(`/hackathons/${hackathon.slug}`)}
-      className="group flex items-stretch border rounded-xl overflow-hidden bg-card hover:shadow-md hover:border-primary/30 transition-all duration-200 cursor-pointer"
+      className="group relative flex flex-col sm:flex-row sm:items-center border border-white/5 rounded-xl overflow-hidden bg-[#0A0A0A]/60 backdrop-blur-sm hover:bg-white/[0.03] hover:border-white/10 transition-all duration-300 cursor-pointer p-4 sm:p-5 gap-4"
     >
-      {/* 왼쪽 그라데이션 바 */}
-      <div
-        className="w-1.5 flex-shrink-0"
+      {/* 바닥부 그라데이션 보더 효과 (Hover 시 강조) */}
+      <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
+      
+      {/* 왼쪽 색상 포인트 (간결화) */}
+      <div 
+        className="absolute left-0 top-0 bottom-0 w-1 opacity-60 group-hover:opacity-100 transition-opacity"
         style={{ background: `linear-gradient(to bottom, ${color1}, ${color2})` }}
       />
 
-      {/* 메인 콘텐츠 */}
-      <div className="flex-1 min-w-0 px-4 sm:px-5 py-4">
-        {/* 상단: 상태 + 유형 + D-day */}
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge className={cn('font-semibold text-xs', getStatusColor(hackathon.status))}>
-              {statusText}
-            </Badge>
-            <Badge variant="outline" className="text-xs font-normal">
-              {hackathon.type}
-            </Badge>
+      {/* 1. 상태 및 D-day 세션 (좌측 고정) */}
+      <div className="flex sm:flex-col items-center sm:items-start justify-between sm:justify-center gap-3 sm:gap-2.5 sm:w-28 flex-shrink-0">
+        <Badge className={cn('font-bold text-[10px] sm:text-xs px-2 px-1.5', getStatusColor(hackathon.status))}>
+          {statusText}
+        </Badge>
+        {hackathon.status !== 'ended' && (
+          <div className={cn(
+            'text-[10px] sm:text-xs font-bold tracking-wider px-2 py-0.5 rounded-md border',
+            isDdayUrgent 
+              ? 'text-rose-400 border-rose-500/30 bg-rose-500/10 animate-pulse' 
+              : 'text-gray-400 border-white/10 bg-white/5'
+          )}>
+            {dday}
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {hackathon.status !== 'ended' && (
-              <Badge
-                className={cn(
-                  'font-semibold text-xs',
-                  isDdayUrgent
-                    ? 'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-300'
-                    : 'bg-muted text-muted-foreground'
-                )}
-              >
-                {dday}
-              </Badge>
-            )}
-            <motion.button
-              whileTap={{ scale: 1.2 }}
-              onClick={handleBookmarkClick}
-              className="p-1 rounded-full hover:bg-muted transition-colors"
-              aria-label="Bookmark hackathon"
-            >
-              <Heart
-                className={cn(
-                  'w-4 h-4 text-muted-foreground',
-                  isBookmarked && 'fill-red-500 text-red-500'
-                )}
-              />
-            </motion.button>
-          </div>
+        )}
+      </div>
+
+      {/* 2. 제목 및 태그 세션 (중앙 집중형) */}
+      <div className="flex-1 min-w-0 space-y-2">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-primary transition-colors line-clamp-1">
+            {hackathon.title}
+          </h3>
+          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-white/5 px-1.5 py-0.5 rounded">
+            {hackathon.type}
+          </span>
         </div>
-
-        {/* 제목 */}
-        <h3 className="text-base sm:text-lg font-semibold text-card-foreground line-clamp-1 group-hover:text-primary transition-colors">
-          {hackathon.title}
-        </h3>
-
-        {/* 태그 */}
-        <div className="flex flex-wrap gap-1.5 mt-2">
-          {hackathon.tags.slice(0, 4).map((tag) => (
+        
+        {/* 태그 (최대 3개 제한) */}
+        <div className="flex flex-wrap gap-1.5">
+          {hackathon.tags.slice(0, 3).map((tag) => (
             <span
               key={tag}
-              className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground"
+              className="text-[10px] sm:text-xs px-2 py-0.5 rounded-md bg-white/5 text-gray-400 border border-white/5 group-hover:border-white/10 transition-colors"
             >
-              {tag}
+              #{tag}
             </span>
           ))}
-          {hackathon.tags.length > 4 && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-              +{hackathon.tags.length - 4}
+          {hackathon.tags.length > 3 && (
+            <span className="text-[10px] sm:text-xs px-1.5 py-0.5 rounded-md text-gray-600 font-bold italic">
+              +{hackathon.tags.length - 3}
             </span>
           )}
         </div>
+      </div>
 
-        {/* 하단: 참여자 / 상금 / 마감일 / 상세 링크 */}
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-dashed">
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Users className="w-3.5 h-3.5" />
-              {hackathon.participantCount}명
+      {/* 3. 주요 지표 및 상호작용 (우측 고정) */}
+      <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 flex-shrink-0 border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0 mt-1 sm:mt-0">
+        <div className="flex items-center gap-4 sm:gap-5 text-gray-400">
+          <div className="flex flex-col sm:items-end gap-0.5">
+            <span className="flex items-center gap-1 text-[10px] text-gray-600 font-bold uppercase tracking-tighter">
+              <Users className="w-2.5 h-2.5" /> Participants
             </span>
-            {hackathon.prizeTotal && (
-              <span className="flex items-center gap-1">
-                <Trophy className="w-3.5 h-3.5" />
-                {hackathon.prizeTotal}
-              </span>
-            )}
-            <span className="flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" />
-              제출 마감 ~{formatDate(hackathon.period.submissionDeadlineAt)}
-            </span>
+            <p className="text-xs sm:text-sm font-bold text-white italic">{hackathon.participantCount}명</p>
           </div>
-          <span className="hidden sm:flex items-center gap-1 text-sm text-muted-foreground group-hover:text-primary transition-colors">
-            상세보기 <ArrowRight className="w-3.5 h-3.5" />
-          </span>
+          
+          {hackathon.prizeTotal && (
+            <div className="flex flex-col sm:items-end gap-0.5">
+              <span className="flex items-center gap-1 text-[10px] text-gray-600 font-bold uppercase tracking-tighter">
+                <Trophy className="w-2.5 h-2.5" /> Prize
+              </span>
+              <p className="text-xs sm:text-sm font-bold text-cyan-400">{hackathon.prizeTotal}</p>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3 border-l border-white/10 pl-5 ml-1">
+          <motion.button
+            whileTap={{ scale: 1.3 }}
+            onClick={handleBookmarkClick}
+            className="p-2 rounded-full hover:bg-white/10 transition-colors group/heart"
+          >
+            <Heart
+              className={cn(
+                'w-4 h-4 text-gray-600 transition-all',
+                isBookmarked ? 'fill-rose-500 text-rose-500' : 'group-hover/heart:text-rose-400'
+              )}
+            />
+          </motion.button>
+          <ArrowRight className="w-4 h-4 text-gray-700 group-hover:text-primary group-hover:translate-x-1 transition-all hidden sm:block" />
         </div>
       </div>
     </div>
+
   );
 }

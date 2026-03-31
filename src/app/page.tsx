@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, BarChart3, Trophy, Users, Boxes, Rocket } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowRight, BarChart3, Trophy, Users, Boxes, Rocket, Info } from 'lucide-react';
 import { useHackathonStore } from '@/store/useHackathonStore';
 import { useTeamStore } from '@/store/useTeamStore';
 import { useUserStore } from '@/store/useUserStore';
@@ -56,11 +57,15 @@ export default function Home() {
           }}
         />
         <div className="relative container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground tracking-tighter">
-            함께 도전하고, 함께 성장하세요
+          <h1 className="text-5xl md:text-7xl font-extrabold text-foreground tracking-tight leading-[1.1]">
+            MAXER
+            <span className="block text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#6366F1] to-[#06B6D4] mt-2">
+              해커톤 참여·성장·커리어를 잇는 통합 플랫폼
+            </span>
           </h1>
-          <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
-            해커톤 참여부터 팀 빌딩, 순위 확인까지 한곳에서.
+          <p className="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground font-medium">
+            도전의 한계를 넘어 성장의 자산으로, <br className="hidden sm:block" />
+            해커톤의 모든 여정을 <span className="text-foreground font-bold">MAX</span>로 기록하다
           </p>
           <Button asChild size="lg" className="mt-8">
             <Link href="/hackathons">
@@ -94,75 +99,77 @@ export default function Home() {
 
       {/* 내 작전실 (참여중인 해커톤) */}
       {myHackathons.length > 0 && (
-        <section className="py-12 bg-slate-50/50 dark:bg-slate-950/50 border-y border-slate-200/60 dark:border-slate-800/60">
+        <section className="py-16 bg-slate-50/30 dark:bg-slate-950/30">
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between mb-8">
-              <div className="space-y-1">
-                <h2 className="text-2xl font-black text-foreground flex items-center gap-2.5 italic uppercase tracking-tight">
-                  <div className="p-2 bg-indigo-500 rounded-lg shadow-indigo-500/20 shadow-lg">
-                    <Rocket className="w-5 h-5 text-white" />
-                  </div>
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-1 bg-indigo-500 rounded-full" />
+                  <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em]">Operational Hub</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl font-black text-foreground tracking-tighter">
                   My Basecamp
                 </h2>
-                <p className="text-sm text-muted-foreground font-medium ml-1">현재 활발히 빌딩 중인 프로젝트 작전실입니다.</p>
+                <p className="text-sm text-muted-foreground font-medium max-w-md">현재 활발히 빌딩 중인 프로젝트 작전실입니다. 실시간 진행도와 마일스톤을 확인하세요.</p>
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {myHackathons.map(({ team, hackathon }) => (
                 <div 
                   key={team.teamCode}
-                  className="group relative overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-1 flex flex-col shadow-sm hover:shadow-xl hover:border-indigo-500/30 transition-all duration-300"
+                  className="group relative bg-white dark:bg-slate-900 rounded-[1.5rem] border border-slate-200 dark:border-slate-800 p-6 shadow-sm hover:shadow-2xl hover:border-indigo-500/20 transition-all duration-500"
                 >
-                  <div className="p-5 flex flex-col sm:flex-row gap-5 items-start sm:items-center justify-between">
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-center gap-2.5">
-                        <Badge variant="outline" className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20 px-2.5 py-0.5 rounded-full flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-wider">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          진행 중
-                        </Badge>
-                        <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 line-clamp-1">{hackathon?.title}</span>
-                      </div>
-                      
-                      <div>
-                        <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 transition-colors">
-                          Team {team.name}
-                        </h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium italic">
-                          현재 팀과 함께 멋진 결과물을 만들어가는 중입니다!
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
-                      <Button asChild variant="ghost" className="h-10 px-4 text-xs font-bold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                        <Link href={`/hackathons/${hackathon?.slug}`}>
-                          정보 확인
-                        </Link>
-                      </Button>
-                      <Button asChild className="h-10 px-5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20 gap-2 text-xs font-bold transition-all">
-                        <Link href={`/basecamp/${team.teamCode}`}>
-                          <Rocket className="w-3.5 h-3.5" />
-                          작전실 입장
-                        </Link>
-                      </Button>
-                    </div>
+                  <div className="absolute top-0 right-0 p-6 opacity-[0.03] dark:opacity-[0.05] group-hover:scale-110 transition-transform duration-700">
+                    <Rocket className="w-24 h-24" />
                   </div>
-                  
-                  {/* Progress visualization */}
-                  <div className="mt-auto px-5 pb-5">
-                    <div className="flex justify-between items-center mb-1.5">
-                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                         <div className="w-1 h-1 rounded-full bg-indigo-400" />
-                         Project Progress
-                      </span>
-                      <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">{team.progressPercent || 40}%</span>
+
+                  <div className="relative z-10 flex flex-col h-full">
+                    <div className="flex items-center gap-3 mb-6">
+                      <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 px-3 py-1 rounded-full font-black text-[10px] uppercase tracking-widest">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-2 inline-block" />
+                        In Progress
+                      </Badge>
+                      <span className="text-[11px] font-bold text-slate-400 truncate max-w-[200px]">{hackathon?.title}</span>
                     </div>
-                    <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 transition-all duration-1000 ease-in-out" 
-                        style={{ width: `${team.progressPercent || 40}%` }}
-                      />
+
+                    <div className="mb-6">
+                      <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-1.5 leading-tight">
+                        Team <span className="text-indigo-600 dark:text-indigo-400">{team.name}</span>
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                         {team.progressStatus === 'developing' ? '현재 핵심 기능 고도화 작업 중' : '프로젝트 기획 및 MVP 설계 진행 중'}
+                      </p>
+                    </div>
+
+                    <div className="mt-auto space-y-4">
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between items-end">
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Overall Progress</span>
+                          <span className="text-lg font-black text-indigo-600 dark:text-indigo-400 font-mono">{team.progressPercent || 40}%</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${team.progressPercent || 40}%` }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                            className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500" 
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2.5">
+                        <Button asChild className="flex-1 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-xl h-12 font-extrabold text-sm shadow-md shadow-indigo-200 dark:shadow-none transition-all duration-300">
+                          <Link href={`/basecamp/${team.teamCode}`}>
+                            베이스캠프 입장
+                          </Link>
+                        </Button>
+                        <Button asChild variant="outline" size="icon" className="w-12 h-12 rounded-xl border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all">
+                          <Link href={`/hackathons/${hackathon?.slug}`}>
+                            <Info className="w-5 h-5" />
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>

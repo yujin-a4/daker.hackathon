@@ -5,13 +5,45 @@ import { useUserStore } from '@/store/useUserStore';
 import type { Team, Hackathon } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { CheckCircle, Clock, FileText, Globe, Presentation, ArrowRight, Sparkles, UserPlus, UserMinus, ShieldCheck, Mail, Lock, Unlock, Users } from 'lucide-react';
+import { 
+  CheckCircle, Clock, FileText, Globe, Presentation, ArrowRight, 
+  Sparkles, UserPlus, UserMinus, ShieldCheck, Mail, Lock, Unlock, 
+  Users, Layout, ClipboardList, PenTool, Lightbulb, Link as LinkIcon 
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { formatDate } from '@/lib/date';
 import { useTeamStore } from '@/store/useTeamStore';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { useState } from 'react';
+
+const CHECKLIST_BY_PHASE: Record<string, string[]> = {
+  'planning': [
+    '해커톤 주제 분석 및 핵심 아이디어 선정',
+    '타겟 사용자 정의 및 페르소나 설정',
+    '핵심 기능(MVP) 리스트 확정',
+    '시장 조사 및 차별점 분석'
+  ],
+  'designing': [
+    '유저 시나리오 및 와이어프레임 설계',
+    '피그마 프로토타입 제작',
+    '컬러 팔레트 및 타이포그래피 확정',
+    '주요 UI 컴포넌트 라이브러리 검토'
+  ],
+  'developing': [
+    '기본 프로젝트 구조 세팅 (Next.js/Git)',
+    'UI 레이아웃 및 핵심 기능 개발',
+    '데이터베이스 스키마 및 API 연동',
+    '중간 점검 및 버그 수정'
+  ],
+  'completed': [
+    '최종 결과물 배포 (Vercel/Cloud)',
+    '시연 영상 촬영 및 편집',
+    '기술 문서 및 Readme 작성',
+    '최종 제출물 누락 여부 확인'
+  ]
+};
 
 export default function BasecampWarroomTab({
   team,
@@ -154,175 +186,136 @@ export default function BasecampWarroomTab({
         </div>
       </Card>
 
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-lg p-4 border flex gap-3 items-center mt-6">
-        <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-        <p className="text-sm font-medium text-blue-900 dark:text-blue-300">
-          <strong className="font-bold">{currentUser?.nickname}</strong>님의 역할({role})에 맞춰 가장 우선순위가 높은 작업업무를 상단에 배치했습니다.
-        </p>
+      <div className="bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-2xl p-0.5 shadow-lg group">
+        <div className="bg-white dark:bg-slate-900 rounded-[14px] p-4 flex flex-col md:flex-row gap-4 items-center">
+          <div className="p-3 bg-indigo-500/10 rounded-xl">
+            <Sparkles className="w-6 h-6 text-indigo-500" />
+          </div>
+          <div className="flex-1 text-center md:text-left">
+            <p className="text-sm font-black text-slate-800 dark:text-slate-100 italic">
+              "올인원 베이스캠프: 기획부터 제출까지, 이 안에서 끝낸다"
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-1 font-medium">
+              <strong className="text-indigo-600 dark:text-indigo-400 font-extrabold">{currentUser?.nickname}</strong>님의 역할({role})에 맞춰 가장 우선순위가 높은 과업을 분석했습니다.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mt-6">
-        {sortedCards.map((card, index) => {
-          const Icon = card.icon;
-          const isDone = Boolean(card.isSubmitted);
-          const isPriority = index === 0;
-          
-          return (
-            <Card key={card.id} className={`p-5 lg:p-6 flex flex-col h-full border ${isDone ? 'border-blue-500/50 bg-blue-50/10' : (isPriority ? 'border-blue-400 dark:border-blue-700 shadow-md ring-1 ring-blue-400/20' : 'border-border')}`}>
-              <div className="flex items-start justify-between mb-4">
-                <div className={`p-2.5 rounded-lg ${isDone ? 'bg-blue-100 text-blue-600' : (isPriority ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400' : 'bg-muted text-muted-foreground')}`}>
-                  <Icon className="w-6 h-6" />
-                </div>
-                <div className="flex items-center gap-2">
-                  {isPriority && !isDone && (
-                     <span className="text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-1 rounded-full">
-                       추천 우선작업
-                     </span>
-                  )}
-                  <div className="flex items-center gap-1.5 text-xs font-medium">
-                    {isDone ? (
-                      <span className="text-emerald-600 flex items-center gap-1.5">
-                        <CheckCircle className="w-3.5 h-3.5" /> 제출 완료
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5" /> 미작성
-                      </span>
-                    )}
-                  </div>
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8 pb-12">
+        {/* Left Column: Smart Checklist */}
+        <div className="lg:col-span-1 space-y-4">
+          <h3 className="text-sm font-black flex items-center gap-2 uppercase tracking-widest text-slate-400">
+            <ClipboardList className="w-4 h-4" /> Smart Checklist
+          </h3>
+          <div className="bg-slate-100/50 dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 space-y-4 h-full">
+            <div className="pb-3 border-b border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-1.5 mb-1">
+                <Sparkles className="w-3 h-3 text-indigo-500" />
+                <span className="text-[10px] font-black text-indigo-500 uppercase tracking-tighter">AI Assistant 추천</span>
               </div>
-              
-              <h3 className="font-bold text-lg mb-2">{card.title}</h3>
-              <p className="text-sm text-muted-foreground flex-1 mb-8">
-                {card.desc}
-              </p>
-              
-              <div className="mt-auto pt-4 border-t flex flex-col gap-3">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-rose-500 font-semibold flex items-center gap-1">
-                     <Clock className="w-3.5 h-3.5" /> 마감일
-                  </span>
-                  <span className="text-muted-foreground">
-                    ~{formatDate(card.deadline)}
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-xs text-muted-foreground italic">
-                    {isDone ? '제출이 완료되었습니다.' : '아직 작성된 내용이 없습니다.'}
-                  </span>
-                  <Button 
-                    variant="link" 
-                    className="p-0 h-auto font-semibold text-blue-600"
-                    onClick={() => router.push(`/hackathons/${hackathon.slug}?tab=submit`)}
-                  >
-                    작성하기 &rarr;
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* --- Team Leader Management Console --- */}
-      {team.leaderId === currentUser?.id && (
-        <motion.div
-           initial={{ opacity: 0, y: 30 }}
-           animate={{ opacity: 1, y: 0 }}
-           transition={{ delay: 0.3 }}
-           className="mt-12 p-6 lg:p-8 rounded-3xl border-2 border-slate-900 bg-slate-900 text-white shadow-2xl relative overflow-hidden"
-        >
-          {/* Subtle decoration */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 blur-3xl -z-0 rounded-full -mr-32 -mt-32" />
-          
-          <div className="relative z-10">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 border-b border-slate-800 pb-6">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-indigo-400" />
-                  <h3 className="text-xl font-black italic tracking-tight">팀장 전용 관리 콘솔</h3>
-                </div>
-                <p className="text-sm text-slate-400">팀원 초대 및 모집 상태를 직접 관리할 수 있는 공간입니다.</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge variant={team.isOpen ? 'default' : 'secondary'} className={cn("px-3 py-1 font-bold", team.isOpen ? "bg-indigo-500 text-white" : "bg-slate-700 text-slate-300")}>
-                  {team.isOpen ? '팀 빌딩 진행 중' : '팀 모집 마감됨'}
-                </Badge>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className={cn("h-9 font-bold bg-transparent border-slate-700 hover:bg-slate-800", team.isOpen ? "text-rose-400 border-rose-900/40" : "text-emerald-400 border-emerald-900/40")}
-                  onClick={() => updateTeam(team.teamCode, { isOpen: !team.isOpen })}
-                >
-                  {team.isOpen ? <><Lock className="w-3.5 h-3.5 mr-2" /> 모집 즉시 마감</> : <><Unlock className="w-3.5 h-3.5 mr-2" /> 모집 다시 시작</>}
-                </Button>
-              </div>
+              <h4 className="text-sm font-bold">현재 {team.progressStatus === 'developing' ? '개발' : team.progressStatus === 'designing' ? '디자인' : team.progressStatus === 'completed' ? '완료' : '기획'} 단계 권장 사항</h4>
             </div>
+            
+            <ul className="space-y-4 pt-2">
+              {(CHECKLIST_BY_PHASE[team.progressStatus || 'planning'] || []).map((item, i) => {
+                const isChecked = team.checklist?.includes(`${team.progressStatus}-${i}`);
+                const toggleItem = () => {
+                  const currentList = team.checklist || [];
+                  const itemKey = `${team.progressStatus}-${i}`;
+                  const newList = isChecked 
+                    ? currentList.filter(k => k !== itemKey)
+                    : [...currentList, itemKey];
+                  updateTeam(team.teamCode, { checklist: newList });
+                };
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-              {/* Left: Invitation */}
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <h4 className="text-sm font-bold text-slate-300 flex items-center gap-2">
-                    <UserPlus className="w-4 h-4" /> 팀원 초대하기
-                  </h4>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                      <input 
-                        type="email" 
-                        placeholder="초대할 팀원의 이메일 입력" 
-                        className="w-full h-11 bg-slate-800 border-slate-700 rounded-xl pl-10 pr-4 text-sm focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
-                      />
+                return (
+                  <li 
+                    key={i} 
+                    onClick={toggleItem}
+                    className="flex items-start gap-3 group cursor-pointer"
+                  >
+                    <div className={cn(
+                      "w-5 h-5 rounded-md border-2 mt-0.5 flex-shrink-0 flex items-center justify-center transition-all duration-200",
+                      isChecked 
+                        ? "bg-indigo-500 border-indigo-500 text-white shadow-sm" 
+                        : "border-slate-300 dark:border-slate-700 group-hover:border-indigo-400"
+                    )}>
+                      {isChecked && <CheckCircle className="w-3.5 h-3.5" />}
                     </div>
-                    <Button className="h-11 px-6 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl">초대 발송</Button>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-slate-800/40 rounded-2xl border border-slate-800 text-xs text-slate-400">
-                  <p className="flex items-center gap-2">
-                    <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                    <strong>Tip:</strong> 이메일을 통해 전송된 초대 링크를 클릭하면 즉시 팀원으로 합류됩니다.
-                  </p>
-                </div>
-              </div>
-
-              {/* Right: Member List (Demo) */}
-              <div className="space-y-4">
-                <h4 className="text-sm font-bold text-slate-300 flex items-center gap-2">
-                  <Users className="w-4 h-4" /> 현재 소속 팀원 ({team.memberCount}명)
-                </h4>
-                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-2 scrollbar-hide">
-                   {[
-                     { name: currentUser?.nickname || '본인', role: '팀장', email: currentUser?.email },
-                     { name: '이프론트', role: '팀원', email: 'dev.lee@example.com' },
-                     { name: '김기획', role: '팀원', email: 'pm.kim@example.com' }
-                   ].map((member, i) => (
-                     <div key={i} className="flex items-center justify-between p-3 bg-slate-800/60 rounded-xl border border-slate-700/50">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-indigo-600/30 flex items-center justify-center text-[10px] font-black">
-                            {member.name.charAt(0)}
-                          </div>
-                          <div>
-                            <p className="text-xs font-bold">{member.name} <span className="text-[10px] text-slate-500 ml-1">({member.role})</span></p>
-                            <p className="text-[10px] text-slate-500">{member.email}</p>
-                          </div>
-                        </div>
-                        {member.role !== '팀장' && (
-                          <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-600 hover:text-rose-400 hover:bg-rose-900/20">
-                            <UserMinus className="w-4 h-4" />
-                          </Button>
-                        )}
-                     </div>
-                   ))}
-                </div>
-              </div>
+                    <span className={cn(
+                      "text-xs font-medium transition-all duration-200",
+                      isChecked 
+                        ? "text-slate-400 dark:text-slate-500 line-through" 
+                        : "text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white"
+                    )}>
+                      {item}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+            
+            <div className="mt-8 p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10">
+               <p className="text-[10px] text-indigo-600 dark:text-indigo-400 leading-tight">
+                 대회 종료까지 <strong>{formatDate(hackathon.period.submissionDeadlineAt)}</strong>가 남았습니다. 화이팅하세요!
+               </p>
             </div>
           </div>
-        </motion.div>
-      )}
+        </div>
+
+        {/* Right Column: Work Submission */}
+        <div className="lg:col-span-2 space-y-6">
+          <h3 className="text-sm font-black flex items-center gap-2 uppercase tracking-widest text-slate-400">
+            <Layout className="w-4 h-4" /> Work Submission
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {sortedCards.slice(0, 2).map((card) => {
+              const Icon = card.icon;
+              const isDone = Boolean(card.isSubmitted);
+              
+              return (
+                <Card key={card.id} className={cn("p-6 flex flex-col h-full border-2 transition-all duration-300", isDone ? "border-emerald-500/30 bg-emerald-50/5" : "border-slate-100 dark:border-slate-800 hover:border-indigo-500/30")}>
+                  <div className="flex justify-between items-start mb-6">
+                    <div className={cn("p-2.5 rounded-xl", isDone ? "bg-emerald-500/10 text-emerald-500" : "bg-slate-100 dark:bg-slate-800 text-slate-400")}>
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    {isDone ? (
+                      <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-200">완료</Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-slate-400 border-slate-200 uppercase text-[10px] tracking-widest">Pending</Badge>
+                    )}
+                  </div>
+                  <h4 className="font-bold text-base mb-1.5">{card.title}</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-6">{card.desc}</p>
+                  <Button 
+                    variant="link" 
+                    className="p-0 h-auto text-xs font-black text-indigo-600 dark:text-indigo-400 self-start hover:translate-x-1 transition-transform" 
+                    onClick={() => router.push(`/hackathons/${hackathon.slug}?tab=submit`)}
+                  >
+                    데이터 입력하기 &rarr;
+                  </Button>
+                </Card>
+              );
+            })}
+          </div>
+
+          <div className="p-5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                <Presentation className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <h5 className="text-sm font-bold">최종 솔루션 발표 자료</h5>
+                <p className="text-[11px] text-muted-foreground">발표용 PPT 또는 노션 링크를 준비해 주세요.</p>
+              </div>
+            </div>
+            <Button size="sm" variant="outline" className="text-xs font-bold" onClick={() => router.push(`/hackathons/${hackathon.slug}?tab=submit`)}>
+              이동
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

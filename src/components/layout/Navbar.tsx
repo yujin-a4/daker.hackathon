@@ -179,11 +179,13 @@ export default function Navbar() {
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 max-w-7xl items-center">
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <Dna className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl text-primary">DAKER</span>
+            <Dna className="h-6 w-6 text-[#6366F1]" />
+            <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-[#6366F1] to-[#06B6D4]">
+              MAXER
+            </span>
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+          <nav className="hidden md:flex items-center space-x-8 text-[15px] font-bold tracking-widest uppercase">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -265,8 +267,10 @@ export default function Navbar() {
                   className="flex items-center space-x-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <Dna className="h-6 w-6 text-primary" />
-                  <span className="font-bold text-xl text-primary">DAKER</span>
+                  <Dna className="h-6 w-6 text-[#6366F1]" />
+                  <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-[#6366F1] to-[#06B6D4]">
+                    MAXER
+                  </span>
                 </Link>
                 <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)}>
                   <X className="h-6 w-6" />

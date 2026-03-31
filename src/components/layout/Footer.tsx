@@ -28,9 +28,9 @@ export default function Footer() {
   return (
     <footer className="border-t bg-background">
       <div className="container flex flex-col items-center justify-center py-8 text-center">
-        <p className="text-sm text-muted-foreground">DAKER 해커톤 플랫폼</p>
+        <p className="text-sm text-muted-foreground">MAXER 해커톤 플랫폼</p>
         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          © 2026 DAKER. 이 서비스는 해커톤 과제로 제작된 데모입니다.
+          © 2026 MAXER. 이 서비스는 해커톤 과제로 제작된 데모입니다.
         </p>
         <AlertDialog>
           <AlertDialogTrigger asChild>

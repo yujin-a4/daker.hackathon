@@ -62,112 +62,100 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
 
   return (
     <Card
-      className="group flex flex-col h-full rounded-2xl overflow-hidden transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 cursor-pointer border bg-card"
+      className="group relative flex flex-col h-full rounded-xl overflow-hidden transition-all duration-300 cursor-pointer border bg-white dark:bg-[#0D0D0D] border-slate-100 dark:border-white/5 hover:border-indigo-500/30 dark:hover:border-indigo-500/30 hover:shadow-[0_20px_40px_-20px_rgba(99,102,241,0.15)] dark:hover:shadow-[0_0_40px_-20px_rgba(99,102,241,0.3)]"
       onClick={() => router.push(`/hackathons/${hackathon.slug}`)}
     >
-      {/* 1. 썸네일/그라데이션 영역 */}
-      <div
-        className="relative flex items-center justify-center h-44 w-full overflow-hidden"
-        style={{ background: `linear-gradient(135deg, ${color1}, ${color2})` }}
-      >
-        <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-300" />
-        
-        <h3 className="text-white/20 dark:text-black/20 text-5xl font-extrabold text-center break-all px-4 select-none transform group-hover:scale-105 transition-transform duration-500">
-          {hackathon.title.substring(0, 10)}...
-        </h3>
-        
-        <div className="absolute top-3 left-3 flex gap-2">
-          <Badge className={cn('font-semibold text-xs shadow-sm', getStatusColor(hackathon.status))}>
-            {statusText}
-          </Badge>
-          {hackathon.status !== 'ended' && (
-            <Badge className={cn(
-              'font-semibold text-xs flex items-center gap-1 shadow-sm', 
-              isDdayUrgent 
-                ? 'bg-rose-500 text-white border-none animate-pulse' 
-                : 'bg-white/90 text-slate-800 border-none'
-            )}>
-              <Timer className="w-3 h-3" />
-              {dday}
+      {/* 1. 최상단 그라데이션 보더 포인트 */}
+      <div 
+        className="absolute top-0 inset-x-0 h-[3px] z-10"
+        style={{ background: 'linear-gradient(to right, #6366F1, #06B6D4)' }}
+      />
+
+      <div className="p-5 flex flex-col h-full gap-4">
+        {/* 2 & 3. 헤더 및 상태 배지 (컴팩트) */}
+        <div className="space-y-3">
+          <div className="flex justify-between items-start gap-4">
+            <h4 className="text-base font-bold leading-tight text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
+              {hackathon.title}
+            </h4>
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleBookmarkClick}
+              className="flex-shrink-0 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 text-muted-foreground transition-colors"
+            >
+              <Heart className={cn("w-4 h-4", isBookmarked ? "fill-rose-500 text-rose-500" : "fill-transparent")} />
+            </motion.button>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge className={cn('font-bold text-[10px] uppercase tracking-wider', getStatusColor(hackathon.status))}>
+              {statusText}
             </Badge>
-          )}
+            <Badge variant="outline" className="text-[10px] font-medium border-slate-200 dark:border-white/10 text-muted-foreground bg-slate-50/50 dark:bg-transparent">
+              {hackathon.type}
+            </Badge>
+            {hackathon.status !== 'ended' && (
+              <div className={cn(
+                'text-[10px] font-bold px-2 py-0.5 rounded border',
+                isDdayUrgent ? 'text-rose-500 border-rose-500/20 bg-rose-500/5' : 'text-muted-foreground border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-transparent'
+              )}>
+                {dday}
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="absolute top-3 right-3 flex items-center gap-2">
-          <motion.button
-            whileTap={{ scale: 0.8 }}
-            onClick={handleBookmarkClick}
-            className="bg-black/20 backdrop-blur-md rounded-full p-2 text-white hover:bg-black/40 transition-colors shadow-sm"
-            aria-label="Bookmark hackathon"
-          >
-            <Heart className={cn("w-4 h-4 transition-colors", isBookmarked ? "fill-rose-500 text-rose-500" : "fill-transparent")} />
-          </motion.button>
-        </div>
-      </div>
-
-      {/* 2. 콘텐츠 영역 */}
-      <div className="p-5 flex flex-col flex-grow bg-gradient-to-b from-transparent to-muted/10">
-        <h4 className="text-lg font-bold line-clamp-2 h-[56px] leading-snug text-foreground group-hover:text-primary transition-colors">
-          {hackathon.title}
-        </h4>
-        
-        {/* 3. 해시태그 칩 (UI 개선) */}
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        {/* 4. 해시태그 (최대 3개) */}
+        <div className="flex flex-wrap gap-1.5">
           {hackathon.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
+            <span key={tag} className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
               #{tag}
             </span>
           ))}
           {hackathon.tags.length > 3 && (
-            <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-medium bg-muted text-muted-foreground border border-border">
+            <span className="text-[11px] text-slate-400 dark:text-slate-500/60 font-bold italic">
               +{hackathon.tags.length - 3}
             </span>
           )}
         </div>
 
-        <div className="flex-grow min-h-[1rem]" />
+        <div className="flex-grow" />
 
-        {/* 4. 프로그레스 바 (신규 추가) */}
-        <div className="mt-4 mb-4">
-          <div className="flex justify-between text-xs mb-1.5">
-            <span className="text-muted-foreground font-medium">
-              {hackathon.status === 'ended' ? '진행 완료' : '마감 진행률'}
-            </span>
-            <span className={cn("font-bold", isDdayUrgent ? "text-rose-500" : "text-primary")}>
-              {Math.round(progress)}%
-            </span>
+        {/* 5. 진행률 (미니멀하게 유지) */}
+        <div className="space-y-1.5">
+          <div className="flex justify-between text-[10px] font-bold uppercase tracking-tighter text-slate-400 dark:text-slate-500">
+            <span>Progress</span>
+            <span className={cn("font-black", isDdayUrgent ? "text-rose-500" : "text-indigo-600 dark:text-indigo-400")}>{Math.round(progress)}%</span>
           </div>
-          <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
+          <div className="h-1.5 w-full bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+            <div
               className={cn(
-                "h-full rounded-full transition-colors duration-300",
-                hackathon.status === 'ended' ? "bg-slate-400" : isDdayUrgent ? "bg-rose-500" : "bg-primary"
+                "h-full rounded-full transition-all duration-1000",
+                hackathon.status === 'ended' ? "bg-slate-300 dark:bg-muted-foreground" : isDdayUrgent ? "bg-rose-500" : "bg-gradient-to-r from-indigo-500 to-cyan-500"
               )}
+              style={{ width: `${progress}%` }}
             />
           </div>
         </div>
 
-        {/* 5. 푸터 영역 */}
-        <div className="pt-4 border-t flex text-xs text-muted-foreground justify-between items-center">
-          <div className="flex flex-col gap-1.5">
+        {/* 6. 푸터: 참여자 및 기간 */}
+        <div className="pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between font-medium">
+          <div className="flex items-center gap-4 text-[11px] text-slate-500 dark:text-slate-400">
             <div className="flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>제출 마감 ~{formatDate(hackathon.period.submissionDeadlineAt)}</span>
+              <Users className="w-3.5 h-3.5 opacity-70" />
+              <span>{hackathon.participantCount || 0}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5" />
-              <span>{hackathon.participantCount || 0}명 참여중</span>
+              <Calendar className="w-3.5 h-3.5 opacity-70" />
+              <span>~{formatDate(hackathon.period.submissionDeadlineAt)}</span>
             </div>
           </div>
           
-          <div className="w-8 h-8 rounded-full bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-            <ArrowRight className="w-4 h-4 text-primary group-hover:translate-x-0.5 transition-transform" />
-          </div>
+          <ArrowRight className="w-4 h-4 text-slate-300 dark:text-slate-700 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all" />
         </div>
       </div>
     </Card>
+
+
   );
 }

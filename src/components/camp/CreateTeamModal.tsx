@@ -47,7 +47,7 @@ interface CreateTeamModalProps {
 export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, defaultHackathonSlug }: CreateTeamModalProps) {
   const { toast } = useToast();
   const { addTeam, updateTeam } = useTeamStore();
-  const { addTeamCode } = useUserStore();
+  const { currentUser, addTeamCode } = useUserStore();
   const { hackathons, hackathonDetails } = useHackathonStore();
   const [isSolo, setIsSolo] = useState(false);
 
@@ -99,6 +99,11 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
   const maxTeamSizeForHackathon = selectedHackathonDetail?.sections.overview.teamPolicy.maxTeamSize || 5;
 
   const onSubmit = (data: FormData) => {
+    if (!currentUser) {
+      toast({ variant: 'destructive', title: '로그인이 필요합니다.' });
+      return;
+    }
+
     try {
       const finalHackathonSlug: string | null = data.hackathonSlug === 'none' ? null : (data.hackathonSlug ?? null);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -117,6 +122,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
       } else {
         const newTeam = addTeam({
           ...teamData,
+          leaderId: currentUser.id,
           isOpen: !isSolo, // 개인 참가는 모집 안 함
           memberCount: 1,
         });

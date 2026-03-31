@@ -13,26 +13,6 @@ import type {
 export const hackathons: Hackathon[] = [
   // ─── Ongoing (진행중) ─────────────────────────────────────────
   {
-    slug: 'daker-handover-2026-03',
-    title: '긴급 인수인계 해커톤: 명세서만 보고 구현하라',
-    status: 'ongoing',
-    type: 'SW개발',
-    tags: ['VibeCoding', 'Web', 'Vercel', 'Handover'],
-    thumbnailUrl: '/placeholder-images/3.jpg',
-    period: {
-      timezone: 'Asia/Seoul',
-      submissionDeadlineAt: '2026-03-30T10:00:00+09:00',
-      endAt: '2026-04-27T10:00:00+09:00',
-    },
-    participantCount: 41,
-    prizeTotal: '100만원',
-    links: {
-      detail: '/hackathons/daker-handover-2026-03',
-      rules: 'https://example.com/public/rules/daker-handover-202603',
-      faq: 'https://example.com/public/faq/daker-handover-202603',
-    },
-  },
-  {
     slug: 'gen-ai-startup-challenge',
     title: '제1회 생성형 AI 스타트업 챌린지',
     status: 'ongoing',
@@ -136,6 +116,26 @@ export const hackathons: Hackathon[] = [
   },
 
   // ─── Ended (종료) ──────────────────────────────────────────────
+  {
+    slug: 'daker-handover-2026-03',
+    title: '긴급 인수인계 해커톤: 명세서만 보고 구현하라',
+    status: 'ended',
+    type: 'SW개발',
+    tags: ['VibeCoding', 'Web', 'Vercel', 'Handover'],
+    thumbnailUrl: '/placeholder-images/3.jpg',
+    period: {
+      timezone: 'Asia/Seoul',
+      submissionDeadlineAt: '2026-03-30T10:00:00+09:00',
+      endAt: '2026-04-27T10:00:00+09:00',
+    },
+    participantCount: 41,
+    prizeTotal: '100만원',
+    links: {
+      detail: '/hackathons/daker-handover-2026-03',
+      rules: 'https://example.com/public/rules/daker-handover-202603',
+      faq: 'https://example.com/public/faq/daker-handover-202603',
+    },
+  },
   {
     slug: 'metaverse-creator-camp',
     title: '메타버스 크리에이터스 아카데미 캠프',

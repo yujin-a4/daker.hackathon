@@ -67,7 +67,7 @@ export default function AuthModal({ open, onOpenChange }: AuthModalProps) {
           </DialogTitle>
           <DialogDescription>
             {mode === 'register'
-              ? 'DAKER에서 해커톤에 참여하려면 간단히 가입하세요.'
+              ? 'MAXER에서 해커톤에 참여하려면 간단히 가입하세요.'
               : '닉네임으로 간편하게 로그인하세요.'}
           </DialogDescription>
         </DialogHeader>

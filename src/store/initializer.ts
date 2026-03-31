@@ -18,7 +18,7 @@ import {
 } from '@/data/seed';
 import { useNotificationStore } from './useNotificationStore';
 
-export const SEED_VERSION = 'v4.4';
+export const SEED_VERSION = 'v4.5';
 
 export function initializeStore() {
   const detailsRecord = hackathonDetails.reduce((acc, detail) => {

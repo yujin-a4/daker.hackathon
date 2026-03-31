@@ -108,6 +108,7 @@ export interface Team {
   createdAt: string;
   progressStatus?: 'planning' | 'designing' | 'developing' | 'completed';
   progressPercent?: number;
+  checklist?: string[]; // 체크된 항목들의 인덱스나 ID 저장
 }
 
 export interface RankingUser {

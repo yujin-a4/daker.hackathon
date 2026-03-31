@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useHackathonStore } from '@/store/useHackathonStore';
 import { useUserStore } from '@/store/useUserStore';
-import HackathonListItem from '@/components/hackathon/HackathonListItem';
+import HackathonCard from '@/components/hackathon/HackathonCard';
 import HackathonFilters from '@/components/hackathon/HackathonFilters';
 import RecommendedSection from '@/components/hackathon/RecommendedSection';
 import EmptyState from '@/components/shared/EmptyState';
@@ -186,14 +186,14 @@ export default function HackathonsPage() {
           <>
             <motion.div
               key={currentPage}
-              className="flex flex-col gap-3"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               variants={containerVariants}
               initial="hidden"
               animate="visible"
             >
               {paginatedHackathons.map((hackathon) => (
                 <motion.div key={hackathon.slug} variants={itemVariants}>
-                  <HackathonListItem hackathon={hackathon} />
+                  <HackathonCard hackathon={hackathon} />
                 </motion.div>
               ))}
             </motion.div>
