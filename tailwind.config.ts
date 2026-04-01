@@ -21,8 +21,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
-        headline: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+        sans: ['"Space Grotesk"', 'sans-serif'],
+        serif: ['"Space Grotesk"', 'sans-serif'],
+        body: ['"Space Grotesk"', 'sans-serif'],
+        headline: ['"Space Grotesk"', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {

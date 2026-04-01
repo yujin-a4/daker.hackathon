@@ -42,8 +42,8 @@ interface TeamDetailModalProps {
 export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: TeamDetailModalProps) {
   const router = useRouter();
   const { hackathons } = useHackathonStore();
-  const { currentUser } = useUserStore();
-  const { updateTeam } = useTeamStore();
+  const { currentUser, addTeamCode, removeTeamCode } = useUserStore();
+  const { updateTeam, applyToTeam, leaveTeam } = useTeamStore();
 
   if (!team) return null;
 
@@ -66,6 +66,19 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
     }
     onOpenChange(false);
   }
+
+  const handleApplyToTeam = () => {
+    if (!currentUser || !team) return;
+    applyToTeam(team.teamCode, currentUser.id);
+    // Note: We don't addTeamCode yet because they are not a member
+  };
+
+  const handleLeaveTeam = () => {
+    if (!currentUser || !team) return;
+    leaveTeam(team.teamCode, currentUser.id);
+    removeTeamCode(team.teamCode);
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -129,23 +142,23 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
         <DialogFooter className="sm:justify-between pt-4 border-t !mt-0">
           <div className="flex-grow flex items-center">
             {isMyTeam ? (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 w-full">
                 <Link href={`/basecamp/${team.teamCode}`} className="flex-grow sm:flex-grow-0" onClick={() => onOpenChange(false)}>
                   <Button variant="outline" className="w-full bg-indigo-50 hover:bg-indigo-100 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 dark:border-indigo-800 dark:text-indigo-300">
-                    <ExternalLink /> 팀 작전실 바로가기
+                    <ExternalLink className="w-4 h-4 mr-2" /> 팀 작전실 바로가기
                   </Button>
                 </Link>
 
-                {currentUser?.id === team.leaderId && (
+                {currentUser?.id === team.leaderId ? (
                   <>
                     <Button variant="secondary" onClick={handleEditClick}>
-                        <Edit /> 수정하기
+                        <Edit className="w-4 h-4 mr-2" /> 수정하기
                     </Button>
                     {team.isOpen && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="destructive" className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800">
-                            <LogOut /> 모집마감하기
+                            <LogOut className="w-4 h-4 mr-2" /> 모집마감하기
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
@@ -161,19 +174,37 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
                       </AlertDialog>
                     )}
                   </>
+                ) : (
+                  <Button variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={handleLeaveTeam}>
+                    팀 탈퇴하기
+                  </Button>
                 )}
               </div>
             ) : (
-              // ... Rest of the logic for non-members (Contact button)
-              team.isOpen ? (
-                <a href={team.contact.url} target="_blank" rel="noopener noreferrer">
-                    <Button>
-                        연락하기 <ExternalLink />
+              <div className="flex flex-wrap gap-2 w-full">
+                {team.isOpen && team.memberCount < team.maxTeamSize ? (
+                  currentUser && team.applicantIds?.includes(currentUser.id) ? (
+                    <Button disabled variant="secondary" className="flex-grow sm:flex-grow-0">
+                      신청 완료
                     </Button>
-                </a>
-              ) : (
-                <p className="text-sm text-muted-foreground">현재 모집이 마감된 팀입니다.</p>
-              )
+                  ) : (
+                    <Button onClick={handleApplyToTeam} className="bg-primary hover:bg-primary/90 flex-grow sm:flex-grow-0">
+                      <Users className="w-4 h-4 mr-2" /> 합류 신청하기
+                    </Button>
+                  )
+                ) : (
+                  <Button disabled variant="outline" className="flex-grow sm:flex-grow-0">
+                    {team.memberCount >= team.maxTeamSize ? '정원 초과' : '모집 종료'}
+                  </Button>
+                )}
+                {team.isOpen && (
+                  <a href={team.contact.url} target="_blank" rel="noopener noreferrer" className="flex-grow sm:flex-grow-0">
+                    <Button variant="outline" className="w-full">
+                      연락하기 <ExternalLink className="w-4 h-4 ml-2" />
+                    </Button>
+                  </a>
+                )}
+              </div>
             )}
           </div>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>닫기</Button>

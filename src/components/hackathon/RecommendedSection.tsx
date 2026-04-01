@@ -23,7 +23,7 @@ export default function RecommendedSection() {
   // 비로그인
   if (!currentUser) {
     return (
-      <div className="rounded-2xl border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-8 text-center">
+      <div className="rounded-[10px] border border-dashed border-border bg-card p-8 text-center">
         <Sparkles className="w-8 h-8 text-primary mx-auto mb-3" />
         <p className="text-sm font-medium mb-1">맞춤 해커톤 추천을 받아보세요</p>
         <p className="text-xs text-muted-foreground mb-4">
@@ -40,7 +40,7 @@ export default function RecommendedSection() {
   // 프로필 미설정
   if (!hasProfile) {
     return (
-      <div className="rounded-2xl border-2 border-dashed border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-8 text-center">
+      <div className="rounded-[10px] border border-dashed border-border bg-card p-8 text-center">
         <Sparkles className="w-8 h-8 text-primary mx-auto mb-3" />
         <p className="text-sm font-medium mb-1">프로필을 설정하면 추천받을 수 있어요</p>
         <p className="text-xs text-muted-foreground mb-4">
@@ -57,7 +57,7 @@ export default function RecommendedSection() {
   if (recommendations.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border bg-gradient-to-br from-primary/5 via-background to-primary/5 p-5 shadow-sm">
+    <div className="rounded-[10px] border border-border bg-card p-5 shadow-sm">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -85,7 +85,7 @@ export default function RecommendedSection() {
           <button
             key={hackathon.slug}
             onClick={() => router.push(`/hackathons/${hackathon.slug}`)}
-            className="text-left rounded-xl border bg-card p-4 hover:border-primary/50 hover:shadow-md transition-all duration-200 group"
+            className="text-left rounded-[10px] border border-border bg-background p-4 hover:border-primary transition-all duration-200 group"
           >
             {/* 상단: 매칭 점수 + 상태 */}
             <div className="flex items-center justify-between mb-2">

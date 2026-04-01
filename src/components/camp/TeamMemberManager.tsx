@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useUserStore } from '@/store/useUserStore';
 import { useNotificationStore } from '@/store/useNotificationStore';
 import { useHackathonStore } from '@/store/useHackathonStore';
+import { useTeamStore } from '@/store/useTeamStore';
 import type { Team, UserProfile } from '@/types';
 import { users as userPool } from '@/data/seed';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,6 +19,7 @@ interface TeamMemberManagerProps {
 
 export default function TeamMemberManager({ team }: TeamMemberManagerProps) {
   const { currentUser } = useUserStore();
+  const { acceptApplicant, rejectApplicant } = useTeamStore();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [invitedEmails, setInvitedEmails] = useState<string[]>([]);
@@ -108,7 +110,23 @@ export default function TeamMemberManager({ team }: TeamMemberManagerProps) {
     toast({ title: `${nickname}님에게 합류 제안 알림을 보냈습니다.` });
   };
 
+  const handleAccept = (userId: string, nickname: string) => {
+    acceptApplicant(team.teamCode, userId);
+    toast({ title: `${nickname}님의 합류 신청을 수락했습니다.` });
+  };
+
+  const handleReject = (userId: string, nickname: string) => {
+    rejectApplicant(team.teamCode, userId);
+    toast({ title: `${nickname}님의 합류 신청을 거절했습니다.` });
+  };
+
   if (!isLeader) return null; // 팀장만 볼 수 있음
+
+  // 신청자 목록 매핑
+  const applicants = (team.applicantIds || []).map(id => {
+    const user = userPool.find(u => u.id === id);
+    return user || { id, nickname: '알 수 없는 유저', role: 'Unknown' };
+  });
 
   const myTeamSentInvitations = sentInvitations.filter(si => si.teamCode === team.teamCode);
 
@@ -118,10 +136,59 @@ export default function TeamMemberManager({ team }: TeamMemberManagerProps) {
         <span className="p-1.5 bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 flex items-center justify-center rounded-md shrink-0">
           <Mail className="w-5 h-5" />
         </span>
-        팀원 관리 및 초대 (팀장 전용)
+        팀 관리 및 초대 (팀장 전용)
       </h3>
 
       <div className="space-y-8">
+        {/* 📥 합류 신청 유저 관리 (New Section) */}
+        <div className="bg-blue-50/30 border border-blue-100 dark:bg-blue-900/10 dark:border-blue-900/30 rounded-2xl p-6 shadow-sm mb-8">
+          <h4 className="font-bold text-base flex items-center gap-2 mb-6">
+            <UserPlus className="w-5 h-5 text-blue-500" />
+            새로운 합류 신청
+            <span className="bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 text-xs px-2 py-0.5 rounded-full font-medium">
+              {applicants.length}
+            </span>
+          </h4>
+
+          {applicants.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {applicants.map((applicant) => (
+                <div key={applicant.id} className="bg-background border rounded-xl p-4 flex flex-col gap-3 shadow-sm hover:shadow-md transition-all">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500">
+                      {applicant.nickname.slice(0, 1)}
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm">{applicant.nickname}</p>
+                      <p className="text-xs text-muted-foreground">{applicant.role}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 h-8 text-xs" 
+                      onClick={() => handleAccept(applicant.id, applicant.nickname)}
+                    >
+                      수락
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex-1 h-8 text-xs hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200"
+                      onClick={() => handleReject(applicant.id, applicant.nickname)}
+                    >
+                      거절
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+              <p className="text-sm">현재 대기 중인 합류 신청이 없습니다.</p>
+            </div>
+          )}
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* 이메일 수동 초대 */}
           <div className="bg-muted/30 border rounded-xl p-5 shadow-sm">

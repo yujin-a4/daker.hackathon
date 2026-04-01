@@ -100,8 +100,23 @@ function CampContent() {
                           team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           team.intro.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const positionMatch = positionFilter === 'all' || 
-                            team.lookingFor.some(lf => lf.position.toLowerCase().includes(positionFilter.toLowerCase()));
+      const positionMatch = (() => {
+        if (positionFilter === 'all') return true;
+        if (!team.lookingFor || team.lookingFor.length === 0) return false;
+        
+        const filterMap: Record<string, string[]> = {
+          frontend: ['frontend', '프론트', '리액트', 'react', 'web', '웹', 'next', 'vue'],
+          backend: ['backend', '백엔드', '서버', 'server', 'node', 'spring', 'go', 'python'],
+          designer: ['designer', '디자인', 'ux', 'ui', '디자이너'],
+          pm: ['pm', 'po', '기획', '서비스기획', '전략', 'bm', '발표'],
+          ml: ['ml', 'ai', '머신러닝', '인공지능', 'data', '데이터', 'engineer'],
+        };
+
+        const keywords = filterMap[positionFilter] || [positionFilter];
+        return team.lookingFor.some(lf => 
+          keywords.some(kw => lf.position.toLowerCase().includes(kw.toLowerCase()))
+        );
+      })();
                             
       return openMatch && searchMatch && positionMatch;
     });
@@ -139,7 +154,7 @@ function CampContent() {
         )}
 
         {/* 🔍 필터 바 (Sticky & Minimal) */}
-        <div className="sticky top-[4.5rem] z-30 flex flex-col md:flex-row justify-between items-center gap-4 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md py-4 border-y border-slate-100 dark:border-slate-800 transition-all">
+        <div className="sticky top-[4.5rem] z-30 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-8 bg-background/95 backdrop-blur-md py-7 px-4 border-y border-slate-100 dark:border-slate-800 transition-all shadow-sm">
           <TeamFilters
             hackathonFilter={hackathonFilter}
             setHackathonFilter={setHackathonFilter}
@@ -151,8 +166,12 @@ function CampContent() {
             setPositionFilter={setPositionFilter}
             hackathons={hackathons}
           />
-          <Button onClick={handleCreateNew} className="w-full md:w-auto shadow-sm">
-            <Plus className="mr-2 h-4 w-4" /> 팀 모집글 작성
+          <Button 
+            onClick={handleCreateNew} 
+            className="w-full xl:w-auto h-12 px-10 text-base font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all bg-primary hover:bg-primary/90 shrink-0"
+            aria-label="새로운 팀 모집글 작성하기"
+          >
+            <Plus className="mr-2 h-5 w-5" /> 팀 모집글 작성
           </Button>
         </div>
 
@@ -220,9 +239,13 @@ function CampContent() {
               icon={Users}
               title={teams.length === 0 ? "아직 등록된 팀이 없습니다" : "조건에 맞는 팀이 없습니다"}
               description={teams.length === 0 ? "가장 먼저 팀을 만들어보세요!" : "필터를 변경해보세요."}
-              actionLabel={teams.length === 0 ? "팀 만들기" : undefined}
-              onAction={teams.length === 0 ? handleCreateNew : undefined}
-            />
+            >
+              {teams.length === 0 && (
+                <Button onClick={handleCreateNew} className="bg-primary hover:bg-primary/90">
+                  <Plus className="mr-2 h-4 w-4" /> 팀 만들기
+                </Button>
+              )}
+            </EmptyState>
           </div>
         )}
       </div>

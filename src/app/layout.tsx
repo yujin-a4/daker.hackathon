@@ -20,9 +20,9 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased" suppressHydrationWarning>
+      <body className="font-sans antialiased" suppressHydrationWarning>
         <ThemeProvider>
           <StoreInitializer />
           <div className="flex flex-col min-h-screen bg-background">
