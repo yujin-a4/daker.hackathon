@@ -82,8 +82,8 @@ export default function HackathonsPage() {
 
         // default: deadline
         return (
-          new Date(a.period.submissionDeadlineAt).getTime() -
-          new Date(b.period.submissionDeadlineAt).getTime()
+          new Date(a.period.endAt).getTime() -
+          new Date(b.period.endAt).getTime()
         );
       })
       .filter((hackathon) => {

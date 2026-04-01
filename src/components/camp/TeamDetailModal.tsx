@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Trophy, Users, ExternalLink, Edit, LogOut } from 'lucide-react';
+import { Trophy, Users, ExternalLink, Edit, LogOut, Lock as LockIcon } from 'lucide-react';
 import type { Team } from '@/types';
 import { useHackathonStore } from '@/store/useHackathonStore';
 import { useUserStore } from '@/store/useUserStore';
@@ -126,53 +126,67 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
           </div>
         </div>
 
-        <DialogFooter className="sm:justify-between pt-4 border-t !mt-0">
-          <div className="flex-grow flex items-center">
+        <DialogFooter className="sm:justify-between pt-6 border-t !mt-4">
+          <div className="flex-grow flex flex-col gap-3">
             {isMyTeam ? (
-              <div className="flex flex-wrap gap-2">
-                <Link href={`/basecamp/${team.teamCode}`} className="flex-grow sm:flex-grow-0" onClick={() => onOpenChange(false)}>
-                  <Button variant="outline" className="w-full bg-indigo-50 hover:bg-indigo-100 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 dark:border-indigo-800 dark:text-indigo-300">
-                    <ExternalLink /> 팀 작전실 바로가기
+              <>
+                <Link href={`/basecamp/${team.teamCode}`} className="w-full" onClick={() => onOpenChange(false)}>
+                  <Button className="w-full h-12 text-base font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 dark:shadow-none group transition-all">
+                    <ExternalLink className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" /> 
+                    팀 작전실 바로가기
                   </Button>
                 </Link>
 
-                {currentUser?.id === team.leaderId && (
-                  <>
-                    <Button variant="secondary" onClick={handleEditClick}>
-                        <Edit /> 수정하기
-                    </Button>
-                    {team.isOpen && (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="destructive" className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800">
-                            <LogOut /> 모집마감하기
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>모집을 마감하시겠습니까?</AlertDialogTitle>
-                            <AlertDialogDescription>더 이상 새로운 팀원을 받을 수 없게 됩니다. 이 작업은 되돌릴 수 없습니다.</AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>취소</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleCloseRecruitment} className="bg-red-600 hover:bg-red-700">마감하기</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    )}
-                  </>
-                )}
-              </div>
+                <div className="flex gap-2 w-full">
+                  {currentUser?.id === team.leaderId && (
+                    <>
+                      <Button variant="outline" size="sm" className="flex-1 h-9 font-semibold border-slate-200" onClick={handleEditClick}>
+                        <Edit className="mr-1.5 h-4 w-4" /> 정보 수정
+                      </Button>
+                      {team.isOpen && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="flex-1 h-9 font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-700 border border-transparent hover:border-rose-100">
+                              <LogOut className="mr-1.5 h-4 w-4" /> 모집 마감
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>모집을 마감하시겠습니까?</AlertDialogTitle>
+                              <AlertDialogDescription>더 이상 새로운 팀원을 받을 수 없게 됩니다. 이 작업은 되돌릴 수 없습니다.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>취소</AlertDialogCancel>
+                              <AlertDialogAction onClick={handleCloseRecruitment} className="bg-red-600 hover:bg-red-700">마감하기</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                    </>
+                  )}
+                </div>
+              </>
             ) : (
-              // ... Rest of the logic for non-members (Contact button)
               team.isOpen ? (
-                <a href={team.contact.url} target="_blank" rel="noopener noreferrer">
-                    <Button>
-                        연락하기 <ExternalLink />
+                team.isPrivate ? (
+                  <div className="space-y-4">
+                    <p className="text-sm text-amber-700 bg-amber-50 dark:bg-amber-900/30 border border-amber-100 dark:border-amber-800 p-3 rounded-xl flex items-start gap-2 leading-relaxed">
+                      <LockIcon className="w-4 h-4 mt-0.5 shrink-0" />
+                      이 팀은 <strong>초대로만 참여할 수 있는 비공개 팀</strong>입니다. 팀장의 초대를 받은 경우 알림 센터에서 수락할 수 있습니다.
+                    </p>
+                    <Button disabled className="w-full h-12 bg-slate-100 text-slate-400 dark:bg-slate-800 cursor-not-allowed">
+                       연락하기 제한됨
                     </Button>
-                </a>
+                  </div>
+                ) : (
+                  <a href={team.contact.url} target="_blank" rel="noopener noreferrer">
+                    <Button className="w-full h-12 text-base font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 dark:shadow-none group transition-all">
+                      연락하기 (오픈카톡/DM) <ExternalLink className="ml-2 h-5 w-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    </Button>
+                  </a>
+                )
               ) : (
-                <p className="text-sm text-muted-foreground">현재 모집이 마감된 팀입니다.</p>
+                <p className="text-sm text-center py-4 text-muted-foreground bg-muted/30 rounded-xl">현재 모집이 마감된 팀입니다.</p>
               )
             )}
           </div>

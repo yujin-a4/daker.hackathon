@@ -33,6 +33,7 @@ const FormSchema = z.object({
     description: z.string(),
   })).optional(),
   contact: z.string().url('유효한 URL을 입력해주세요. (https://...)'),
+  isPrivate: z.boolean().default(false),
 });
 
 type FormData = z.infer<typeof FormSchema>;
@@ -60,6 +61,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
       maxTeamSize: 5,
       lookingFor: [],
       contact: '',
+      isPrivate: false,
     },
   });
 
@@ -79,6 +81,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
           maxTeamSize: editingTeam.maxTeamSize,
           lookingFor: editingTeam.lookingFor || [],
           contact: editingTeam.contact.url,
+          isPrivate: editingTeam.isPrivate ?? false,
         });
       } else {
         setIsSolo(false);
@@ -89,6 +92,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
           maxTeamSize: 5,
           lookingFor: [],
           contact: '',
+          isPrivate: false,
         });
       }
     }
@@ -112,6 +116,7 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
         ...restData,
         hackathonSlug: finalHackathonSlug,
         isSolo,
+        isPrivate: data.isPrivate,
         lookingFor: isSolo ? [] : (data.lookingFor || []),
         contact: { type: 'link', url: data.contact },
       };
@@ -137,11 +142,11 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
   };
   
   const introLength = form.watch('intro')?.length || 0;
-  const lookingForValue = form.watch('lookingFor') || [];
+  const isPrivateWatch = form.watch('isPrivate');
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{editingTeam ? '팀 정보 수정' : '새 모집글 / 개인 참가 등록'}</DialogTitle>
           <DialogDescription>
@@ -149,42 +154,83 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
           </DialogDescription>
         </DialogHeader>
 
-        {/* 참가 유형 선택 토글 */}
-        {!editingTeam && (
-          <div className="grid grid-cols-2 gap-2 rounded-xl border bg-muted/50 p-1.5">
-            <button
-              type="button"
-              onClick={() => setIsSolo(false)}
-              className={cn(
-                'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-200',
-                !isSolo
-                  ? 'bg-white dark:bg-slate-800 text-primary shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <Users className="w-4 h-4" /> 팀 참가 (팀원 모집)
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsSolo(true)}
-              className={cn(
-                'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-200',
-                isSolo
-                  ? 'bg-white dark:bg-slate-800 text-primary shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <User className="w-4 h-4" /> 개인 참가
-            </button>
-          </div>
-        )}
-        {isSolo && !editingTeam && (
-          <p className="text-xs text-muted-foreground bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2">
-            💡 개인 참가는 <strong>팀 찾기 목록에 노출되지 않습니다.</strong> 나만의 작전실(Basecamp)이 생성됩니다.
-          </p>
-        )}
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
+        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 pb-4">
+          {/* 참가 유형 선택 토글 */}
+          {!editingTeam && (
+            <div className="grid grid-cols-2 gap-2 rounded-xl border bg-muted/50 p-1.5">
+              <button
+                type="button"
+                onClick={() => setIsSolo(false)}
+                className={cn(
+                  'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-200',
+                  !isSolo
+                    ? 'bg-white dark:bg-slate-800 text-primary shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Users className="w-4 h-4" /> 팀 참가 (팀원 모집)
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSolo(true)}
+                className={cn(
+                  'flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-200',
+                  isSolo
+                    ? 'bg-white dark:bg-slate-800 text-primary shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <User className="w-4 h-4" /> 개인 참가
+              </button>
+            </div>
+          )}
+
+          {/* 모집 성격 선택 (Public vs Private) */}
+          {!isSolo && (
+            <div className="space-y-2">
+              <label className="text-sm font-semibold">모집 공개 여부</label>
+              <div className="grid grid-cols-2 gap-2 rounded-xl border bg-muted/50 p-1.5">
+                <button
+                  type="button"
+                  onClick={() => form.setValue('isPrivate', false)}
+                  className={cn(
+                    'flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-all duration-200',
+                    !isPrivateWatch
+                      ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  🌐 공개 모집
+                </button>
+                <button
+                  type="button"
+                  onClick={() => form.setValue('isPrivate', true)}
+                  className={cn(
+                    'flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-bold transition-all duration-200',
+                    isPrivateWatch
+                      ? 'bg-white dark:bg-slate-800 text-amber-600 shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  🔒 초대 전용
+                </button>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed px-1">
+                {isPrivateWatch 
+                  ? "💡 초대 전용: 목록에는 노출되나 외부인이 연락할 수 없습니다. 팀장의 직접 초대만 허용합니다."
+                  : "💡 공개 모집: 모든 사용자가 팀에 합류 제안을 하거나 연락할 수 있습니다."}
+              </p>
+            </div>
+          )}
+
+          {isSolo && !editingTeam && (
+            <p className="text-xs text-muted-foreground bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2">
+              💡 개인 참가는 <strong>팀 찾기 목록에 노출되지 않습니다.</strong> 나만의 작전실(Basecamp)이 생성됩니다.
+            </p>
+          )}
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -327,7 +373,8 @@ export default function CreateTeamModal({ isOpen, onOpenChange, editingTeam, def
               <Button type="submit">{editingTeam ? '수정하기' : isSolo ? '개인 참가 등록' : '모집글 등록하기'}</Button>
             </DialogFooter>
           </form>
-        </Form>
+          </Form>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -30,7 +30,7 @@ export default function TeamMemberManager({ team }: TeamMemberManagerProps) {
   const recommendedUsers = useMemo(() => {
     if (!team.lookingFor || team.lookingFor.length === 0) return [];
     
-    const recommendations = userPool.map(user => {
+    const recommendations = (userPool || []).map(user => {
       let score = 0;
       
       // 우리 팀이 찾는 포지션과 유저의 역할이 일치하는가? (부분 일치 허용)
@@ -113,12 +113,12 @@ export default function TeamMemberManager({ team }: TeamMemberManagerProps) {
   const myTeamSentInvitations = sentInvitations.filter(si => si.teamCode === team.teamCode);
 
   return (
-    <div className="mt-8 pt-8 border-t border-dashed border-border/60">
-      <h3 className="font-semibold text-lg flex items-center gap-2 mb-6 text-slate-800 dark:text-slate-200">
-        <span className="p-1.5 bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 flex items-center justify-center rounded-md shrink-0">
+    <div className="p-6 space-y-8">
+      <h3 className="font-bold text-lg flex items-center gap-2 text-slate-800 dark:text-slate-200">
+        <span className="p-1.5 bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 flex items-center justify-center rounded-lg shrink-0">
           <Mail className="w-5 h-5" />
         </span>
-        팀원 관리 및 초대 (팀장 전용)
+        팀원 초대 및 리쿠르팅
       </h3>
 
       <div className="space-y-8">

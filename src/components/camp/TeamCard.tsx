@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Trophy, Users, Edit, LogOut, MessageSquare, ExternalLink, Sparkles } from 'lucide-react';
+import { Trophy, Users, Edit, LogOut, MessageSquare, ExternalLink, Sparkles, Lock as LockIcon } from 'lucide-react';
 import type { Team } from '@/types';
 import { useHackathonStore } from '@/store/useHackathonStore';
 import { useUserStore } from '@/store/useUserStore';
@@ -79,6 +79,11 @@ export default function TeamCard({ team, onEdit, onCardClick, className, matchSc
           </CardTitle>
           <div className="flex items-center gap-1.5 flex-shrink-0 pt-0.5">
             {isMyTeam && <Badge variant="outline" className="border-primary/50 text-primary px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider">내 팀</Badge>}
+            {team.isPrivate && (
+              <Badge className="bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800 font-bold text-[10px] px-2 py-0.5 uppercase tracking-wider flex items-center gap-1">
+                <LockIcon className="w-2.5 h-2.5" /> 초대 전용
+              </Badge>
+            )}
             <Badge className={cn(team.isOpen ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300" : "bg-muted text-muted-foreground", "font-bold text-[10px] px-2 py-0.5 uppercase tracking-wider")}>
               {team.isOpen ? '모집중' : '모집마감'}
             </Badge>

@@ -52,9 +52,9 @@ import MatchAnalysisCard from '@/components/hackathon/MatchAnalysisCard';
 import { getHackathonPhase } from '@/lib/hackathon-utils';
 import { useTeamStore } from '@/store/useTeamStore';
 import { useSubmissionStore } from '@/store/useSubmissionStore';
+import MatchStatusTag from '@/components/hackathon/MatchStatusTag';
 
 const sections = [
-  { id: 'overview', label: '개요', icon: BookOpen },
   { id: 'info', label: '안내', icon: Info },
   { id: 'eval', label: '평가', icon: BarChart },
   { id: 'schedule', label: '일정', icon: CalendarIcon },
@@ -164,7 +164,7 @@ export default function HackathonDetailPage() {
     : undefined;
 
   const milestones = details.sections.schedule.milestones || [];
-  const deadlineAt = hackathon.period.submissionDeadlineAt;
+  const deadlineAt = hackathon.period.endAt;
 
   // D-Day 계산
   const diffTime = new Date(deadlineAt).getTime() - new Date().getTime();
@@ -197,46 +197,50 @@ export default function HackathonDetailPage() {
 
   return (
     <div className="container mx-auto py-8 lg:py-12">
-      {/* Phase Tracker (Live Tracking) */}
-      <div className="mb-10 p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-wrap md:flex-nowrap items-center justify-between shadow-sm overflow-hidden">
-        {phases.map((p, i) => {
-          const isActive = currentPhase.type === p.key;
-          const isDone = phases.findIndex(ph => ph.key === currentPhase.type) > i;
-          
-          return (
-            <div key={p.key} className="flex flex-1 items-center gap-0 min-w-[80px]">
-              <div className={cn(
-                "flex-1 flex items-center justify-center p-3 sm:p-4 rounded-xl transition-all duration-300 gap-2.5",
-                isActive ? "bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm" : "text-slate-400 dark:text-slate-600"
-              )}>
-                <div className={cn(
-                  "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border-2 transition-colors",
-                  isActive ? "bg-indigo-600 border-indigo-600 text-white" : isDone ? "bg-indigo-100 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800 text-indigo-500" : "bg-transparent border-slate-200 dark:border-slate-800"
-                )}>
-                  {isDone ? "✓" : i + 1}
-                </div>
-                <span className={cn("text-xs font-black uppercase tracking-widest", isActive && "text-slate-900 dark:text-slate-100")}>{p.label}</span>
-              </div>
-              {i < phases.length - 1 && (
-                <div className="hidden md:block w-px h-6 bg-slate-200 dark:bg-slate-800" />
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-6">
         {/* 공통 헤더: 제목, 통계 바 */}
         <header className="space-y-6">
           <div className="flex flex-col gap-4">
-            <Button
-              variant="link"
-              onClick={() => router.back()}
-              className="p-0 h-auto w-fit text-muted-foreground hover:text-foreground no-underline"
-            >
-              <ArrowLeft className="mr-1 h-3.5 w-3.5" />
-              목록으로
-            </Button>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <Button
+                variant="link"
+                onClick={() => router.back()}
+                className="p-0 h-auto w-fit text-muted-foreground hover:text-foreground no-underline"
+              >
+                <ArrowLeft className="mr-1 h-3.5 w-3.5" />
+                목록으로
+              </Button>
+
+              {/* Ultra-compact Phase Indicator */}
+              <div className="flex items-center gap-2 md:gap-4 bg-slate-50 dark:bg-slate-900 px-4 py-2 rounded-full border border-slate-200/60 dark:border-slate-800/60 w-fit shadow-sm">
+                {phases.map((p, i) => {
+                  const isActive = currentPhase.type === p.key;
+                  const isDone = phases.findIndex(ph => ph.key === currentPhase.type) > i;
+                  
+                  return (
+                    <div key={p.key} className="flex items-center gap-2 md:gap-3">
+                       <div className={cn(
+                        "w-2 h-2 rounded-full transition-all duration-300",
+                        isActive ? "bg-indigo-600 ring-4 ring-indigo-100 dark:ring-indigo-900/30 scale-110" : 
+                        isDone ? "bg-indigo-500" : 
+                        "bg-slate-200 dark:border-slate-800"
+                      )} />
+                      <span className={cn(
+                        "text-[11px] font-bold uppercase tracking-wider transition-colors duration-300",
+                        isActive ? "text-indigo-600 dark:text-indigo-400" : 
+                        isDone ? "text-slate-600 dark:text-slate-400" : 
+                        "text-slate-400 dark:text-slate-700"
+                      )}>
+                        {p.label}
+                      </span>
+                      {i < phases.length - 1 && (
+                        <div className="w-2 md:w-6 h-[1px] bg-slate-200 dark:bg-slate-800" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
             
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div className="space-y-4 max-w-3xl">
@@ -253,10 +257,18 @@ export default function HackathonDetailPage() {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-wrap">
                   <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
                     {details.title}
                   </h1>
+                  
+                  {currentUser && (
+                    <MatchStatusTag 
+                      hackathon={hackathon} 
+                      currentUser={currentUser} 
+                    />
+                  )}
+
                   <motion.button
                     whileTap={{ scale: 1.2 }}
                     onClick={handleBookmarkClick}

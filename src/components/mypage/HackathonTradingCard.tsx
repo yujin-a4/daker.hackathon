@@ -81,7 +81,7 @@ export default function HackathonTradingCard({ hackathon, team, submission, vari
     setGlarePosition({ x: 50, y: 50 });
   };
 
-  const deadline = hackathon.period.submissionDeadlineAt;
+  const deadline = hackathon.period.endAt;
   const subStatus = getSubmissionStatus(submission?.status || 'none');
 
   // Gradient palette — indigo/purple tones to match site theme

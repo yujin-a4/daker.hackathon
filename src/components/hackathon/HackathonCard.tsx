@@ -42,9 +42,9 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
     });
   };
 
-  const dday = getDday(hackathon.period.submissionDeadlineAt);
-  const daysLeft = differenceInDays(new Date(hackathon.period.submissionDeadlineAt), new Date());
-  const isDdayUrgent = !isExpired(hackathon.period.submissionDeadlineAt) && daysLeft <= 7;
+  const dday = getDday(hackathon.period.endAt);
+  const daysLeft = differenceInDays(new Date(hackathon.period.endAt), new Date());
+  const isDdayUrgent = !isExpired(hackathon.period.endAt) && daysLeft <= 7;
 
   // 시니어의 팁: 가상의 진행률 계산 (마감일 기준 역산)
   useEffect(() => {
@@ -147,9 +147,10 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
             </div>
             <div className="flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5 opacity-70" />
-              <span>~{formatDate(hackathon.period.submissionDeadlineAt)}</span>
+              <span>~{formatDate(hackathon.period.endAt)}</span>
             </div>
           </div>
+
           
           <ArrowRight className="w-4 h-4 text-slate-300 dark:text-slate-700 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all" />
         </div>

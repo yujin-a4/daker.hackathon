@@ -39,10 +39,10 @@ export default function HackathonListItem({ hackathon }: HackathonListItemProps)
     });
   };
 
-  const dday = getDday(hackathon.period.submissionDeadlineAt);
+  const dday = getDday(hackathon.period.endAt);
   const isDdayUrgent =
-    !isExpired(hackathon.period.submissionDeadlineAt) &&
-    differenceInDays(new Date(hackathon.period.submissionDeadlineAt), new Date()) <= 7;
+    !isExpired(hackathon.period.endAt) &&
+    differenceInDays(new Date(hackathon.period.endAt), new Date()) <= 7;
 
   return (
     <div

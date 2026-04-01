@@ -47,26 +47,27 @@ export default function BasecampPage() {
 
   return (
     <div className="min-h-screen bg-muted/20 pb-20">
-      <div className="bg-background border-b sticky top-14 z-20">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full">
-              <ArrowLeft className="w-5 h-5" />
+      <div className="bg-background border-b sticky top-14 z-20 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => router.back()} className="h-8 w-8 rounded-full">
+              <ArrowLeft className="w-4 h-4" />
             </Button>
-            <div>
+            <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 h-5 px-1.5 text-[10px] font-bold uppercase tracking-wider">
                   작전실
                 </Badge>
-                <h1 className="text-xl font-bold">{team.name}</h1>
+                <h1 className="text-base font-black tracking-tight">{team.name}</h1>
               </div>
-              <p className="text-sm text-muted-foreground mt-1 truncate">
+              <div className="hidden md:block w-px h-3 bg-slate-200 dark:bg-slate-800" />
+              <p className="text-[11px] font-medium text-muted-foreground truncate max-w-[200px] md:max-w-md">
                 {hackathon.title}
               </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => router.push(`/hackathons/${hackathon.slug}`)}>
-            해커톤 페이지로
+          <Button variant="ghost" size="sm" onClick={() => router.push(`/hackathons/${hackathon.slug}`)} className="text-xs font-bold text-primary group">
+            대회 본선 페이지 <ArrowLeft className="ml-1 h-3.5 w-3.5 rotate-180 transition-transform group-hover:translate-x-0.5" />
           </Button>
         </div>
       </div>
