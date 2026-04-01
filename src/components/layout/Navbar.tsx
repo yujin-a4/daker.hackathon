@@ -36,6 +36,15 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
   const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // 🔥 유저 이름과 참가 중인 해커톤 제목 동적 할당 + 빈 상태 예외 처리
   const notices = useMemo(() => {
@@ -176,29 +185,32 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header 
+        className={cn(
+          "sticky top-0 z-50 w-full transition-all duration-300 border-b",
+          scrolled 
+            ? "bg-background/80 backdrop-blur-md border-border" 
+            : "bg-transparent border-transparent"
+        )}
+      >
         <div className="container flex h-14 max-w-7xl items-center">
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <Dna className="h-6 w-6 text-[#6366F1]" />
-            <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-[#6366F1] to-[#06B6D4]">
+            <span className="font-bold text-[18px] text-foreground tracking-[0.05em]">
               MAXER
             </span>
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-8 text-[15px] font-bold tracking-widest uppercase">
+          <nav className="hidden md:flex items-center gap-[36px] text-[14px] font-medium tracking-normal">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  'relative text-muted-foreground transition-colors hover:text-primary',
-                  pathname.startsWith(link.href) && 'text-primary'
+                  'relative text-muted-foreground transition-colors duration-150 hover:text-foreground',
+                  pathname.startsWith(link.href) && 'text-foreground font-semibold'
                 )}
               >
                 {link.label}
-                {pathname.startsWith(link.href) && (
-                  <span className="absolute bottom-[-19px] left-0 w-full h-0.5 bg-primary" />
-                )}
               </Link>
             ))}
           </nav>

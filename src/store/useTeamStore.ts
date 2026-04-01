@@ -13,6 +13,11 @@ interface TeamState {
   setAiStrategy: (teamCode: string, phase: string, strategy: string) => void;
   addTeamMemo: (teamCode: string, memo: { title: string; content: string }) => void;
   removeTeamMemo: (teamCode: string, memoId: string) => void;
+  joinTeam: (teamCode: string, userId: string) => void;
+  leaveTeam: (teamCode: string, userId: string) => void;
+  applyToTeam: (teamCode: string, userId: string) => void;
+  acceptApplicant: (teamCode: string, userId: string) => void;
+  rejectApplicant: (teamCode: string, userId: string) => void;
 }
 
 export const useTeamStore = create<TeamState>()(
@@ -24,6 +29,8 @@ export const useTeamStore = create<TeamState>()(
           ...teamData,
           teamCode: generateId('T'),
           createdAt: new Date().toISOString(),
+          memberIds: [teamData.leaderId],
+          applicantIds: [],
           progressStatus: 'planning',
           progressPercent: 0,
         };
@@ -111,6 +118,88 @@ export const useTeamStore = create<TeamState>()(
             return {
               ...team,
               teamMemos: (team.teamMemos || []).filter((m) => m.id !== memoId),
+            };
+          }),
+        }));
+      },
+      joinTeam: (teamCode, userId) => {
+        set((state) => ({
+          teams: state.teams.map((team) => {
+            if (team.teamCode !== teamCode) return team;
+            const currentMemberIds = team.memberIds || [team.leaderId];
+            if (currentMemberIds.includes(userId)) return team;
+            if (team.memberCount >= team.maxTeamSize) return team;
+            
+            return {
+              ...team,
+              memberIds: [...currentMemberIds, userId],
+              memberCount: team.memberCount + 1,
+            };
+          }),
+        }));
+      },
+      leaveTeam: (teamCode, userId) => {
+        set((state) => ({
+          teams: state.teams.map((team) => {
+            if (team.teamCode !== teamCode) return team;
+            if (team.leaderId === userId) return team;
+            const currentMemberIds = team.memberIds || [team.leaderId];
+            if (!currentMemberIds.includes(userId)) return team;
+
+            return {
+              ...team,
+              memberIds: currentMemberIds.filter((id) => id !== userId),
+              memberCount: Math.max(1, team.memberCount - 1),
+            };
+          }),
+        }));
+      },
+      applyToTeam: (teamCode, userId) => {
+        set((state) => ({
+          teams: state.teams.map((team) => {
+            if (team.teamCode !== teamCode) return team;
+            const currentMemberIds = team.memberIds || [team.leaderId];
+            const currentApplicantIds = team.applicantIds || [];
+            
+            if (currentMemberIds.includes(userId)) return team;
+            if (currentApplicantIds.includes(userId)) return team;
+            if (team.memberCount >= team.maxTeamSize) return team;
+
+            return {
+              ...team,
+              applicantIds: [...currentApplicantIds, userId],
+            };
+          }),
+        }));
+      },
+      acceptApplicant: (teamCode, userId) => {
+        set((state) => ({
+          teams: state.teams.map((team) => {
+            if (team.teamCode !== teamCode) return team;
+            const currentApplicantIds = team.applicantIds || [];
+            if (!currentApplicantIds.includes(userId)) return team;
+            if (team.memberCount >= team.maxTeamSize) return team;
+
+            const currentMemberIds = team.memberIds || [team.leaderId];
+            return {
+              ...team,
+              applicantIds: currentApplicantIds.filter(id => id !== userId),
+              memberIds: [...currentMemberIds, userId],
+              memberCount: team.memberCount + 1,
+            };
+          }),
+        }));
+      },
+      rejectApplicant: (teamCode, userId) => {
+        set((state) => ({
+          teams: state.teams.map((team) => {
+            if (team.teamCode !== teamCode) return team;
+            const currentApplicantIds = team.applicantIds || [];
+            if (!currentApplicantIds.includes(userId)) return team;
+
+            return {
+              ...team,
+              applicantIds: currentApplicantIds.filter(id => id !== userId),
             };
           }),
         }));

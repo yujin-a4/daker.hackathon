@@ -33,7 +33,7 @@ export default function BasecampPage() {
   const [activeTab, setActiveTab] = useState<TabId>('info');
 
   const team = teams.find(t => t.teamCode === teamCode);
-  const isMember = currentUser && currentUser.teamCodes.includes(teamCode);
+  const isMember = team && currentUser && (currentUser.teamCodes.includes(teamCode) || team.memberIds.includes(currentUser.id));
   const hackathon = team ? hackathons.find(h => h.slug === team.hackathonSlug) : null;
 
   useEffect(() => {
