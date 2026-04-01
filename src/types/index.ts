@@ -93,6 +93,13 @@ export interface Leaderboard {
   entries: LeaderboardEntry[];
 }
 
+export interface TeamMemo {
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string;
+}
+
 export interface Team {
   teamCode: string;
   hackathonSlug: string | null;
@@ -109,6 +116,9 @@ export interface Team {
   progressStatus?: 'planning' | 'designing' | 'developing' | 'completed';
   progressPercent?: number;
   checklist?: string[]; // 체크된 항목들의 인덱스나 ID 저장
+  aiChecklists?: Record<string, { id: string; text: string; completed: boolean }[]>;
+  aiStrategy?: Record<string, string>;
+  teamMemos?: TeamMemo[];
 }
 
 export interface RankingUser {
