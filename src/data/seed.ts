@@ -217,7 +217,7 @@ export const hackathons: Hackathon[] = [
     thumbnailUrl: 'https://images.unsplash.com/photo-1454165833767-0af1954a68af?w=800&q=80',
     period: { timezone: 'Asia/Seoul', submissionDeadlineAt: '2025-07-05T10:00:00+09:00', endAt: '2025-07-20T18:00:00+09:00' },
     participantCount: 89,
-    prizeTotal: '닥커 파트너십',
+    prizeTotal: '데이커 파트너십',
     links: { detail: '/hackathons/dos-operation-hack-2025', rules: '#', faq: '#' },
   },
   {
@@ -256,9 +256,9 @@ export const hackathonDetails: HackathonDetail[] = [
       },
       prize: { items: [{ place: '대상', amountKRW: 10000000 }] },
       teams: { campEnabled: true, listUrl: '#' },
-      submit: { 
-        allowedArtifactTypes: ['pdf', 'url'], 
-        submissionUrl: '#', 
+      submit: {
+        allowedArtifactTypes: ['pdf', 'url'],
+        submissionUrl: '#',
         guide: ['기획안, 데모, 발표 자료를 단계별로 제출하세요.'],
         submissionItems: [
           { key: 'plan', title: '아이디어 기획서', format: 'PDF', deadline: '2026-03-25T18:00:00+09:00' },
@@ -287,9 +287,9 @@ export const hackathonDetails: HackathonDetail[] = [
       },
       prize: { items: [{ place: '대상', amountKRW: 5000000 }] },
       teams: { campEnabled: true, listUrl: '#' },
-      submit: { 
-        allowedArtifactTypes: ['pdf', 'url'], 
-        submissionUrl: '#', 
+      submit: {
+        allowedArtifactTypes: ['pdf', 'url'],
+        submissionUrl: '#',
         guide: ['설계서와 코드 저장소를 제출하세요.'],
         submissionItems: [
           { key: 'arch', title: '아키텍처 설계서', format: 'PDF', deadline: '2026-04-05T10:00:00+09:00' },
@@ -299,9 +299,10 @@ export const hackathonDetails: HackathonDetail[] = [
       leaderboard: { publicLeaderboardUrl: '#', note: '인프라 구축 현황' },
     },
   },
+
   {
     slug: 'daker-handover-2026-03',
-    title: '제1회 닥커 긴급 인수인계 해커톤',
+    title: '제1회 데이커 긴급 인수인계 해커톤',
     sections: {
       overview: { summary: '인수인계 실습', teamPolicy: { allowSolo: true, maxTeamSize: 5 } },
       info: { notice: ['명세서 구현'], links: { rules: '#', faq: '#' } },
@@ -310,22 +311,26 @@ export const hackathonDetails: HackathonDetail[] = [
         timezone: 'Asia/Seoul',
         milestones: [
           { name: '시작', at: '2026-03-04T10:00:00+09:00', step: 0 },
-          { name: '최종 결과물 제출', at: '2026-03-30T10:00:00+09:00', type: 'submission', step: 1, itemKey: 'web' },
-          { name: '투표 개시', at: '2026-03-30T10:00:01+09:00', type: 'voting', step: 2, votingEnabled: true, galleryEnabled: true },
-          { name: '최종 결과', at: '2026-04-27T10:00:00+09:00', type: 'result', step: 3 },
+          { name: '1단계: 기획안 제출', at: '2026-03-28T18:00:00+09:00', type: 'submission', step: 1, itemKey: 'plan' },
+          { name: '2단계: 중간 점검', at: '2026-04-05T18:00:00+09:00', type: 'submission', step: 2, itemKey: 'mid' },
+          { name: '3단계: 최종 결과물', at: '2026-04-12T18:00:00+09:00', type: 'submission', step: 3, itemKey: 'final' },
+          { name: '투표 개시', at: '2026-04-12T18:00:01+09:00', type: 'voting', step: 4, votingEnabled: true, galleryEnabled: true },
+          { name: '최종 결과', at: '2026-04-27T10:00:00+09:00', type: 'result', step: 5 },
         ],
       },
       prize: { items: [{ place: '대상', amountKRW: 1000000 }] },
       teams: { campEnabled: true, listUrl: '#' },
-      submit: { 
-        allowedArtifactTypes: ['url'], 
-        submissionUrl: '#', 
-        guide: ['Vibe 앱 링크를 제출하세요.'],
+      submit: {
+        allowedArtifactTypes: ['url', 'pdf'],
+        submissionUrl: '#',
+        guide: ['기획, 중간, 최종 앱 링크를 단계별로 제출하세요.'],
         submissionItems: [
-          { key: 'web', title: '구현 결과 앱 링크', format: 'URL', deadline: '2026-03-30T10:00:00+09:00' },
+          { key: 'plan', title: '기획안 (PDF/URL)', format: 'URL', deadline: '2026-03-28T18:00:00+09:00' },
+          { key: 'mid', title: '중간 구현 링크', format: 'URL', deadline: '2026-04-05T18:00:00+09:00' },
+          { key: 'final', title: '최종 결과 앱 링크', format: 'URL', deadline: '2026-04-12T18:00:00+09:00' },
         ],
       },
-      leaderboard: { publicLeaderboardUrl: '#', note: '실시간 투표 현황' },
+      leaderboard: { publicLeaderboardUrl: '#', note: '단계별 제출 및 투표 현황' },
     },
   },
   {
@@ -346,9 +351,9 @@ export const hackathonDetails: HackathonDetail[] = [
       },
       prize: { items: [{ place: '대상', amountKRW: 3000000 }] },
       teams: { campEnabled: true, listUrl: '#' },
-      submit: { 
-        allowedArtifactTypes: ['url', 'pdf'], 
-        submissionUrl: '#', 
+      submit: {
+        allowedArtifactTypes: ['url', 'pdf'],
+        submissionUrl: '#',
         guide: ['리서치와 디자인 결과물을 제출하세요.'],
         submissionItems: [
           { key: 'research', title: '사용자 리서치 보고서', format: 'PDF', deadline: '2026-04-10T18:00:00+09:00' },
@@ -376,9 +381,9 @@ export const hackathonDetails: HackathonDetail[] = [
       },
       prize: { items: [{ place: '대상', amountKRW: 4000000 }] },
       teams: { campEnabled: true, listUrl: '#' },
-      submit: { 
-        allowedArtifactTypes: ['pdf', 'url'], 
-        submissionUrl: '#', 
+      submit: {
+        allowedArtifactTypes: ['pdf', 'url'],
+        submissionUrl: '#',
         guide: ['분석 보고서와 패치 소스코드를 제출하세요.'],
         submissionItems: [
           { key: 'threat', title: '취약점 분석 리포트', format: 'PDF', deadline: '2026-04-10T10:00:00+09:00' },
@@ -406,9 +411,9 @@ export const hackathonDetails: HackathonDetail[] = [
       },
       prize: { items: [{ place: '대상', amountKRW: 10000000 }] },
       teams: { campEnabled: true, listUrl: '#' },
-      submit: { 
-        allowedArtifactTypes: ['url'], 
-        submissionUrl: '#', 
+      submit: {
+        allowedArtifactTypes: ['url'],
+        submissionUrl: '#',
         guide: ['데이터셋 구성과 훈련 성과를 제출하세요.'],
         submissionItems: [
           { key: 'dataset', title: '정제된 데이터셋 구성안', format: 'URL', deadline: '2026-04-25T10:00:00+09:00' },
@@ -515,9 +520,9 @@ export const hackathonDetails: HackathonDetail[] = [
       },
       prize: { items: [{ place: '대상', amountKRW: 0 }] },
       teams: { campEnabled: true, listUrl: '#' },
-      submit: { 
-        allowedArtifactTypes: ['url'], 
-        submissionUrl: '#', 
+      submit: {
+        allowedArtifactTypes: ['url'],
+        submissionUrl: '#',
         guide: ['모델 결과물을 제출하세요.'],
         submissionItems: [
           { key: 'base', title: '베이스라인 추론 결과', format: 'URL', deadline: '2026-02-15T18:00:00+09:00' },
@@ -543,9 +548,9 @@ export const hackathonDetails: HackathonDetail[] = [
       },
       prize: { items: [{ place: '대상', amountKRW: 10000000 }] },
       teams: { campEnabled: false, listUrl: '#' },
-      submit: { 
-        allowedArtifactTypes: ['pdf'], 
-        submissionUrl: '#', 
+      submit: {
+        allowedArtifactTypes: ['pdf'],
+        submissionUrl: '#',
         guide: ['성과 보고서를 제출하세요.'],
         submissionItems: [
           { key: 'report', title: '성과 분석 보고서', format: 'PDF', deadline: '2025-12-15T18:00:00+09:00' },
@@ -571,9 +576,9 @@ export const hackathonDetails: HackathonDetail[] = [
       },
       prize: { items: [{ place: '대상', amountKRW: 20000000 }] },
       teams: { campEnabled: false, listUrl: '#' },
-      submit: { 
-        allowedArtifactTypes: ['url'], 
-        submissionUrl: '#', 
+      submit: {
+        allowedArtifactTypes: ['url'],
+        submissionUrl: '#',
         guide: ['작품 링크를 제출하세요.'],
         submissionItems: [
           { key: 'plan', title: '창작물 기획안', format: 'PDF', deadline: '2025-11-01T18:00:00+09:00' },
@@ -599,9 +604,9 @@ export const hackathonDetails: HackathonDetail[] = [
       },
       prize: { items: [{ place: '대상', amountKRW: 0 }] },
       teams: { campEnabled: false, listUrl: '#' },
-      submit: { 
-        allowedArtifactTypes: ['url'], 
-        submissionUrl: '#', 
+      submit: {
+        allowedArtifactTypes: ['url'],
+        submissionUrl: '#',
         guide: ['캠프 과제를 제출하세요.'],
         submissionItems: [
           { key: 'task', title: '공간 기획 및 과제', format: 'URL', deadline: '2025-10-01T18:00:00+09:00' },
@@ -626,9 +631,9 @@ export const hackathonDetails: HackathonDetail[] = [
       },
       prize: { items: [{ place: '대상', amountKRW: 0 }] },
       teams: { campEnabled: false, listUrl: '#' },
-      submit: { 
-        allowedArtifactTypes: ['url'], 
-        submissionUrl: '#', 
+      submit: {
+        allowedArtifactTypes: ['url'],
+        submissionUrl: '#',
         guide: ['기여한 PR 링크를 제출하세요.'],
         submissionItems: [
           { key: 'pr', title: '오픈소스 PR 링크', format: 'URL', deadline: '2025-09-15T18:00:00+09:00' },
@@ -653,9 +658,9 @@ export const hackathonDetails: HackathonDetail[] = [
       },
       prize: { items: [{ place: '대상', amountKRW: 0 }] },
       teams: { campEnabled: false, listUrl: '#' },
-      submit: { 
-        allowedArtifactTypes: ['pdf'], 
-        submissionUrl: '#', 
+      submit: {
+        allowedArtifactTypes: ['pdf'],
+        submissionUrl: '#',
         guide: ['보안 보고서를 제출하세요.'],
         submissionItems: [
           { key: 'consulting', title: '보안 취약점 컨설팅 보고서', format: 'PDF', deadline: '2025-08-15T18:00:00+09:00' },
@@ -680,9 +685,9 @@ export const hackathonDetails: HackathonDetail[] = [
       },
       prize: { items: [{ place: '대상', amountKRW: 0 }] },
       teams: { campEnabled: false, listUrl: '#' },
-      submit: { 
-        allowedArtifactTypes: ['pdf'], 
-        submissionUrl: '#', 
+      submit: {
+        allowedArtifactTypes: ['pdf'],
+        submissionUrl: '#',
         guide: ['운영 기획안을 제출하세요.'],
         submissionItems: [
           { key: 'ops', title: '운영 체계 기획안', format: 'PDF', deadline: '2025-07-05T18:00:00+09:00' },
@@ -707,9 +712,9 @@ export const hackathonDetails: HackathonDetail[] = [
       },
       prize: { items: [{ place: '대상', amountKRW: 0 }] },
       teams: { campEnabled: false, listUrl: '#' },
-      submit: { 
-        allowedArtifactTypes: ['url'], 
-        submissionUrl: '#', 
+      submit: {
+        allowedArtifactTypes: ['url'],
+        submissionUrl: '#',
         guide: ['실시간 관제 데이터를 제출하세요.'],
         submissionItems: [
           { key: 'logs', title: '네트워크 관제 실시간 로그', format: 'URL', deadline: '2025-06-15T18:00:00+09:00' },
@@ -752,14 +757,14 @@ export const teams: Team[] = [
       { position: 'Backend', description: 'Next.js API' },
       { position: 'Designer', description: 'UI 정비' },
     ],
-    intro: '닥커 인수인계 해커톤의 끝을 장식할 404found 팀입니다. 우리의 바이브를 앱으로 증명합니다.',
+    intro: '데이커 인수인계 해커톤의 끝을 장식할 404found 팀입니다. 우리의 바이브를 앱으로 증명합니다.',
     contact: { type: 'link', url: 'https://vibe.app' },
     createdAt: '2026-03-20T10:00:00Z',
     progressStatus: 'developing',
     progressPercent: 100,
   },
   // Ongoing Hackathons Teams
-  ...['gen-ai-startup-challenge', 'cloud-native-modernization', 'daker-handover-2026-03', 'ux-ui-redesign-2026', 'fintech-security-hack', 'metabolism-healthcare-2026'].flatMap((slug, sIdx) => 
+  ...['gen-ai-startup-challenge', 'cloud-native-modernization', 'daker-handover-2026-03', 'ux-ui-redesign-2026', 'fintech-security-hack', 'metabolism-healthcare-2026'].flatMap((slug, sIdx) =>
     Array.from({ length: slug === 'daker-handover-2026-03' ? 40 : 30 + sIdx * 10 }).map((_, i) => ({
       teamCode: `T-${slug.slice(0, 3).toUpperCase()}-${i + 1}`,
       hackathonSlug: slug,
@@ -778,13 +783,13 @@ export const teams: Team[] = [
     }))
   ),
   // Ended Hackathons Teams
-  ...['aimers-8-model-lite', 'public-data-2025-final', 'university-sw-challenge-2025', 'metaverse-camp-2025', 'opensource-mentoring-2025', 'iot-smart-home-2025', 'dos-operation-hack-2025', 'cyber-security-grand-2025'].flatMap((slug, sIdx) => 
+  ...['aimers-8-model-lite', 'public-data-2025-final', 'university-sw-challenge-2025', 'metaverse-camp-2025', 'opensource-mentoring-2025', 'iot-smart-home-2025', 'dos-operation-hack-2025', 'cyber-security-grand-2025'].flatMap((slug, sIdx) =>
     Array.from({ length: 20 }).map((_, i) => ({
       teamCode: `T-OLD-${slug.slice(0, 3).toUpperCase()}-${i + 1}`,
       hackathonSlug: slug,
-      name: i === 0 ? (slug === 'aimers-8-model-lite' ? 'Alpha ML' : slug === 'public-data-2025-final' ? '공조팀' : `Best Team ${sIdx + i}`) : 
-            i === 1 ? (slug === 'aimers-8-model-lite' ? 'Beta Opt' : `Runner Team ${sIdx + i}`) :
-            teamNameLibrary[(i + sIdx + 10) % teamNameLibrary.length] + ` (E)`,
+      name: i === 0 ? (slug === 'aimers-8-model-lite' ? 'Alpha ML' : slug === 'public-data-2025-final' ? '공조팀' : `Best Team ${sIdx + i}`) :
+        i === 1 ? (slug === 'aimers-8-model-lite' ? 'Beta Opt' : `Runner Team ${sIdx + i}`) :
+          teamNameLibrary[(i + sIdx + 10) % teamNameLibrary.length] + ` (E)`,
       isOpen: false,
       isPrivate: false,
       leaderId: `user-old-${slug}-${i}`,
@@ -818,7 +823,7 @@ export const submissions: Submission[] = [
     if (i < 36) arts.push({ type: 'pdf', key: 'plan', content: 'plan.pdf', uploadedAt: '2026-03-20T10:00:00Z' });
     if (i < 16) arts.push({ type: 'url', key: 'demo', content: 'https://youtube.com/demo', uploadedAt: '2026-04-01T10:00:00Z' });
     if (i < 4) arts.push({ type: 'pdf', key: 'deck', content: 'deck.pdf', uploadedAt: '2026-04-10T10:00:00Z' });
-    
+
     if (arts.length === 0) return [];
     return [{
       id: `sub-genai-${i}`,
@@ -836,7 +841,7 @@ export const submissions: Submission[] = [
     const arts: any[] = [];
     if (i < 21) arts.push({ type: 'pdf', key: 'arch', content: 'arch.pdf', uploadedAt: '2026-03-30T10:00:00Z' });
     if (i < 9) arts.push({ type: 'url', key: 'repo', content: 'https://github.com/repo', uploadedAt: '2026-04-10T10:00:00Z' });
-    
+
     if (arts.length === 0) return [];
     return [{
       id: `sub-cloud-${i}`,
@@ -850,7 +855,7 @@ export const submissions: Submission[] = [
     }];
   }),
   // Ended Hackathons (100% submission)
-  ...['aimers-8-model-lite', 'public-data-2025-final', 'university-sw-challenge-2025', 'metaverse-camp-2025', 'opensource-mentoring-2025', 'iot-smart-home-2025', 'dos-operation-hack-2025', 'cyber-security-grand-2025'].flatMap((slug) => 
+  ...['aimers-8-model-lite', 'public-data-2025-final', 'university-sw-challenge-2025', 'metaverse-camp-2025', 'opensource-mentoring-2025', 'iot-smart-home-2025', 'dos-operation-hack-2025', 'cyber-security-grand-2025'].flatMap((slug) =>
     Array.from({ length: 15 }).map((_, i) => ({
       id: `sub-old-${slug}-${i}`,
       hackathonSlug: slug,

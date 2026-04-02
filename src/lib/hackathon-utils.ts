@@ -8,7 +8,7 @@ export interface HackathonPhase {
   name: string;
   endDate: Date | null;
   milestoneIndex: number;
-  step: number; 
+  step: number;
   votingEnabled: boolean;
   judgingEnabled: boolean;
   galleryEnabled: boolean;
@@ -19,12 +19,12 @@ export interface HackathonPhase {
  */
 export function getHackathonPhase(detail: HackathonDetail, now: Date = new Date()): HackathonPhase {
   const milestones = detail.sections.schedule.milestones || [];
-  
+
   if (milestones.length === 0) {
-    return { 
-      type: 'PREPARATION', 
-      name: '준비 중', 
-      endDate: null, 
+    return {
+      type: 'PREPARATION',
+      name: '준비 중',
+      endDate: null,
       milestoneIndex: -1,
       step: 0,
       votingEnabled: false,
@@ -42,13 +42,16 @@ export function getHackathonPhase(detail: HackathonDetail, now: Date = new Date(
     if (now >= start && (!end || now < end)) {
       const m = milestones[i];
       let type: PhaseType = 'PREPARATION';
-      
+
       switch (m.type) {
         case 'submission': type = 'SUBMISSION'; break;
         case 'voting': type = 'VOTING'; break;
         case 'judging': type = 'JUDGING'; break;
         case 'result': type = 'RESULT'; break;
       }
+
+      // 🌟 핵심: 제출 기간(SUBMISSION)에는 표절 방지를 위해 갤러리 강제 차단
+      const isGalleryEnabled = m.galleryEnabled !== undefined ? m.galleryEnabled : (type !== 'SUBMISSION' && type !== 'PREPARATION');
 
       return {
         type,
@@ -59,36 +62,22 @@ export function getHackathonPhase(detail: HackathonDetail, now: Date = new Date(
         step: m.step ?? 1,
         votingEnabled: m.votingEnabled ?? false,
         judgingEnabled: m.judgingEnabled ?? false,
-        galleryEnabled: m.galleryEnabled ?? true
+        galleryEnabled: isGalleryEnabled
       };
     }
   }
 
   // 모든 마일스톤이 지났다면 결과 단계
   const lastMilestone = milestones[milestones.length - 1];
-  if (now >= new Date(lastMilestone.at)) {
-    return { 
-      type: 'RESULT', 
-      name: '최종 결과 발표', 
-      endDate: null, 
-      milestoneIndex: milestones.length - 1,
-      step: lastMilestone.step ?? 3,
-      votingEnabled: false,
-      judgingEnabled: true,
-      galleryEnabled: true
-    };
-  }
-
-  // 아직 첫 마일스톤 시작 전이라면 준비 단계
-  return { 
-    type: 'PREPARATION', 
-    name: '준비 중', 
-    endDate: new Date(milestones[0].at), 
-    milestoneIndex: -1,
-    step: 0,
+  return {
+    type: 'RESULT',
+    name: '최종 결과 발표',
+    endDate: null,
+    milestoneIndex: milestones.length - 1,
+    step: lastMilestone.step ?? 3,
     votingEnabled: false,
-    judgingEnabled: false,
-    galleryEnabled: false
+    judgingEnabled: true,
+    galleryEnabled: true
   };
 }
 
@@ -118,7 +107,7 @@ export function calculateCompetitionStandings(
   const standings = teams.map(team => {
     const teamSubmissions = submissions.filter(s => s.teamCode === team.teamCode);
     const submissionMap: Record<string, string | null> = {};
-    
+
     // 각 제출 항목별 상태 매핑
     teamSubmissions.forEach(sub => {
       sub.artifacts.forEach((art: any) => {
@@ -132,13 +121,10 @@ export function calculateCompetitionStandings(
     const teamVotes = (lbEntry?.votes ?? 0) + (votes[team.name] || 0);
     const judgeScore = lbEntry?.score ?? null;
 
-    // 최종 점수 계산 (30/70) - RESULT 단계에서만 적용
+    // 최종 점수 계산 (30/70 비율) - RESULT 단계에서만 적용됨
     let finalScore = null;
     if (phase.judgingEnabled && judgeScore !== null) {
-      // 투표 점수 정규화 (최고 득표수 기준 100점 만점으로 환산하거나 절대값 사용)
-      // 여기서는 심플하게 (평점 * 0.7) + (로그화된 투표 가중치 등) -> 유저 요청대로 30/70 비율 적용
-      // 실제 구현 시 투표수의 최대치를 기준으로 백분위 환산 필요
-      const voteScoreEquivalent = Math.min(100, (teamVotes / 200) * 100); 
+      const voteScoreEquivalent = Math.min(100, (teamVotes / 200) * 100);
       finalScore = (voteScoreEquivalent * 0.3) + (judgeScore * 0.7);
     }
 
@@ -155,38 +141,43 @@ export function calculateCompetitionStandings(
     };
   });
 
-  // 정렬 로직
+  // 🌟 여기서 정렬 로직을 완벽하게 수정했어! 🌟
   standings.sort((a, b) => {
-    // 1. 최종 결과 단계: 최종 점수 우선
+    // 1. 최종 결과 단계: 최종 점수 높은 팀 우선
     if (phase.type === 'RESULT' && a.finalScore !== null && b.finalScore !== null) {
       return b.finalScore - a.finalScore;
     }
 
-    // 2. 투표 단계: 투표 수 우선
+    // 2. 투표 단계: 투표 수 많은 팀 우선
     if (phase.votingEnabled) {
       if (a.votes !== b.votes) return b.votes - a.votes;
     }
 
-    // 3. 제출 단계 또는 투표 전: 특정 아이템 제출 여부 및 시간 우선
-    if (phase.itemKey) {
-      const aSub = a.submissions[phase.itemKey];
-      const bSub = b.submissions[phase.itemKey];
-      
-      if (aSub && bSub) {
-        return new Date(aSub).getTime() - new Date(bSub).getTime();
-      }
-      if (aSub) return -1;
-      if (bSub) return 1;
+    // 3. 제출 단계: 제출한 총 단계(항목) 수가 많은 팀 무조건 우선! (3단계 > 2단계 > 1단계)
+    const aSubCount = Object.keys(a.submissions).length;
+    const bSubCount = Object.keys(b.submissions).length;
+
+    if (aSubCount !== bSubCount) {
+      return bSubCount - aSubCount; // 내림차순 (숫자가 클수록 위로)
     }
 
-    // 기본: 이름순
+    // 4. 제출한 단계 수가 같다면, 더 '먼저' 제출한 팀 우선 (빠른 시간 우대)
+    if (aSubCount > 0 && bSubCount > 0) {
+      const aLastTime = Math.max(...Object.values(a.submissions).filter(Boolean).map(d => new Date(d as string).getTime()));
+      const bLastTime = Math.max(...Object.values(b.submissions).filter(Boolean).map(d => new Date(d as string).getTime()));
+      if (aLastTime !== bLastTime) {
+        return aLastTime - bLastTime; // 오름차순 (시간값이 작을수록 먼저 낸 것이므로 위로)
+      }
+    }
+
+    // 5. 위 조건이 모두 같다면 기본 이름순
     return a.name.localeCompare(b.name);
   });
 
-  // 순위 부여 (제출한 팀만)
+  // 순위 부여 (제출을 하나라도 했거나 투표를 1표라도 받은 팀만 랭크 부여)
   return standings.map((entry, idx) => ({
     ...entry,
-    rank: (entry.submissions[Object.keys(entry.submissions)[0]] || entry.votes > 0) ? idx + 1 : null
+    rank: (Object.keys(entry.submissions).length > 0 || entry.votes > 0) ? idx + 1 : null
   }));
 }
 

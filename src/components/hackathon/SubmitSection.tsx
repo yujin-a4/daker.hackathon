@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CheckCircle, XCircle, Upload, AlertTriangle, Target, Clock } from 'lucide-react';
+import { CheckCircle, XCircle, Upload, AlertTriangle, Target, Clock, Send } from 'lucide-react';
 import { formatDateTime } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -44,7 +44,7 @@ type SubmitSectionProps = {
 const FormSchema = z.object({
   itemKey: z.string().optional(),
   inputType: z.enum(['text', 'url']).optional(),
-  content: z.string().min(1, '내용을 입력하세요.'),
+  content: z.string().min(1, '결과물 링크나 내용을 입력해주세요.'),
   fileName: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -58,13 +58,12 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
   const { currentUser } = useUserStore();
   const { teams } = useTeamStore();
   const { submissions, addSubmission, updateSubmission } = useSubmissionStore();
-  const { hackathons, addLeaderboardEntry, updateLeaderboardEntryTimestamp } = useHackathonStore();
+  const { hackathons, addLeaderboardEntry, updateLeaderboardEntryTimestamp, updateAutoScore } = useHackathonStore();
   const { rankings, recalculateRankings } = useRankingStore();
 
   const hackathon = useMemo(() => hackathons.find(h => h.slug === hackathonSlug), [hackathons, hackathonSlug]);
   const isEnded = hackathon?.status === 'ended';
 
-  // ─── 0. Phase Logic ───
   const currentPhase = useMemo(() => getHackathonPhase(hackathonDetail), [hackathonDetail]);
   const isSubmissionPhase = currentPhase.type === 'SUBMISSION';
   const activeItemKey = currentPhase.itemKey;
@@ -94,7 +93,6 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
     },
   });
 
-  // phase가 변경되면 자동 선택된 itemKey 업데이트
   React.useEffect(() => {
     if (activeItemKey) {
       form.setValue('itemKey', activeItemKey);
@@ -103,7 +101,7 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
 
   const selectedItemKey = form.watch('itemKey');
   const selectedItem = submitInfo.submissionItems?.find(item => item.key === selectedItemKey);
-  const format = selectedItem?.format || submitInfo.allowedArtifactTypes[0];
+  const format = (selectedItem?.format || submitInfo.allowedArtifactTypes[0] || 'text').toLowerCase();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -116,13 +114,9 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
   };
 
   const onSubmit = (data: FormData) => {
-    if (!userTeam) {
-      toast({ variant: 'destructive', title: '팀에 먼저 참가해야 합니다.' });
-      return;
-    }
+    if (!userTeam) return;
 
     const now = new Date().toISOString();
-
     const newArtifact: Submission['artifacts'][0] = {
       type: format,
       key: data.itemKey,
@@ -132,7 +126,6 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
     };
 
     if (currentSubmission) {
-      // ── 기존 제출 업데이트 ──
       const updatedArtifacts = [
         ...currentSubmission.artifacts.filter(a => a.key !== newArtifact.key),
         newArtifact,
@@ -144,8 +137,6 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
       });
       updateLeaderboardEntryTimestamp(hackathonSlug, userTeam.name, now);
     } else {
-      // ── 새 제출 ──
-      // 1. 먼저 리더보드에 엔트리 추가
       addLeaderboardEntry(hackathonSlug, {
         teamName: userTeam.name,
         score: null,
@@ -153,7 +144,6 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
         submittedAt: now,
       });
 
-      // 2. submission 저장
       addSubmission({
         hackathonSlug,
         teamCode: userTeam.teamCode,
@@ -164,7 +154,6 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
         submittedAt: now,
       });
 
-      // 3. 이 해커톤에 처음 제출 → 랭킹 참가 횟수 +1
       if (currentUser) {
         const alreadySubmitted = submissions.some(
           s => s.hackathonSlug === hackathonSlug && s.teamCode === userTeam.teamCode
@@ -178,10 +167,19 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
           useRankingStore.setState({ rankings: updatedRankings });
         }
       }
-      recalculateRankings();
     }
 
-    toast({ title: '제출이 완료되었습니다.' });
+    // 🌟 [수정됨] 나중(결과 발표)을 위해 백그라운드에 점수만 조용히 저장해둠. (UI에는 안 뜸)
+    const secretAiScore = Math.floor(Math.random() * 16) + 85;
+    updateAutoScore(hackathonSlug, userTeam.name, secretAiScore);
+
+    // 🌟 제출 완료 깔끔한 알림
+    toast({
+      title: '✅ 결과물 제출 완료!',
+      description: `성공적으로 제출되었습니다. 리더보드에 진행 상황이 즉시 반영됩니다.`,
+      className: 'bg-emerald-600 text-white border-none',
+    });
+
     form.reset();
     setSelectedFile(null);
   };
@@ -192,11 +190,9 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
     const updatedArtifacts = currentSubmission.artifacts.filter(a => a.key !== key);
     updateSubmission(currentSubmission.id, { artifacts: updatedArtifacts });
 
-    // 모든 artifact가 제거되면 리더보드에서도 제출 시간 null 처리
     if (updatedArtifacts.length === 0) {
       updateLeaderboardEntryTimestamp(hackathonSlug, userTeam.name, null);
     }
-
     toast({ title: '제출이 취소되었습니다.' });
   };
 
@@ -228,8 +224,8 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
               제출 전, 팀 작전실에 입장하여 일정을 점검하고 패들렛 보드에서 팀원들과 아이디어를 나누세요.
             </p>
           </div>
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             onClick={() => router.push(`/basecamp/${userTeam.teamCode}`)}
             className="flex-shrink-0 w-full sm:w-auto font-bold bg-white text-indigo-700 hover:bg-slate-100 shadow-md"
           >
@@ -237,6 +233,7 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
           </Button>
         </div>
       )}
+
       <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-xl p-6">
         <ul className="space-y-4">
           {submitInfo.guide.map((item, index) => (
@@ -321,7 +318,7 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
               {currentPhase.name} {isSubmissionPhase ? "진행 중" : "준비/심사 중"}
             </Badge>
           </div>
-          
+
           {!isSubmissionPhase ? (
             <div className="p-8 border-2 border-dashed rounded-xl bg-slate-50 dark:bg-slate-900/50 text-center flex flex-col items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-500">
@@ -330,7 +327,7 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
               <div>
                 <p className="font-bold text-slate-600">현재는 제출 기간이 아닙니다.</p>
                 <p className="text-sm text-slate-400 mt-1">
-                  {currentPhase.endDate 
+                  {currentPhase.endDate
                     ? `${formatDateTime(currentPhase.endDate.toISOString())}에 다음 단계가 시작됩니다.`
                     : "대회 일정을 확인해 주세요."}
                 </p>
@@ -338,58 +335,61 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
             </div>
           ) : (
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-6 bg-card border rounded-lg shadow-sm">
-          {submitInfo.submissionItems && (
-            <Controller
-              control={form.control}
-              name="itemKey"
-              render={({ field }) => (
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="제출할 항목을 선택하세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {submitInfo.submissionItems?.map(item => (
-                      <SelectItem key={item.key} value={item.key}>{item.title}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {submitInfo.submissionItems && (
+                <Controller
+                  control={form.control}
+                  name="itemKey"
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="제출할 항목을 선택하세요" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {submitInfo.submissionItems?.map(item => (
+                          <SelectItem key={item.key} value={item.key}>{item.title}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               )}
-            />
+
+              <div>
+                {(format === 'zip' || format === 'pdf' || format === 'pdf_url') && (
+                  <div className="border-dashed border-2 border-muted-foreground/30 rounded-xl p-8 text-center">
+                    <input type="file" id="file-upload" className="hidden" onChange={handleFileChange} accept={format.includes('pdf') ? '.pdf' : '.zip'} />
+                    <label htmlFor="file-upload" className="cursor-pointer">
+                      <Upload className="mx-auto h-10 w-10 text-muted-foreground" />
+                      <p className="mt-2 text-sm text-muted-foreground">{selectedFile ? selectedFile.name : '파일을 드래그하거나 클릭하여 업로드'}</p>
+                    </label>
+                  </div>
+                )}
+
+                {format === 'text_or_url' && (
+                  <div className="flex flex-col gap-2">
+                    <Input type="text" placeholder="https://... 또는 텍스트 입력" {...form.register('content')} />
+                  </div>
+                )}
+
+                {format === 'url' && (
+                  <Input type="url" placeholder="https://example.com" {...form.register('content')} />
+                )}
+
+                {form.formState.errors.content && <p className="text-sm text-red-500 mt-1 font-bold">{form.formState.errors.content.message}</p>}
+              </div>
+
+              <Textarea rows={3} placeholder="메모 (선택사항)" {...form.register('notes')} />
+
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="ghost" onClick={() => { form.reset(); setSelectedFile(null); }}>취소</Button>
+                <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 font-bold">
+                  <Send className="w-4 h-4 mr-2" />
+                  결과물 최종 제출
+                </Button>
+              </div>
+            </form>
           )}
-
-          <div>
-            {(format === 'zip' || format === 'pdf' || format === 'pdf_url') && (
-              <div className="border-dashed border-2 border-muted-foreground/30 rounded-xl p-8 text-center">
-                <input type="file" id="file-upload" className="hidden" onChange={handleFileChange} accept={format.includes('pdf') ? '.pdf' : '.zip'} />
-                <label htmlFor="file-upload" className="cursor-pointer">
-                  <Upload className="mx-auto h-10 w-10 text-muted-foreground" />
-                  <p className="mt-2 text-sm text-muted-foreground">{selectedFile ? selectedFile.name : '파일을 드래그하거나 클릭하여 업로드'}</p>
-                </label>
-              </div>
-            )}
-
-            {format === 'text_or_url' && (
-              <div className="flex flex-col gap-2">
-                <Input type="text" placeholder="https://... 또는 텍스트 입력" {...form.register('content')} />
-              </div>
-            )}
-
-            {format === 'url' && (
-              <Input type="url" placeholder="https://example.com" {...form.register('content')} />
-            )}
-
-            {form.formState.errors.content && <p className="text-sm text-red-500 mt-1">{form.formState.errors.content.message}</p>}
-          </div>
-
-          <Textarea rows={3} placeholder="메모 (선택사항)" {...form.register('notes')} />
-
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={() => { form.reset(); setSelectedFile(null); }}>취소</Button>
-            <Button type="submit">제출하기</Button>
-          </div>
-        </form>
-      )}
-      </div>
+        </div>
       )}
     </div>
   );
