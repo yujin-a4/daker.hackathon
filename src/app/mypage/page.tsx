@@ -37,6 +37,7 @@ import { useUserStore } from '@/store/useUserStore';
 import { useTeamStore } from '@/store/useTeamStore';
 import { useHackathonStore } from '@/store/useHackathonStore';
 import { useSubmissionStore } from '@/store/useSubmissionStore';
+import { useRankingStore } from '@/store/useRankingStore';
 import { formatDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -56,6 +57,7 @@ export default function MyPage() {
   const { teams } = useTeamStore();
   const { hackathons, hackathonDetails, leaderboards } = useHackathonStore();
   const { submissions } = useSubmissionStore();
+  const { rankings } = useRankingStore();
 
   const [isPointModalOpen, setIsPointModalOpen] = useState(false);
   const [showPastTeams, setShowPastTeams] = useState(false);
@@ -97,13 +99,64 @@ export default function MyPage() {
     currentUser.bookmarkedSlugs?.includes(h.slug),
   );
 
-  // 총 포인트 계산
-  const totalPoints = currentUser.pointHistory?.reduce((acc, log) => acc + log.points, 0) || 0;
-
   // 내 제출물 조회
   const mySubmissions = submissions.filter((s) =>
     currentUser.teamCodes.includes(s.teamCode),
   );
+
+  // 총 포인트 계산 및 합성 포인트 내역 생성
+  const myRanking = rankings.find(r => r.nickname === currentUser.nickname);
+  const totalPoints = myRanking?.points || 0;
+  
+  const syntheticHistory = [...(currentUser.pointHistory || [])];
+  
+  if (myRanking && myRanking.basePoints > 0) {
+    syntheticHistory.push({
+      id: 'base-points',
+      description: '회원가입 기본 혜택',
+      points: myRanking.basePoints,
+      date: currentUser.joinedAt || new Date().toISOString()
+    });
+  }
+
+  myTeams.forEach(team => {
+    const hackathon = hackathons.find(h => h.slug === team.hackathonSlug);
+    if (hackathon) {
+      // 본선 진출(참여) 포인트
+      syntheticHistory.push({
+        id: `part-${team.teamCode}`,
+        description: `'${hackathon.title}' 본선 결선 진출 (참여 수당)`,
+        points: 50,
+        date: team.createdAt
+      });
+
+      // 산출물 제출 (단계별 100점)
+      const sub = mySubmissions.find(s => s.teamCode === team.teamCode);
+      if (sub && sub.artifacts) {
+        sub.artifacts.forEach((art, idx) => {
+          syntheticHistory.push({
+            id: `sub-${art.key || idx}-${team.teamCode}`,
+            description: `'${hackathon.title}' 과제 제출 장려금`,
+            points: 100,
+            date: art.uploadedAt
+          });
+        });
+      }
+
+      // 우승 포인트
+      const lb = leaderboards[hackathon.slug];
+      if (lb) {
+        const entry = lb.entries.find(e => e.teamName === team.name);
+        if (entry && entry.rank) {
+          if (entry.rank === 1) syntheticHistory.push({ id: `win-1-${team.teamCode}`, description: `'${hackathon.title}' 최종 1위 우승`, points: 500, date: lb.updatedAt });
+          else if (entry.rank === 2) syntheticHistory.push({ id: `win-2-${team.teamCode}`, description: `'${hackathon.title}' 대회 준우승 (2위)`, points: 400, date: lb.updatedAt });
+          else if (entry.rank === 3) syntheticHistory.push({ id: `win-3-${team.teamCode}`, description: `'${hackathon.title}' 입상 (3위)`, points: 300, date: lb.updatedAt });
+        }
+      }
+    }
+  });
+
+  const sortedHistory = syntheticHistory.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   // D-day 계산 함수
   const getDday = (dateStr: string) => {
@@ -192,16 +245,14 @@ export default function MyPage() {
                       {currentUser.role}
                     </Badge>
                   )}
-                  {currentUser.pointHistory && (
-                    <Badge
-                      variant="outline"
-                      onClick={() => setIsPointModalOpen(true)}
-                      className="ml-auto flex items-center gap-1.5 px-3 py-1 text-sm font-bold bg-amber-50 text-amber-700 border-amber-200 shadow-sm cursor-pointer hover:bg-amber-100 transition-colors"
-                    >
-                      <Coins className="w-4 h-4 text-amber-500" />
-                      {totalPoints.toLocaleString()} P
-                    </Badge>
-                  )}
+                  <Badge
+                    variant="outline"
+                    onClick={() => setIsPointModalOpen(true)}
+                    className="ml-auto flex items-center gap-1.5 px-3 py-1 text-[15px] font-black bg-gradient-to-r from-amber-50 to-orange-50 text-amber-600 border-amber-200 shadow-sm cursor-pointer hover:bg-amber-100 transition-colors"
+                  >
+                    <Coins className="w-5 h-5 text-amber-500" />
+                    {totalPoints.toLocaleString()} P
+                  </Badge>
                 </div>
                 <div className="flex flex-wrap items-center gap-3 mt-1.5 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
@@ -689,16 +740,16 @@ export default function MyPage() {
               </p>
             </div>
 
-            {currentUser.pointHistory && currentUser.pointHistory.length > 0 ? (
+            {sortedHistory.length > 0 ? (
               <div className="space-y-2">
-                {[...currentUser.pointHistory].reverse().map((log) => (
+                {sortedHistory.map((log) => (
                   <div key={log.id} className="flex justify-between items-center p-3 rounded-lg border bg-card hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <div className="space-y-0.5">
-                      <p className="font-semibold text-sm">{log.description}</p>
+                      <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">{log.description}</p>
                       <p className="text-xs text-muted-foreground">{formatDate(log.date)}</p>
                     </div>
-                    <div className="shrink-0 ml-4 px-3 py-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 rounded-full font-bold text-sm">
-                      +{log.points}P
+                    <div className="shrink-0 ml-4 px-3 py-1 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 dark:from-amber-900/30 dark:to-orange-900/30 dark:text-amber-400 rounded-full font-bold text-sm tracking-tight border border-amber-200 dark:border-amber-500/30">
+                      +{log.points.toLocaleString()} P
                     </div>
                   </div>
                 ))}

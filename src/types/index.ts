@@ -65,7 +65,7 @@ export interface HackathonDetail {
       allowedArtifactTypes: string[];
       submissionUrl: string;
       guide: string[];
-      submissionItems?: { key: string; title: string; format: string; deadline?: string }[];
+      submissionItems?: { key: string; title: string; format: string; deadline?: string; isGalleryTarget?: boolean }[];
     };
     leaderboard: {
       publicLeaderboardUrl: string;

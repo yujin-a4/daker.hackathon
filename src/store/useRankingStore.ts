@@ -4,6 +4,8 @@ import type { RankingUser } from '@/types';
 import { useTeamStore } from './useTeamStore';
 import { useHackathonStore } from './useHackathonStore';
 import { useUserStore } from './useUserStore';
+import { useSubmissionStore } from './useSubmissionStore';
+import { getHackathonPhase, calculateCompetitionStandings } from '@/lib/hackathon-utils';
 
 interface RankingState {
   rankings: RankingUser[];
@@ -17,68 +19,108 @@ export const useRankingStore = create<RankingState>()(
       rankings: [],
 
       recalculateRankings: () => {
-        const { rankings: existingRankings } = get();
+        // ──────────────────────────────────────────────────────────────
+        // 단일 진실 공급원:
+        //  allUsers (personaPool + 로그인 유저들)
+        //  → 각 유저의 leaderId와 매칭되는 팀 역추적
+        //  → 해당 팀의 리더보드 성적 + 제출물로 포인트 산출
+        // ──────────────────────────────────────────────────────────────
+        const allUsers = useUserStore.getState().allUsers;
+        const currentUser = useUserStore.getState().currentUser;
         const teams = useTeamStore.getState().teams;
         const leaderboards = useHackathonStore.getState().leaderboards;
-        const currentUser = useUserStore.getState().currentUser;
+        const hcDetails = useHackathonStore.getState().hackathonDetails;
+        const allVotes = useHackathonStore.getState().votes;
+        const submissions = useSubmissionStore.getState().submissions;
 
-        // 1. 유저 베이스 구축 (기존 랭킹 유저 + 현재 사용자)
-        const allUserMap = new Map<string, RankingUser>();
-        
-        existingRankings.forEach(user => {
-          allUserMap.set(user.nickname, { ...user });
-        });
-
-        if (currentUser) {
-          if (allUserMap.has(currentUser.nickname)) {
-            const existing = allUserMap.get(currentUser.nickname)!;
-            allUserMap.set(currentUser.nickname, { ...existing, id: currentUser.id });
-          } else {
-            allUserMap.set(currentUser.nickname, {
-              id: currentUser.id,
-              nickname: currentUser.nickname,
-              rank: 0,
-              points: 0,
-              basePoints: 100, // 기본 점수
-              hackathonsJoined: 0,
-              winsCount: 0,
-              lastActiveAt: new Date().toISOString(),
-            });
-          }
+        // 현재 로그인 유저가 allUsers에 없으면 추가
+        const userList = [...allUsers];
+        if (currentUser && !userList.find(u => u.id === currentUser.id)) {
+          userList.push(currentUser);
         }
 
-        // 2. 각 유저별 참여 및 우승 횟수 계산
-        const updated = Array.from(allUserMap.values()).map((user) => {
-          // 이 유저가 리더인 팀들 찾기
-          const userTeams = teams.filter(t => t.leaderId === user.id || t.name === user.nickname + " Team" || (user.nickname === '강유진' && t.teamCode === 'T-HANDOVER-01'));
-          
-          const joinedCount = userTeams.length;
-          let winsCount = 0;
+        const updated: RankingUser[] = userList.map((user) => {
+          // 1. 이 유저가 리더인 팀 목록
+          const userTeams = teams.filter(t => t.leaderId === user.id);
 
-          userTeams.forEach(team => {
-            const lb = leaderboards[team.hackathonSlug!];
-            if (lb) {
-              const entry = lb.entries.find(e => e.teamName === team.name);
-              if (entry && entry.rank === 1) {
-                winsCount++;
-              }
+          // 2. 강유진(currentUser)은 teamCodes 기반으로도 팀을 추적
+          const extraTeams =
+            currentUser && user.id === currentUser.id
+              ? teams.filter(
+                  t =>
+                    currentUser.teamCodes.includes(t.teamCode) &&
+                    t.leaderId !== user.id
+                )
+              : [];
+          const allMyTeams = [...userTeams, ...extraTeams];
+
+          const joinedCount = allMyTeams.length;
+          let winsCount = 0;
+          let competitivePoints = 0;
+          let submissionPoints = 0;
+
+          allMyTeams.forEach(team => {
+            const slug = team.hackathonSlug;
+            if (!slug) return;
+            const detail = hcDetails[slug];
+            if (!detail) return;
+
+            const hbTeams = teams.filter(t => t.hackathonSlug === slug);
+            const hbLeaderboard = leaderboards[slug]?.entries || [];
+            const hbVotes = allVotes[slug] || {};
+            const phase = getHackathonPhase(detail);
+
+            // 리더보드 기반 순위 계산 (team.name 으로 매칭)
+            const standings = calculateCompetitionStandings(
+              phase, hbTeams, submissions, hbVotes, hbLeaderboard, team.teamCode
+            );
+
+            const myEntry = standings.find(e => e.teamCode === team.teamCode);
+
+            // 리더보드 직접 조회로 보조 (팀명 기반)
+            const lbEntry = hbLeaderboard.find(e => e.teamName === team.name);
+
+            const effectiveRank = myEntry?.rank ?? lbEntry?.rank ?? null;
+            if (effectiveRank) {
+              if (effectiveRank === 1) { winsCount++; competitivePoints += 500; }
+              else if (effectiveRank === 2) { competitivePoints += 400; }
+              else if (effectiveRank === 3) { competitivePoints += 300; }
+            }
+
+            // 제출물 단계별 100점
+            const submission = submissions.find(s => s.teamCode === team.teamCode);
+            if (submission?.artifacts) {
+              submissionPoints += submission.artifacts.length * 100;
             }
           });
 
-          // 포인트 재계산: basePoints + 참여(100) + 우승(350)
-          const participationPoints = joinedCount * 100;
-          const winPoints = winsCount * 350;
-          const totalPoints = (user.basePoints || 0) + participationPoints + winPoints;
+          // 3. 현재 로그인 유저의 pointHistory(투표/게시글 등 활동) 합산
+          let historyPoints = 0;
+          if (currentUser && user.id === currentUser.id && currentUser.pointHistory) {
+            historyPoints = currentUser.pointHistory.reduce((acc, h) => acc + h.points, 0);
+          }
 
-          return { 
-            ...user, 
+          // 4. 포인트 합산
+          const participationPoints = joinedCount * 50;
+          const totalPoints =
+            (user as any).basePoints
+              // 기존 RankingUser는 basePoints 보유 가능
+              ? ((user as any).basePoints as number) + historyPoints + participationPoints + competitivePoints + submissionPoints
+              : historyPoints + participationPoints + competitivePoints + submissionPoints;
+
+          return {
+            id: user.id || `anon-${user.nickname}`,
+            rank: 0,                          // 정렬 후 부여
+            nickname: user.nickname,
+            points: totalPoints,
+            basePoints: (user as any).basePoints ?? 0,
             hackathonsJoined: joinedCount,
-            winsCount: winsCount,
-            points: totalPoints 
-          };
+            winsCount,
+            lastActiveAt: user.joinedAt || new Date().toISOString(),
+          } as RankingUser;
         });
 
-        // 3. 포인트 내림차순 정렬 + 동점 처리
+        // 5. 포인트 내림차순 정렬 + 동점 처리
         updated.sort((a, b) => b.points - a.points);
 
         let currentRank = 1;
@@ -110,7 +152,7 @@ export const useRankingStore = create<RankingState>()(
       },
     }),
     {
-      name: 'vibehack-ranking-storage',
+      name: 'vibehack-ranking-storage-v5',
       storage: createJSONStorage(() => localStorage),
     }
   )

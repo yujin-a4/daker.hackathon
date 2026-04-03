@@ -132,7 +132,7 @@ export const useHackathonStore = create<HackathonState>()(
       },
     }),
     {
-      name: 'vibehack-hackathon-storage',
+      name: 'vibehack-hackathon-storage-v3',
       storage: createJSONStorage(() => localStorage),
     }
   )

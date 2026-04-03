@@ -60,8 +60,8 @@ export function getHackathonPhase(detail: HackathonDetail, now: Date = new Date(
         endDate: end,
         milestoneIndex: i,
         step: m.step ?? 1,
-        votingEnabled: m.votingEnabled ?? false,
-        judgingEnabled: m.judgingEnabled ?? false,
+        votingEnabled: m.votingEnabled !== undefined ? m.votingEnabled : type === 'VOTING',
+        judgingEnabled: m.judgingEnabled !== undefined ? m.judgingEnabled : type === 'RESULT' || type === 'JUDGING',
         galleryEnabled: isGalleryEnabled
       };
     }
@@ -85,6 +85,8 @@ export interface CompetitionEntry {
   teamCode: string;
   name: string;
   isSolo: boolean;
+  leaderId?: string;       // 팀장 ID — allUsers로 닉네임 역추적
+  memberCount?: number;   // 팀원 수
   rank: number | null;
   votes: number;
   judgeScore: number | null;
@@ -112,7 +114,7 @@ export function calculateCompetitionStandings(
     teamSubmissions.forEach(sub => {
       sub.artifacts.forEach((art: any) => {
         if (art.key) {
-          submissionMap[art.key] = sub.submittedAt;
+          submissionMap[art.key] = art.uploadedAt || sub.submittedAt || new Date().toISOString();
         }
       });
     });
@@ -132,6 +134,8 @@ export function calculateCompetitionStandings(
       teamCode: team.teamCode,
       name: team.name,
       isSolo: !!team.isSolo,
+      leaderId: team.leaderId,
+      memberCount: team.memberCount ?? 1,
       rank: null,
       votes: teamVotes,
       judgeScore,

@@ -10,6 +10,8 @@ import { ChevronsUpDown } from 'lucide-react';
 import { useRankingStore } from '@/store/useRankingStore';
 import RankingTable from '@/components/rankings/RankingTable';
 import { Button } from '@/components/ui/button';
+import { Info } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const timeFilterOptions = [
   { label: '전체', value: 'all' },
@@ -42,7 +44,41 @@ export default function RankingsPage() {
   return (
     <div className="container mx-auto py-8">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold font-headline">글로벌 랭킹</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-bold font-headline">글로벌 랭킹</h1>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50">
+                <Info className="h-5 w-5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 text-sm">
+              <div className="space-y-3">
+                <h4 className="font-bold text-slate-800 dark:text-slate-200">MAXER 포인트 산정 기준 🏆</h4>
+                <p className="text-muted-foreground leading-relaxed">MAXER 생태계에서 활동할 때마다 아래 공식을 통해 포인트가 누적되어 글로벌 랭킹과 프로필에 즉시 반영됩니다.</p>
+                <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg space-y-2 border border-slate-100 dark:border-slate-800">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-slate-600 dark:text-slate-400">기본 가입 포인트</span>
+                    <span className="text-indigo-600 dark:text-indigo-400 font-bold">+100 P</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-slate-600 dark:text-slate-400 text-[13px]">대회 결선 진출 (참여) / 산출물 제출 (건당)</span>
+                    <span className="text-indigo-600 dark:text-indigo-400 font-bold text-[13px]">+50 P / +100 P</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-slate-600 dark:text-slate-400 text-[13px]">해커톤 입상 (1위 / 2위 / 3위)</span>
+                    <span className="text-amber-500 font-bold tracking-tight text-[13px]">+500 / +400 / +300 P</span>
+                  </div>
+                  <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <span className="font-medium text-slate-600 dark:text-slate-400 text-[12px]">투표 / 팀 개설 / 멤버 합류</span>
+                    <span className="text-emerald-500 font-bold tracking-tight text-[12px]">+5 / +30 / +10 P</span>
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-2 leading-tight">* 실시간 리더보드의 순위 갱신 시 입상 포인트가 즉각 반영되며, 작전실 활동 및 투표 시에도 포인트가 실시간으로 누적됩니다.</p>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
         <p className="mt-2 text-muted-foreground">해커톤 참여와 성과로 쌓이는 포인트 랭킹입니다.</p>
       </header>
 

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Submission } from '@/types';
 import { generateId } from '@/lib/utils';
+import { submissions as initialSubmissions } from '@/data/seed';
 
 interface SubmissionState {
   submissions: Submission[];
@@ -13,7 +14,7 @@ interface SubmissionState {
 export const useSubmissionStore = create<SubmissionState>()(
   persist(
     (set, get) => ({
-      submissions: [],
+      submissions: initialSubmissions,
       addSubmission: (submissionData) => {
         const newSubmission: Submission = {
           ...submissionData,
@@ -38,7 +39,7 @@ export const useSubmissionStore = create<SubmissionState>()(
       },
     }),
     {
-      name: 'vibehack-submission-storage',
+      name: 'vibehack-submission-storage-v4',
       storage: createJSONStorage(() => localStorage),
     }
   )

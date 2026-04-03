@@ -55,7 +55,7 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
   const router = useRouter();
   const { toast } = useToast();
 
-  const { currentUser } = useUserStore();
+  const { currentUser, addPointHistory } = useUserStore();
   const { teams } = useTeamStore();
   const { submissions, addSubmission, updateSubmission } = useSubmissionStore();
   const { hackathons, addLeaderboardEntry, updateLeaderboardEntryTimestamp, updateAutoScore } = useHackathonStore();
@@ -172,6 +172,11 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
     // 🌟 [수정됨] 나중(결과 발표)을 위해 백그라운드에 점수만 조용히 저장해둠. (UI에는 안 뜸)
     const secretAiScore = Math.floor(Math.random() * 16) + 85;
     updateAutoScore(hackathonSlug, userTeam.name, secretAiScore);
+
+    // 🌟 데이터 연쇄 동기화: 마이페이지 포인트 추가
+    if (currentUser) {
+      addPointHistory(`'${hackathonDetail.title}' 결과물 제출 완료`, 50);
+    }
 
     // 🌟 제출 완료 깔끔한 알림
     toast({

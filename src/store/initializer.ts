@@ -11,14 +11,14 @@ import {
   hackathonDetails,
   leaderboards,
   teams,
-  rankings,
   submissions,
   boards,
   currentUser as seedUser,
+  personaPool,
 } from '@/data/seed';
 import { useNotificationStore } from './useNotificationStore';
 
-export const SEED_VERSION = 'v4.7';
+export const SEED_VERSION = 'v5.1';
 
 export function initializeStore() {
   const detailsRecord = hackathonDetails.reduce((acc, detail) => {
@@ -26,12 +26,15 @@ export function initializeStore() {
     return acc;
   }, {} as Record<string, typeof hackathonDetails[0]>);
 
-  // hackathon, team, submission, ranking은 시드로 덮어쓰기
+  // hackathon, team, submission은 시드로 덮어쓰기
   useHackathonStore.setState({ hackathons, hackathonDetails: detailsRecord, leaderboards });
   useTeamStore.setState({ teams });
   useSubmissionStore.setState({ submissions });
-  useRankingStore.setState({ rankings });
   useBoardStore.setState({ posts: boards });
+
+  // 페르소나 풀은 allUsers Store에 동기화
+  const { setAllUsers } = useUserStore.getState();
+  setAllUsers([seedUser, ...personaPool] as any);
 
   // 유저: 시드 유저(강유진)이거나 비로그인이면 시드 데이터로 강제 업데이트
   const existingUser = useUserStore.getState().currentUser;

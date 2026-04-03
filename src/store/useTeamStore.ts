@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Team, TeamMemo } from '@/types';
 import { generateId } from '@/lib/utils';
+import { useUserStore } from './useUserStore';
 
 interface TeamState {
   teams: Team[];
@@ -30,6 +31,10 @@ export const useTeamStore = create<TeamState>()(
         set((state) => ({
           teams: [...state.teams, newTeam],
         }));
+        
+        // 🌟 팀 창설 시 30점 랭킹 포인트 부여
+        useUserStore.getState().addPointHistory('팀 창설 완료', 30);
+        
         return newTeam;
       },
       updateTeam: (teamCode, teamUpdate) => {

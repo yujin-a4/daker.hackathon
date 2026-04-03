@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { generateId } from '@/lib/utils';
+import { useUserStore } from './useUserStore';
 
 export interface BoardPost {
   id: string;
@@ -35,6 +36,10 @@ export const useBoardStore = create<BoardState>()(
         set((state) => ({
           posts: [newPost, ...state.posts], // 최신순
         }));
+        
+        // 🌟 게시글 작성 시 포인트 부여
+        useUserStore.getState().addPointHistory('작전실 게시글 작성', 10);
+        
         return newPost;
       },
       deletePost: (id, authorNickname) => {
