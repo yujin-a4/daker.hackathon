@@ -30,6 +30,18 @@ interface UserState {
   addVotedTeam: (hackathonSlug: string, teamName: string) => boolean;
 }
 
+const toCurrentUser = (profile: UserProfile): CurrentUser => ({
+  ...profile,
+  bookmarkedSlugs: profile.bookmarkedSlugs || [],
+  preferredTypes: profile.preferredTypes || [],
+  skills: profile.skills || [],
+});
+
+const upsertUserProfile = (users: UserProfile[], profile: UserProfile) => {
+  const filteredUsers = users.filter((user) => user.id !== profile.id);
+  return [...filteredUsers, profile];
+};
+
 export const useUserStore = create<UserState>()(
   persist(
     (set, get) => ({
@@ -49,9 +61,9 @@ export const useUserStore = create<UserState>()(
           preferredTypes: [],
           skills: [],
         };
-        set((state) => ({ 
+        set((state) => ({
           currentUser: newUser,
-          allUsers: [...state.allUsers.filter(u => u.id !== newUser.id), newUser as UserProfile],
+          allUsers: upsertUserProfile(state.allUsers, newUser as UserProfile),
         }));
       },
 
@@ -64,8 +76,16 @@ export const useUserStore = create<UserState>()(
           return;
         }
 
-        set((state) => ({
-          currentUser: {
+        set((state) => {
+          const existingProfile = state.allUsers.find((user) => user.nickname === nickname);
+          if (existingProfile) {
+            return {
+              currentUser: toCurrentUser(existingProfile),
+              allUsers: upsertUserProfile(state.allUsers, existingProfile),
+            };
+          }
+
+          const newUser: CurrentUser = {
             id: generateId('user'),
             nickname,
             email: '',
@@ -74,11 +94,13 @@ export const useUserStore = create<UserState>()(
             bookmarkedSlugs: [],
             preferredTypes: [],
             skills: [],
-          },
-          allUsers: state.allUsers.some(u => u.nickname === nickname)
-            ? state.allUsers
-            : [...state.allUsers, { id: generateId('user'), nickname, email: '', teamCodes: [], joinedAt: new Date().toISOString() } as UserProfile]
-        }));
+          };
+
+          return {
+            currentUser: newUser,
+            allUsers: upsertUserProfile(state.allUsers, newUser as UserProfile),
+          };
+        });
       },
 
       setAllUsers: (users: UserProfile[]) => set({ allUsers: users }),
@@ -90,7 +112,11 @@ export const useUserStore = create<UserState>()(
       updateProfile: (data) => {
         set((state) => {
           if (!state.currentUser) return state;
-          return { currentUser: { ...state.currentUser, ...data } };
+          const nextCurrentUser = { ...state.currentUser, ...data };
+          return {
+            currentUser: nextCurrentUser,
+            allUsers: upsertUserProfile(state.allUsers, nextCurrentUser as UserProfile),
+          };
         });
       },
 
@@ -103,12 +129,15 @@ export const useUserStore = create<UserState>()(
               ...(state.currentUser.pointHistory || [])
             ];
             
+            const nextCurrentUser = {
+              ...state.currentUser,
+              teamCodes: [...state.currentUser.teamCodes, teamCode],
+              pointHistory: newHistory,
+            };
+
             return {
-              currentUser: {
-                ...state.currentUser,
-                teamCodes: [...state.currentUser.teamCodes, teamCode],
-                pointHistory: newHistory,
-              },
+              currentUser: nextCurrentUser,
+              allUsers: upsertUserProfile(state.allUsers, nextCurrentUser as UserProfile),
             };
           }
           return state;
@@ -118,11 +147,13 @@ export const useUserStore = create<UserState>()(
       removeTeamCode: (teamCode: string) => {
         set((state) => {
           if (state.currentUser && state.currentUser.teamCodes.includes(teamCode)) {
+            const nextCurrentUser = {
+              ...state.currentUser,
+              teamCodes: state.currentUser.teamCodes.filter((code) => code !== teamCode),
+            };
             return {
-              currentUser: {
-                ...state.currentUser,
-                teamCodes: state.currentUser.teamCodes.filter((code) => code !== teamCode),
-              },
+              currentUser: nextCurrentUser,
+              allUsers: upsertUserProfile(state.allUsers, nextCurrentUser as UserProfile),
             };
           }
           return state;
@@ -186,6 +217,9 @@ export const useUserStore = create<UserState>()(
       onRehydrateStorage: () => (state) => {
         if (state?.currentUser && !state.currentUser.bookmarkedSlugs) {
           state.currentUser.bookmarkedSlugs = [];
+        }
+        if (state?.currentUser) {
+          state.allUsers = upsertUserProfile(state.allUsers || [], state.currentUser as UserProfile);
         }
       },
     }

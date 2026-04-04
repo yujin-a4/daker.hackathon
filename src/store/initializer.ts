@@ -9,6 +9,7 @@ import { useTeamStore } from '@/store/useTeamStore';
 import { useUserStore } from '@/store/useUserStore';
 import { computeHackathonStatus } from '@/lib/hackathon-utils';
 import { normalizeSeedLeaderboards, normalizeSeedSubmissions } from '@/lib/seed-runtime';
+import { enrichTeamsWithContext } from '@/lib/team-context';
 import {
   boards,
   currentUser as seedUser,
@@ -39,11 +40,12 @@ export function initializeStore() {
     ...hackathon,
     status: computeHackathonStatus(hackathon, detailsRecord[hackathon.slug], now),
   }));
+  const hydratedTeams = enrichTeamsWithContext(teams, computedHackathons);
 
   const normalizedSubmissions = normalizeSeedSubmissions({
     details: detailsRecord,
     hackathons: computedHackathons,
-    teams,
+    teams: hydratedTeams,
     submissions,
     leaderboards,
     now,
@@ -51,7 +53,7 @@ export function initializeStore() {
   const normalizedLeaderboards = normalizeSeedLeaderboards({
     details: detailsRecord,
     hackathons: computedHackathons,
-    teams,
+    teams: hydratedTeams,
     submissions: normalizedSubmissions,
     leaderboards,
     now,
@@ -62,7 +64,7 @@ export function initializeStore() {
     hackathonDetails: detailsRecord,
     leaderboards: normalizedLeaderboards,
   });
-  useTeamStore.setState({ teams });
+  useTeamStore.setState({ teams: hydratedTeams });
   useSubmissionStore.setState({ submissions: normalizedSubmissions });
   useBoardStore.setState({ posts: boards });
 
@@ -134,8 +136,12 @@ export function initializeIfNeeded() {
     ...hackathon,
     status: computeHackathonStatus(hackathon, detailsRecord[hackathon.slug], now),
   }));
+  const normalizedTeams = enrichTeamsWithContext(useTeamStore.getState().teams, refreshedHackathons, {
+    preserveExisting: true,
+  });
 
   useHackathonStore.setState({ hackathons: refreshedHackathons, hackathonDetails: detailsRecord });
+  useTeamStore.setState({ teams: normalizedTeams });
   useRankingStore.getState().recalculateRankings();
   return false;
 }

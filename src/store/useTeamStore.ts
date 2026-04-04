@@ -25,6 +25,8 @@ export const useTeamStore = create<TeamState>()(
           ...teamData,
           teamCode: generateId('T'),
           createdAt: new Date().toISOString(),
+          availabilitySummary: teamData.availabilitySummary ?? '',
+          projectStatusDetail: teamData.projectStatusDetail ?? '',
           progressStatus: 'planning',
           progressPercent: 0,
         };

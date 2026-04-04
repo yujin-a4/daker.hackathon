@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useUserStore } from './useUserStore';
+import { useTeamStore } from './useTeamStore';
 
 export type NotificationType = 'invitation' | 'message' | 'system';
 
@@ -84,8 +85,14 @@ export const useNotificationStore = create<NotificationState>()(
       acceptInvitation: (id) => {
         const notification = get().notifications.find(n => n.id === id);
         if (notification && notification.type === 'invitation') {
+          const team = useTeamStore.getState().teams.find((item) => item.teamCode === notification.teamCode);
           // 1. 유저 스토어에 팀 코드 추가
           useUserStore.getState().addTeamCode(notification.teamCode);
+          if (team) {
+            useTeamStore.getState().updateTeam(notification.teamCode, {
+              memberCount: Math.min(Math.max(team.memberCount + 1, 1), team.maxTeamSize),
+            });
+          }
           
           // 2. 수신 알림 상태 업데이트
           set((state) => ({
@@ -104,7 +111,13 @@ export const useNotificationStore = create<NotificationState>()(
         const notification = get().notifications.find(n => n.id === id);
         if (notification && notification.type === 'invitation') {
           // 1. 유저 스토어에서 팀 코드 제거
+          const team = useTeamStore.getState().teams.find((item) => item.teamCode === notification.teamCode);
           useUserStore.getState().removeTeamCode(notification.teamCode);
+          if (team) {
+            useTeamStore.getState().updateTeam(notification.teamCode, {
+              memberCount: Math.max(team.memberCount - 1, 1),
+            });
+          }
           
           // 2. 수신 알림 상태를 다시 배정 대기 중(pending)으로 변경
           set((state) => ({

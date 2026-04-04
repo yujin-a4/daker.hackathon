@@ -19,6 +19,7 @@ import { useHackathonStore } from '@/store/useHackathonStore';
 import { useTeamStore } from '@/store/useTeamStore';
 import { useUserStore } from '@/store/useUserStore';
 import { calculateCompetitionStandings, getHackathonPhase } from '@/lib/hackathon-utils';
+import { getTeamComposition } from '@/lib/teamComposition';
 import { cn } from '@/lib/utils';
 
 import { Badge } from '@/components/ui/badge';
@@ -51,14 +52,6 @@ type SubmissionStageCard = {
   percent: number;
 };
 
-function hashSeed(value: string) {
-  let hash = 0;
-  for (let index = 0; index < value.length; index += 1) {
-    hash = Math.imul(31, hash) + value.charCodeAt(index);
-  }
-  return Math.abs(hash);
-}
-
 function getRankLabel(rank: number | null) {
   if (!rank) return '-';
   return `${rank}`;
@@ -87,18 +80,12 @@ function getStageColumns(detail: HackathonDetail): StageColumn[] {
   }));
 }
 
-function buildRoster(team: Team, allUsers: UserProfile[], currentUserId?: string) {
-  const usersById = new Map(allUsers.map((user) => [user.id, user]));
-  const leader =
-    usersById.get(team.leaderId) ||
-    (currentUserId === team.leaderId ? allUsers.find((user) => user.id === currentUserId) : undefined);
-  const candidates = allUsers.filter((user) => user.id !== team.leaderId);
-  const size = Math.max(0, (team.memberCount || 1) - 1);
-  const start = candidates.length > 0 ? hashSeed(team.teamCode) % candidates.length : 0;
-  const members = Array.from({ length: size })
-    .map((_, index) => candidates[(start + index) % Math.max(candidates.length, 1)])
-    .filter(Boolean);
-  return { leader, members };
+function buildRoster(team: Team, allUsers: UserProfile[], currentUser: UserProfile | null) {
+  const composition = getTeamComposition(team, allUsers, currentUser);
+  return {
+    leader: composition.members.find((member) => member.isLeader),
+    members: composition.members.filter((member) => !member.isLeader),
+  };
 }
 
 function SubmissionStateCell({ submittedAt }: { submittedAt?: string | null }) {
@@ -220,7 +207,7 @@ export default function LeaderboardSection({ leaderboard, hackathonDetail, submi
     const query = searchTerm.trim().toLowerCase();
     if (!query) return standingsWithTeams;
     return standingsWithTeams.filter((entry) => {
-      const leader = entry.team ? buildRoster(entry.team, allUsers, currentUser?.id).leader : undefined;
+      const leader = entry.team ? buildRoster(entry.team, allUsers, currentUser).leader : undefined;
       return entry.name.toLowerCase().includes(query) || leader?.nickname.toLowerCase().includes(query);
     });
   }, [allUsers, currentUser, searchTerm, standingsWithTeams]);
@@ -490,7 +477,7 @@ export default function LeaderboardSection({ leaderboard, hackathonDetail, submi
                     isMyRow && 'bg-violet-50/60 dark:bg-violet-950/10'
                   );
                   const roster = !entry.isSolo && entry.team
-                    ? buildRoster(entry.team, allUsers, currentUser?.id)
+                    ? buildRoster(entry.team, allUsers, currentUser)
                     : null;
                   return (
                     <TableRow

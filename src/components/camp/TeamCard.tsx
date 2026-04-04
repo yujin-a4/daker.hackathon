@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/lib/date';
+import { getTeamComposition } from '@/lib/teamComposition';
 import { Button } from '../ui/button';
 import {
   AlertDialog,
@@ -35,7 +36,7 @@ interface TeamCardProps {
 
 export default function TeamCard({ team, onEdit, onCardClick, className, matchScore }: TeamCardProps) {
   const { hackathons } = useHackathonStore();
-  const { currentUser } = useUserStore();
+  const { currentUser, allUsers } = useUserStore();
   const { updateTeam } = useTeamStore();
   const invitation = useNotificationStore((state) =>
     state.notifications.find(
@@ -47,6 +48,7 @@ export default function TeamCard({ team, onEdit, onCardClick, className, matchSc
   );
 
   const hackathon = team.hackathonSlug ? hackathons.find((item) => item.slug === team.hackathonSlug) : null;
+  const composition = getTeamComposition(team, allUsers, currentUser);
   const isMyTeam = currentUser?.teamCodes.includes(team.teamCode);
   const hasPendingInvitation = Boolean(invitation);
 
@@ -131,7 +133,7 @@ export default function TeamCard({ team, onEdit, onCardClick, className, matchSc
           <div className="flex items-center gap-1.5">
             <Users className="h-4 w-4" />
             <span>
-              {team.memberCount}/{team.maxTeamSize}
+              {composition.confirmedMemberCount}/{team.maxTeamSize}
             </span>
           </div>
         </div>
@@ -151,6 +153,7 @@ export default function TeamCard({ team, onEdit, onCardClick, className, matchSc
         )}
 
         <p className="line-clamp-3 flex-grow text-xs leading-relaxed text-secondary-foreground/80">{team.intro}</p>
+
 
         {team.isOpen && team.lookingFor.length > 0 && (
           <div className="mt-3">

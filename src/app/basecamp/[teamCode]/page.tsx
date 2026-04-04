@@ -6,6 +6,7 @@ import { useUserStore } from '@/store/useUserStore';
 import { useTeamStore } from '@/store/useTeamStore';
 import { useHackathonStore } from '@/store/useHackathonStore';
 import { ArrowLeft, BookOpen, Presentation, StickyNote, Activity, Target } from 'lucide-react';
+import { getTeamComposition } from '@/lib/teamComposition';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,7 +27,7 @@ export default function BasecampPage() {
   const params = useParams();
   const teamCode = params.teamCode as string;
 
-  const { currentUser } = useUserStore();
+  const { currentUser, allUsers } = useUserStore();
   const { teams } = useTeamStore();
   const { hackathons } = useHackathonStore();
 
@@ -35,6 +36,7 @@ export default function BasecampPage() {
   const team = teams.find(t => t.teamCode === teamCode);
   const isMember = currentUser && currentUser.teamCodes.includes(teamCode);
   const hackathon = team ? hackathons.find(h => h.slug === team.hackathonSlug) : null;
+  const composition = team ? getTeamComposition(team, allUsers, currentUser) : null;
 
   useEffect(() => {
     // 권한 체크
@@ -105,7 +107,7 @@ export default function BasecampPage() {
             <div className="space-y-4 text-sm">
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">팀원</span>
-                <span className="font-semibold">{team.memberCount} / {team.maxTeamSize}</span>
+                <span className="font-semibold">{composition?.confirmedMemberCount ?? team.memberCount} / {team.maxTeamSize}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">목표 해커톤</span>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Trophy, Users, ExternalLink, Edit, LogOut, Lock as LockIcon } from 'lucide-react';
+import { Trophy, Users, ExternalLink, Edit, LogOut, Lock as LockIcon, Clock, Target } from 'lucide-react';
 import type { Team } from '@/types';
 import { useHackathonStore } from '@/store/useHackathonStore';
 import { useNotificationStore } from '@/store/useNotificationStore';
@@ -10,6 +10,8 @@ import { useUserStore } from '@/store/useUserStore';
 import { useTeamStore } from '@/store/useTeamStore';
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/lib/date';
+import { getTeamAvailabilitySummary, getTeamProjectStatusDetail } from '@/lib/team-context';
+import { getTeamComposition } from '@/lib/teamComposition';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +22,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import TeamCompositionSection from '@/components/camp/TeamCompositionSection';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,7 +45,7 @@ interface TeamDetailModalProps {
 export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: TeamDetailModalProps) {
   const router = useRouter();
   const { hackathons } = useHackathonStore();
-  const { currentUser } = useUserStore();
+  const { currentUser, allUsers } = useUserStore();
   const { updateTeam } = useTeamStore();
   const invitation = useNotificationStore((state) =>
     team
@@ -58,6 +61,7 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
   if (!team) return null;
 
   const hackathon = team.hackathonSlug ? hackathons.find((item) => item.slug === team.hackathonSlug) : null;
+  const composition = getTeamComposition(team, allUsers, currentUser);
   const isMyTeam = currentUser?.teamCodes.includes(team.teamCode);
   const hasPendingInvitation = Boolean(invitation);
 
@@ -87,14 +91,12 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
           <div className="flex flex-wrap items-center gap-2 pt-1 text-sm text-muted-foreground">
             {hasPendingInvitation && (
               <Badge className="border-indigo-100 bg-indigo-50 font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300">
-                이 팀이 나를 초대했어요
+                이 팀에서 초대가 와 있습니다
               </Badge>
             )}
             <Badge
               className={cn(
-                team.isOpen
-                  ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300'
-                  : 'bg-muted text-muted-foreground',
+                team.isOpen ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' : 'bg-muted text-muted-foreground',
                 'font-medium'
               )}
             >
@@ -103,7 +105,7 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
             <div className="flex items-center gap-1.5">
               <Users className="h-4 w-4" />
               <span>
-                {team.memberCount}/{team.maxTeamSize}
+                {composition.confirmedMemberCount}/{team.maxTeamSize}
               </span>
             </div>
           </div>
@@ -112,9 +114,9 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
         <div className="max-h-[60vh] space-y-6 overflow-y-auto py-4 pr-2">
           {hasPendingInvitation && (
             <div className="rounded-xl border border-indigo-200 bg-indigo-50/80 p-4 dark:border-indigo-800 dark:bg-indigo-950/30">
-              <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">이 팀에서 합류 초대를 보냈습니다.</p>
+              <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">이 팀이 합류 제안을 보냈습니다.</p>
               <p className="mt-1 text-sm text-indigo-700/80 dark:text-indigo-300/80">
-                알림 센터에서 팀 정보를 확인한 뒤 수락하거나 거절할 수 있습니다.
+                알림 센터에서 초대 내용을 확인하고 수락하거나 거절할 수 있습니다.
               </p>
             </div>
           )}
@@ -125,12 +127,36 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
               <span className="font-medium">{hackathon.title}</span>
             </button>
           ) : (
-            <p className="text-sm text-muted-foreground">자유 모집</p>
+            <p className="text-sm text-muted-foreground">자율 모집</p>
           )}
 
           <div>
-            <h4 className="mb-2 text-sm font-medium text-muted-foreground">소개</h4>
+            <h4 className="mb-2 text-sm font-medium text-muted-foreground">팀 소개</h4>
             <p className="whitespace-pre-wrap leading-relaxed text-foreground/80">{team.intro}</p>
+          </div>
+
+          <TeamCompositionSection team={team} />
+
+          <div className="space-y-4 rounded-xl border bg-muted/10 p-5">
+            <div>
+              <div className="mb-1.5 flex items-center gap-2">
+                <Clock className="h-4 w-4 text-primary" />
+                <h4 className="text-sm font-medium text-foreground">작업 가능 시간</h4>
+              </div>
+              <p className="pl-6 whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">
+                {getTeamAvailabilitySummary(team)}
+              </p>
+            </div>
+            <div className="border-t border-dashed"></div>
+            <div>
+              <div className="mb-1.5 flex items-center gap-2">
+                <Target className="h-4 w-4 text-amber-500" />
+                <h4 className="text-sm font-medium text-foreground">상세 진행 상태 / 비전</h4>
+              </div>
+              <p className="pl-6 whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">
+                {getTeamProjectStatusDetail(team)}
+              </p>
+            </div>
           </div>
 
           {team.isOpen && team.lookingFor.length > 0 && (
@@ -170,7 +196,7 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
                 <div className="flex w-full gap-2">
                   {currentUser?.id === team.leaderId && (
                     <>
-                      <Button variant="outline" size="sm" className="h-9 flex-1 font-semibold border-slate-200" onClick={handleEditClick}>
+                      <Button variant="outline" size="sm" className="h-9 flex-1 border-slate-200 font-semibold" onClick={handleEditClick}>
                         <Edit className="mr-1.5 h-4 w-4" />
                         정보 수정
                       </Button>
@@ -190,7 +216,7 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
                             <AlertDialogHeader>
                               <AlertDialogTitle>모집을 마감하시겠습니까?</AlertDialogTitle>
                               <AlertDialogDescription>
-                                더 이상 새로운 지원자를 받을 수 없습니다. 필요하면 팀 정보를 수정해 다시 열 수 있습니다.
+                                더 이상 새로운 지원자를 받지 않습니다. 필요하면 팀 정보 수정에서 다시 공개 상태로 바꿀 수 있습니다.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -211,7 +237,7 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
                 <div className="space-y-4">
                   <p className="flex items-start gap-2 rounded-xl border border-amber-100 bg-amber-50 p-3 text-sm leading-relaxed text-amber-700 dark:border-amber-800 dark:bg-amber-900/30">
                     <LockIcon className="mt-0.5 h-4 w-4 shrink-0" />
-                    이 팀은 <strong>초대로만 참여할 수 있는 비공개 팀</strong>입니다. 팀장의 초대를 받은 경우 알림 센터에서 수락할 수 있습니다.
+                    이 팀은 <strong>초대 전용 팀</strong>입니다. 팀 리더의 초대를 받은 경우에만 합류할 수 있습니다.
                   </p>
                   <Button disabled className="h-12 w-full cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-slate-800">
                     연락하기 제한됨
@@ -220,7 +246,7 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
               ) : (
                 <Link href={`/camp/contact/${team.teamCode}`}>
                   <Button className="group h-12 w-full bg-indigo-600 text-base font-bold text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 dark:shadow-none">
-                    연락하기 (오픈채팅 데모)
+                    연락하기 (채팅 열기)
                     <ExternalLink className="ml-2 h-5 w-5 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
                   </Button>
                 </Link>

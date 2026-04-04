@@ -112,6 +112,8 @@ export interface Team {
   maxTeamSize: number;
   lookingFor: { position: string; description: string }[];
   intro: string;
+  availabilitySummary?: string;
+  projectStatusDetail?: string;
   contact: { type: string; url: string };
   createdAt: string;
   progressStatus?: 'planning' | 'designing' | 'developing' | 'completed';

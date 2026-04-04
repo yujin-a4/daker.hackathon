@@ -1402,3 +1402,56 @@ export const rankings: RankingUser[] = [];
 export const boards = [
   { id: 'p1', teamCode: 'T-HANDOVER-01', authorNickname: '강유진', content: '최종 제출 완료!', topic: '공지', color: 'bg-emerald-100', createdAt: '2026-03-29T10:00:00Z', likes: 5 },
 ];
+
+const availabilityPatterns = [
+  '평일 20:00~24:00 집중, 주말은 반나절씩 대응 가능합니다.',
+  '오전 짧은 싱크 후 저녁 메이킹 세션 중심으로 움직입니다.',
+  '야간 작업 비중이 높고, 마감 주간에는 주말도 유동적으로 맞출 수 있습니다.',
+  '점심 전후 체크인과 밤 시간대 실작업 위주로 합을 맞추고 있습니다.',
+  '평일에는 비동기 협업, 주말에는 2~3시간씩 몰아서 진행하는 패턴입니다.',
+];
+
+const progressNarratives = {
+  planning: [
+    '문제 정의와 타깃 사용자 페르소나를 정리하는 중입니다. 이번 주 안에 핵심 가설과 MVP 범위를 확정하려고 합니다.',
+    '아이디어 후보를 압축했고, 지금은 기능 우선순위와 역할 분담을 맞추는 단계입니다. 초반 방향 설계에 함께할 분이 필요합니다.',
+  ],
+  designing: [
+    '핵심 플로우와 화면 구조를 잡아두었고, 프로토타입 디테일을 다듬는 중입니다. 실제 구현 관점에서 함께 설계 보완이 필요합니다.',
+    '와이어프레임과 사용자 시나리오는 정리됐습니다. 지금은 화면 완성도와 개발 연결성을 높이는 단계입니다.',
+  ],
+  developing: [
+    '핵심 기능 구현에 들어갔고, 데모 기준으로 우선순위를 나눠 병렬 작업 중입니다. 지금 합류하면 바로 맡을 수 있는 작업이 있습니다.',
+    '기본 뼈대는 올라왔고, 현재는 품질 보강과 제출용 시나리오 정리에 집중하고 있습니다. 마지막 완성도를 함께 끌어올릴 멤버를 찾고 있습니다.',
+  ],
+  completed: [
+    '제출 가능한 수준까지 정리된 상태입니다. 이후 발표 자료와 마무리 디테일 중심으로 움직이고 있습니다.',
+    '핵심 산출물은 완료했고, 현재는 회고나 후속 정리 위주로 운영 중입니다.',
+  ],
+} as const;
+
+const buildAvailabilitySummary = (index: number, role?: string) => {
+  const base = availabilityPatterns[index % availabilityPatterns.length];
+
+  if (!role) return base;
+  if (role.includes('Designer')) return `${base} 디자인 리뷰는 저녁 시간대에 빠르게 돌립니다.`;
+  if (role.includes('AI') || role.includes('Data')) return `${base} 모델 실험과 데이터 확인은 낮 시간에도 간헐적으로 대응합니다.`;
+  if (role.includes('Backend') || role.includes('Cloud') || role.includes('DevOps')) return `${base} 배포나 인프라 점검은 심야에도 짧게 커버 가능합니다.`;
+
+  return `${base} 필요하면 짧은 스탠드업으로 의사결정을 빠르게 끝냅니다.`;
+};
+
+const buildProjectStatusDetail = (
+  status: Team['progressStatus'],
+  index: number,
+  intro: string,
+  lookingFor: { position: string; description: string }[]
+) => {
+  const narratives = progressNarratives[status || 'planning'];
+  const recruitingHint =
+    lookingFor.length > 0
+      ? ` 특히 ${lookingFor.map((item) => item.position).join(', ')} 포지션이 들어오면 바로 병렬로 속도를 낼 수 있습니다.`
+      : '';
+
+  return `${narratives[index % narratives.length]}${recruitingHint} 팀 톤은 "${intro.slice(0, 28)}${intro.length > 28 ? '...' : ''}" 쪽에 가깝습니다.`;
+};
