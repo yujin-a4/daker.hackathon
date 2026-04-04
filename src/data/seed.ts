@@ -975,12 +975,17 @@ export const teams: Team[] = [
       teamCode: `T-PERSONA-${slug.slice(0, 4).toUpperCase()}-${i + 1}`,
       hackathonSlug: slug,
       name: teamName,
-      isOpen: false,
+      isOpen: ['Prompt Wizards', 'Data Driven', 'Pixel Perfect'].includes(teamName),
       isPrivate: false,
       leaderId,
       memberCount: 3,
       maxTeamSize: 5,
-      lookingFor: [] as { position: string; description: string }[],
+      lookingFor: ['Prompt Wizards', 'Data Driven', 'Pixel Perfect'].includes(teamName)
+        ? [
+            { position: 'Frontend', description: 'React/Next.js 개발자' },
+            { position: 'Designer', description: 'UI/UX 디자이너' }
+          ]
+        : ([] as { position: string; description: string }[]),
       intro: introLibrary[i % introLibrary.length],
       contact: { type: 'link' as const, url: '#' },
       createdAt: slug.includes('2025') ? '2025-06-01T00:00:00Z' : '2026-02-01T00:00:00Z',
@@ -1005,7 +1010,19 @@ export const teams: Team[] = [
         leaderId: personaPool[personaIdx].id,
         memberCount: (i % 3) + 2,
         maxTeamSize: 4,
-        lookingFor: i % 3 === 0 ? [{ position: (i % 2 === 0 ? 'Designer' : 'Frontend'), description: (i % 2 === 0 ? 'UX/UI' : 'React/Next.js') }] : [],
+        lookingFor: i % 3 === 0 ? (() => {
+          const positionPool = [
+            { position: 'Designer', description: 'UX/UI 디자인 담당' },
+            { position: 'Frontend', description: 'React/Next.js 개발' },
+            { position: 'Backend', description: 'API 및 DB 설계' },
+            { position: 'PM', description: '일정 관리 및 기획 조율' },
+            { position: 'AI/ML', description: 'AI 모델 개발 및 실험' },
+            { position: 'Data Analyst', description: '데이터 분석 및 시각화' },
+            { position: 'Security', description: '보안 취약점 분석' },
+            { position: 'Fullstack', description: '프론트·백엔드 전담' },
+          ];
+          return [positionPool[(i + sIdx * 3) % positionPool.length]];
+        })() : [],
         intro: introLibrary[(i + sIdx) % introLibrary.length],
         contact: { type: 'link' as const, url: '#' },
         createdAt: '2026-03-10T10:00:00Z',

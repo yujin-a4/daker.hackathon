@@ -13,12 +13,14 @@ interface RecommendedTeamSectionProps {
   recommendations: MatchingResult[];
   onEdit: (team: Team) => void;
   handleCardClick: (team: Team) => void;
+  userNickname?: string;
 }
 
 export default function RecommendedTeamSection({
   recommendations,
   onEdit,
   handleCardClick,
+  userNickname = '회원',
 }: RecommendedTeamSectionProps) {
   if (recommendations.length === 0) return null;
 
@@ -38,7 +40,7 @@ export default function RecommendedTeamSection({
             </h2>
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 font-medium ml-1">
-            강유진님의 프로필을 분석하여 <span className="text-amber-600 dark:text-amber-400 font-bold">최적의 시너지를 낼 팀</span>을 선별했습니다.
+            {userNickname}님의 프로필을 분석하여 <span className="text-amber-600 dark:text-amber-400 font-bold">최적의 시너지를 낼 팀</span>을 선별했습니다.
           </p>
         </div>
       </div>

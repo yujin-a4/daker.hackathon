@@ -20,7 +20,7 @@ import {
   teams,
 } from '@/data/seed';
 
-export const SEED_VERSION = 'v5.3';
+export const SEED_VERSION = 'v5.5';
 
 function buildDetailsRecord() {
   return hackathonDetails.reduce(
@@ -79,20 +79,20 @@ export function initializeStore() {
   useNotificationStore.getState().addNotification({
     type: 'invitation',
     fromTeamName: 'Prompt Wizards',
-    hackathonTitle: '생성형 AI 스타트업 챌린지',
-    teamCode: 'T-GEN-1',
+    hackathonTitle: '제1회 생성형 AI 스타트업 챌린지',
+    teamCode: 'T-PERSONA-GEN--1',
   });
   useNotificationStore.getState().addNotification({
     type: 'invitation',
     fromTeamName: 'Data Driven',
-    hackathonTitle: '2026 클라우드 네이티브 현대화 대회',
-    teamCode: 'T-CLO-4',
+    hackathonTitle: '제1회 생성형 AI 스타트업 챌린지',
+    teamCode: 'T-PERSONA-GEN--5',
   });
   useNotificationStore.getState().addNotification({
     type: 'invitation',
     fromTeamName: 'Pixel Perfect',
-    hackathonTitle: '글로벌 UX/UI 사용자 리디자인 챌린지 2026',
-    teamCode: 'T-UX--1',
+    hackathonTitle: '2026 사용자 경험 리디자인 챌린지',
+    teamCode: 'T-PERSONA-UX-U-1',
   });
 
   useNotificationStore.getState().addSentInvitation({

@@ -1,4 +1,5 @@
-import type { Team, CurrentUser } from '@/types';
+import type { CurrentUser, Team } from '@/types';
+import { useHackathonStore } from '@/store/useHackathonStore';
 
 export interface MatchingResult {
   team: Team;
@@ -6,82 +7,180 @@ export interface MatchingResult {
   matchReasons: string[];
 }
 
-/**
- * 유저의 역할과 기술 스택을 바탕으로 팀과의 매칭 점수를 계산합니다.
- */
+type MatchBucket =
+  | 'product'
+  | 'design'
+  | 'frontend'
+  | 'backend'
+  | 'fullstack'
+  | 'ai'
+  | 'data'
+  | 'mobile'
+  | 'devops'
+  | 'security';
+
+const BUCKET_ALIASES: Record<MatchBucket, string[]> = {
+  product: ['pm', 'po', 'product', 'planner', 'planning', '기획', '서비스기획', '서비스 기획', 'prd', 'notion', 'biz', 'business'],
+  design: ['design', 'designer', 'ux', 'ui', 'figma', 'prototype', 'prototyping', '디자인', '디자이너'],
+  frontend: ['frontend', 'front-end', 'react', 'next', 'vue', 'web', '퍼블리싱', '프론트'],
+  backend: ['backend', 'back-end', 'server', 'api', 'db', 'database', 'spring', 'nest', 'fastapi', '백엔드'],
+  fullstack: ['fullstack', 'full-stack', '풀스택'],
+  ai: ['ai', 'ml', 'llm', 'rag', 'prompt', 'genai', 'openai', 'langchain', 'pytorch', 'tensorflow'],
+  data: ['data', 'analytics', 'analysis', 'analyst', 'bi', 'sql', 'pandas', '데이터', '분석'],
+  mobile: ['mobile', 'android', 'ios', 'swift', 'kotlin', 'react native', 'flutter'],
+  devops: ['devops', 'infra', 'cloud', 'aws', 'gcp', 'azure', 'docker', 'kubernetes', 'ci/cd'],
+  security: ['security', 'secure', 'ctf', '보안', '취약점'],
+};
+
+const RELATED_BUCKETS: Partial<Record<MatchBucket, MatchBucket[]>> = {
+  product: ['design', 'frontend', 'data'],
+  design: ['product', 'frontend'],
+  frontend: ['design', 'fullstack', 'backend'],
+  backend: ['fullstack', 'devops', 'data', 'security'],
+  fullstack: ['frontend', 'backend', 'devops'],
+  ai: ['data', 'backend', 'product'],
+  data: ['ai', 'backend', 'product'],
+  mobile: ['frontend', 'design'],
+  devops: ['backend', 'security', 'fullstack'],
+  security: ['backend', 'devops'],
+};
+
+const TYPE_BUCKET_MAP: Array<{ bucket: MatchBucket; keywords: string[] }> = [
+  { bucket: 'product', keywords: ['서비스기획', '서비스 기획', '기획', 'startup', 'business', 'idea', 'productivity', 'lowcode', 'nocode'] },
+  { bucket: 'design', keywords: ['디자인', 'ux', 'ui', 'redesign'] },
+  { bucket: 'frontend', keywords: ['web', 'sw개발', 'sw 개발'] },
+  { bucket: 'backend', keywords: ['server', 'api', 'backend'] },
+  { bucket: 'ai', keywords: ['데이터/ai', 'ai/ml', 'ai', 'ml', 'genai'] },
+  { bucket: 'data', keywords: ['데이터', 'analysis', 'analytics', 'bigdata'] },
+  { bucket: 'security', keywords: ['security', '보안'] },
+];
+
+function normalize(value?: string | null) {
+  return (value || '').toLowerCase().trim();
+}
+
+function includesKeyword(texts: Array<string | undefined | null>, keyword: string) {
+  const normalizedKeyword = normalize(keyword);
+  return normalizedKeyword.length > 0 && texts.some((text) => normalize(text).includes(normalizedKeyword));
+}
+
+function resolveBuckets(texts: Array<string | undefined | null>) {
+  const normalizedTexts = texts.map((text) => normalize(text)).filter(Boolean);
+  const buckets = new Set<MatchBucket>();
+
+  (Object.entries(BUCKET_ALIASES) as Array<[MatchBucket, string[]]>).forEach(([bucket, aliases]) => {
+    if (aliases.some((alias) => includesKeyword(normalizedTexts, alias))) {
+      buckets.add(bucket);
+    }
+  });
+
+  TYPE_BUCKET_MAP.forEach(({ bucket, keywords }) => {
+    if (keywords.some((keyword) => includesKeyword(normalizedTexts, keyword))) {
+      buckets.add(bucket);
+    }
+  });
+
+  return buckets;
+}
+
+function getHackathonContext(team: Team) {
+  if (!team.hackathonSlug) return null;
+  const hackathon = useHackathonStore
+    .getState()
+    .hackathons.find((item) => item.slug === team.hackathonSlug);
+
+  if (!hackathon) return null;
+
+  return {
+    type: hackathon.type,
+    tags: hackathon.tags || [],
+    title: hackathon.title,
+  };
+}
+
+function getRelatedOverlap(userBuckets: Set<MatchBucket>, targetBuckets: Set<MatchBucket>) {
+  for (const bucket of userBuckets) {
+    const related = RELATED_BUCKETS[bucket] || [];
+    if (related.some((candidate) => targetBuckets.has(candidate))) {
+      return bucket;
+    }
+  }
+  return null;
+}
+
 export function calculateMatchScore(user: CurrentUser, team: Team): MatchingResult {
   let score = 0;
   const matchReasons: string[] = [];
+  const hackathon = getHackathonContext(team);
 
-  // 1. 역할 매칭 (60점)
-  const myRole = user.role?.toLowerCase() || '';
-  const isLookingForMyRole = team.lookingFor.some(lf => {
-    const role = lf.position.toLowerCase();
-    return role.includes(myRole) || myRole.includes(role);
-  });
+  const teamRoleTexts = team.lookingFor.flatMap((item) => [item.position, item.description]);
+  const hackathonTexts = [hackathon?.title, hackathon?.type, ...(hackathon?.tags || [])];
+  const teamContextTexts = [team.intro, ...teamRoleTexts, ...hackathonTexts];
 
-  if (isLookingForMyRole) {
-    score += 60;
-    matchReasons.push(`✨ ${user.role} 포지션을 간절히 찾고 있는 팀`);
-  } else {
-    // 서브 역할 매칭 (기타 등등)
-    const isRelatedRole = team.lookingFor.some(lf => {
-      const role = lf.position.toLowerCase();
-      if ((myRole.includes('개발') && role.includes('개발')) || (myRole.includes('디자인') && role.includes('디자인'))) return true;
-      return false;
-    });
-    if (isRelatedRole) {
-      score += 30;
-      matchReasons.push(`🎯 ${user.role} 직무 역량을 200% 발휘할 수 있는 환경`);
+  const userBuckets = resolveBuckets([
+    user.role,
+    ...(user.preferredTypes || []),
+    ...(user.skills || []),
+  ]);
+  const teamRoleBuckets = resolveBuckets(teamRoleTexts);
+  const hackathonBuckets = resolveBuckets(hackathonTexts);
+
+  const directRoleBuckets = [...userBuckets].filter((bucket) => teamRoleBuckets.has(bucket));
+  if (directRoleBuckets.length > 0) {
+    score += 40;
+    matchReasons.push(`팀이 ${user.role || '회원님 역량'}과 직접 맞닿은 포지션을 찾고 있어요`);
+  } else if (userBuckets.size > 0 && teamRoleBuckets.size > 0) {
+    const relatedBucket = getRelatedOverlap(userBuckets, teamRoleBuckets);
+    if (relatedBucket) {
+      score += 22;
+      matchReasons.push('현재 모집 포지션과 협업 시너지가 좋은 팀이에요');
     }
   }
 
-  // 2. 기술 스택 매칭 (최대 20점)
-  const mySkills = user.skills || [];
-  const matchedSkills = mySkills.filter(skill => 
-    team.intro.toLowerCase().includes(skill.toLowerCase()) ||
-    team.lookingFor.some(lf => lf.description?.toLowerCase().includes(skill.toLowerCase()))
-  );
-
+  const matchedSkills = (user.skills || []).filter((skill) => includesKeyword(teamContextTexts, skill));
   if (matchedSkills.length > 0) {
-    const skillScore = Math.min(matchedSkills.length * 10, 20);
-    score += skillScore;
-    matchReasons.push(`🛠️ 보유하신 ${matchedSkills.slice(0, 2).join(', ')} 기술 스택이 꼭 필요해요`);
-  }
-
-  // 3. 관심 분야 매칭 (15점)
-  const myPrefs = user.preferredTypes || [];
-  const isPreferredType = team.hackathonSlug && myPrefs.some(pref => 
-    team.hackathonSlug?.toLowerCase().includes(pref.toLowerCase())
-  );
-
-  if (isPreferredType) {
-    score += 15;
-    matchReasons.push('🚀 관심 분야 해커톤에서 더 큰 성장을 도모하세요');
-  }
-
-  // 4. 활동성 및 팀 상태 (최대 5점)
-  if (team.isOpen) {
-    score += 5;
-    if (team.memberCount >= team.maxTeamSize - 1) {
-      matchReasons.push('⏰ 곧 모집 마감! 마지막 한 자리를 선점하세요');
+    score += Math.min(24, matchedSkills.length * 12);
+    matchReasons.push(`${matchedSkills.slice(0, 2).join(', ')} 경험을 바로 활용할 수 있어요`);
+  } else {
+    const skillBuckets = resolveBuckets(user.skills || []);
+    const skillBucketOverlap = [...skillBuckets].filter(
+      (bucket) => teamRoleBuckets.has(bucket) || hackathonBuckets.has(bucket)
+    );
+    if (skillBucketOverlap.length > 0) {
+      score += 14;
+      matchReasons.push('보유 스킬 성향이 팀이 만드는 방향과 잘 맞아요');
     }
   }
 
-  // 점수 정규화 (최대 100점)
-  const finalScore = Math.min(score, 100);
+  const preferredTypeBuckets = resolveBuckets(user.preferredTypes || []);
+  const preferredOverlap = [...preferredTypeBuckets].filter((bucket) => hackathonBuckets.has(bucket));
+  if (preferredOverlap.length > 0) {
+    score += 20;
+    matchReasons.push(`${hackathon?.type || '관심 분야'} 성격의 해커톤이라 선호도와 맞아요`);
+  }
 
-  return { team, score: finalScore, matchReasons };
+  const explicitInterestOverlap = (user.preferredTypes || []).some((pref) => includesKeyword(hackathonTexts, pref));
+  if (explicitInterestOverlap && preferredOverlap.length === 0) {
+    score += 10;
+    matchReasons.push('선호 분야 키워드가 해커톤 주제와 겹쳐요');
+  }
+
+  if (team.isOpen && score > 0) {
+    score += 8;
+    if (team.memberCount >= team.maxTeamSize - 1) {
+      matchReasons.push('곧 모집 마감이라 빠르게 합류 판단하기 좋아요');
+    }
+  }
+
+  const finalScore = Math.min(score, 100);
+  return { team, score: finalScore, matchReasons: matchReasons.slice(0, 3) };
 }
 
-/**
- * 모든 팀 중 유저에게 가장 잘 맞는 팀들을 추천순으로 정렬하여 반환합니다.
- */
 export function getRecommendedTeams(user: CurrentUser, allTeams: Team[], limit: number = 3): MatchingResult[] {
   return allTeams
-    .filter(t => !t.isSolo && t.isOpen && !user.teamCodes.includes(t.teamCode))
-    .map(t => calculateMatchScore(user, t))
-    .filter(res => res.score >= 30) // 30점 이상이면 노출 가능하게 하향 조정
+    .filter((team) => !team.isSolo && team.isOpen && !user.teamCodes.includes(team.teamCode))
+    .map((team) => calculateMatchScore(user, team))
+    .filter((result) => result.score >= 20)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
 }

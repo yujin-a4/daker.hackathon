@@ -4,13 +4,13 @@ import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Users, Plus, Sparkles, ArrowRight } from 'lucide-react';
+import { Users, Plus, ArrowRight } from 'lucide-react';
 
 import { useTeamStore } from '@/store/useTeamStore';
 import { useHackathonStore } from '@/store/useHackathonStore';
 import { useUserStore } from '@/store/useUserStore';
 import type { Team } from '@/types';
-import { getRecommendedTeams, MatchingResult } from '@/lib/matching';
+import { calculateMatchScore, MatchingResult } from '@/lib/matching';
 import RecommendedTeamSection from '@/components/camp/RecommendedTeamSection';
 
 import TeamFilters from '@/components/camp/TeamFilters';
@@ -41,6 +41,7 @@ function CampContent() {
   
   const [hackathonFilter, setHackathonFilter] = useState(searchParams.get('hackathon') || 'all');
   const [showOpenOnly, setShowOpenOnly] = useState(false);
+  const [showPublicOnly, setShowPublicOnly] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [positionFilter, setPositionFilter] = useState('all');
   
@@ -53,10 +54,26 @@ function CampContent() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
 
+  // 추천: ended 해커톤 팀 제외, 내 팀 제외, isSolo 제외, isOpen 팀 우선 → 상위 3개
   const recommendedTeams = useMemo(() => {
     if (!currentUser) return [];
-    return getRecommendedTeams(currentUser, teams, 3);
-  }, [currentUser, teams]);
+    const activeHackathonSlugs = new Set(
+      hackathons.filter(h => h.status === 'ongoing' || h.status === 'upcoming').map(h => h.slug)
+    );
+    const eligibleTeams = teams.filter(t =>
+      !t.isSolo &&
+      !currentUser.teamCodes.includes(t.teamCode) &&
+      t.hackathonSlug &&
+      activeHackathonSlugs.has(t.hackathonSlug)
+    );
+    return eligibleTeams
+      .map(t => calculateMatchScore(currentUser, t))
+      .sort((a, b) => {
+        if (a.team.isOpen !== b.team.isOpen) return b.team.isOpen ? 1 : -1;
+        return b.score - a.score;
+      })
+      .slice(0, 3);
+  }, [currentUser, teams, hackathons]);
 
   const toggleSection = (slug: string) => {
     setExpandedSections(prev => {
@@ -90,26 +107,44 @@ function CampContent() {
     setIsDetailModalOpen(true);
   };
   
+  // 진행 중/예정인 해커톤 slug 세트 (ended 팀 필터링용)
+  const activeHackathonSlugs = useMemo(() =>
+    new Set(hackathons.filter(h => h.status === 'ongoing' || h.status === 'upcoming').map(h => h.slug)),
+    [hackathons]
+  );
+
   const groupedTeams = useMemo(() => {
-    const groups: Record<string, Team[]> = {};
-    
+    const groups: Record<string, MatchingResult[]> = {};
+
     const baseFiltered = teams.filter(team => {
       if (team.isSolo) return false;
+      // ended 해커톤 팀은 숨김
+      if (team.hackathonSlug && !activeHackathonSlugs.has(team.hackathonSlug)) return false;
       const openMatch = !showOpenOnly || team.isOpen;
-      const searchMatch = searchQuery === '' || 
+      const publicMatch = !showPublicOnly || !team.isPrivate;
+      const searchMatch = searchQuery === '' ||
                           team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           team.intro.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const positionMatch = positionFilter === 'all' || 
+      const positionMatch = positionFilter === 'all' ||
                             team.lookingFor.some(lf => lf.position.toLowerCase().includes(positionFilter.toLowerCase()));
-                            
-      return openMatch && searchMatch && positionMatch;
+      return openMatch && publicMatch && searchMatch && positionMatch;
     });
 
     baseFiltered.forEach(team => {
       const slug = team.hackathonSlug || 'general';
       if (!groups[slug]) groups[slug] = [];
-      groups[slug].push(team);
+      groups[slug].push(
+        currentUser
+          ? calculateMatchScore(currentUser, team)
+          : { team, score: 0, matchReasons: [] }
+      );
+    });
+
+    Object.values(groups).forEach(group => {
+      group.sort((a, b) => {
+        if (currentUser) return b.score - a.score;
+        return new Date(b.team.createdAt).getTime() - new Date(a.team.createdAt).getTime();
+      });
     });
 
     if (hackathonFilter !== 'all') {
@@ -117,7 +152,7 @@ function CampContent() {
     }
 
     return groups;
-  }, [teams, hackathonFilter, showOpenOnly, searchQuery]);
+  }, [teams, hackathonFilter, showOpenOnly, showPublicOnly, searchQuery, positionFilter, activeHackathonSlugs, currentUser]);
 
   const activeGroups = Object.keys(groupedTeams).filter(slug => groupedTeams[slug].length > 0);
 
@@ -134,7 +169,8 @@ function CampContent() {
           <RecommendedTeamSection 
             recommendations={recommendedTeams} 
             onEdit={handleEdit} 
-            handleCardClick={handleCardClick} 
+            handleCardClick={handleCardClick}
+            userNickname={currentUser?.nickname}
           />
         )}
 
@@ -145,11 +181,13 @@ function CampContent() {
             setHackathonFilter={setHackathonFilter}
             showOpenOnly={showOpenOnly}
             setShowOpenOnly={setShowOpenOnly}
+            showPublicOnly={showPublicOnly}
+            setShowPublicOnly={setShowPublicOnly}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             positionFilter={positionFilter}
             setPositionFilter={setPositionFilter}
-            hackathons={hackathons}
+            hackathons={hackathons.filter(h => h.status === 'ongoing' || h.status === 'upcoming')}
           />
           <Button onClick={handleCreateNew} className="w-full md:w-auto shadow-sm">
             <Plus className="mr-2 h-4 w-4" /> 팀 모집글 작성
@@ -163,7 +201,7 @@ function CampContent() {
               const groupTeams = groupedTeams[slug];
               const title = hackathon ? hackathon.title : "자유 모집 (대회 무관)";
               const isExpanded = expandedSections.has(slug) || hackathonFilter !== 'all';
-              const displayTeams = isExpanded ? groupTeams.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) : groupTeams.slice(0, 6);
+              const displayTeams = isExpanded ? groupTeams : groupTeams.slice(0, 6);
               
               return (
                 <section key={slug} className="space-y-6">
@@ -188,12 +226,13 @@ function CampContent() {
                     initial="hidden"
                     animate="visible"
                   >
-                    {displayTeams.map((team) => (
+                    {displayTeams.map((match) => (
                       <TeamCard 
-                        key={team.teamCode} 
-                        team={team} 
+                        key={match.team.teamCode} 
+                        team={match.team} 
                         onEdit={handleEdit} 
                         onCardClick={handleCardClick}
+                        matchScore={match.score}
                       />
                     ))}
                   </motion.div>
