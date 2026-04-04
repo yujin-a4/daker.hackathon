@@ -85,6 +85,11 @@ export default function HackathonDetailPage() {
   const { submissions: allSubmissions } = useSubmissionStore();
   
   const hackathonSubmissions = allSubmissions.filter(s => s.hackathonSlug === slug);
+  const participantCount = teams.some(team => team.hackathonSlug === slug)
+    ? teams
+        .filter(team => team.hackathonSlug === slug)
+        .reduce((sum, team) => sum + (team.memberCount || 0), 0)
+    : (hackathon?.participantCount || 0);
 
   // ── Participation State ──
   const myTeam = teams.find(t => t.hackathonSlug === slug && currentUser?.teamCodes.includes(t.teamCode));
@@ -174,7 +179,7 @@ export default function HackathonDetailPage() {
   const stats = [
     { label: '총 상금', value: hackathon.prizeTotal || '자세히 보기', icon: Trophy, color: 'text-amber-500' },
     { label: '마감일', value: dDayText, icon: Clock, color: 'text-rose-500' },
-    { label: '참가자', value: `${hackathon.participantCount}명`, icon: Users, color: 'text-blue-500' },
+    { label: '참가자', value: `${participantCount}명`, icon: Users, color: 'text-blue-500' },
     { label: '분야', value: hackathon.type || '일반', icon: BookOpen, color: 'text-indigo-500' },
   ];
 
@@ -424,7 +429,6 @@ export default function HackathonDetailPage() {
                   <LeaderboardSection 
                     leaderboard={leaderboard} 
                     hackathonDetail={details} 
-                    status={hackathon.status} 
                     submissions={hackathonSubmissions}
                   />
                 </SectionWrapper>

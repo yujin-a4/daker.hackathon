@@ -1,512 +1,625 @@
 'use client';
 
-import React, { useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import type { HackathonDetail, Leaderboard, Submission } from '@/types';
-import { formatDate } from '@/lib/date';
-import { cn } from '@/lib/utils';
-import { Info, Medal, TrendingUp, Search, CheckCircle2, Users, User } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  Check,
+  ChevronsUpDown,
+  Info,
+  Medal,
+  Minus,
+  Search,
+  Target,
+  TrendingUp,
+} from 'lucide-react';
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import type { HackathonDetail, Leaderboard, Submission, Team, UserProfile } from '@/types';
+import { useHackathonStore } from '@/store/useHackathonStore';
+import { useTeamStore } from '@/store/useTeamStore';
+import { useUserStore } from '@/store/useUserStore';
+import { calculateCompetitionStandings, getHackathonPhase } from '@/lib/hackathon-utils';
+import { cn } from '@/lib/utils';
+
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Progress } from '@/components/ui/progress';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-import { useUserStore } from '@/store/useUserStore';
-import { useTeamStore } from '@/store/useTeamStore';
-import { useHackathonStore } from '@/store/useHackathonStore';
-import { getHackathonPhase, calculateCompetitionStandings } from '@/lib/hackathon-utils';
-
-/* ─── Types ─────────────────────────────────────── */
 type LeaderboardSectionProps = {
-  leaderboard: Leaderboard;
+  leaderboard?: Leaderboard;
   hackathonDetail: HackathonDetail;
-  status?: 'ongoing' | 'upcoming' | 'ended';
   submissions: Submission[];
 };
 
-/* ─── Rank badge ─────────────────────────────────── */
-const getRankIndicator = (rank: number) => {
-  if (rank === 1) return <span className="text-xl">🥇</span>;
-  if (rank === 2) return <span className="text-xl">🥈</span>;
-  if (rank === 3) return <span className="text-xl">🥉</span>;
-  return <span className="font-bold text-slate-500">{rank}</span>;
+type StageColumn = {
+  key: string;
+  label: string;
+  shortLabel: string;
 };
 
-/* ─── Row background ─────────────────────────────── */
-const getRowClass = (rank: number | null, isMyTeam: boolean) => {
-  if (isMyTeam) return 'bg-indigo-50/80 dark:bg-indigo-900/30 border-l-4 border-l-indigo-600 shadow-[inset_0_0_10px_rgba(79,70,229,0.1)]';
-  if (rank === 1) return 'bg-amber-50/30 dark:bg-amber-950/10 hover:bg-amber-50';
-  if (rank === 2) return 'bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-50';
-  if (rank === 3) return 'bg-orange-50/30 dark:bg-orange-950/10 hover:bg-orange-50';
-  return 'hover:bg-muted/30';
+/** 제출 단계만 카드로 보여줄 타입 */
+type SubmissionStageCard = {
+  key: string;
+  title: string;
+  shortLabel: string;
+  status: 'completed' | 'current' | 'upcoming';
+  submittedCount: number;
+  totalTeams: number;
+  percent: number;
 };
 
-/* ─── Deterministic member list ──────────────────── */
-// 팀코드 해시로 항상 동일한 팀원 조합 생성
-function hashCode(str: string): number {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+function hashSeed(value: string) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = Math.imul(31, hash) + value.charCodeAt(index);
   }
-  return Math.abs(h);
+  return Math.abs(hash);
 }
 
-function getTeamMemberList(
-  teamCode: string,
-  leaderId: string | undefined,
-  memberCount: number,
-  allUsers: { id?: string; nickname: string }[]
-): { nickname: string; isLeader: boolean }[] {
-  const leader = leaderId ? allUsers.find(u => u.id === leaderId) : null;
-  const result: { nickname: string; isLeader: boolean }[] = [];
-  if (leader) result.push({ nickname: leader.nickname, isLeader: true });
-
-  const pool = allUsers.filter(u => u.id !== leaderId);
-  const needed = Math.max(0, memberCount - 1);
-  const base = hashCode(teamCode);
-  const chosen = new Set<number>();
-
-  for (let i = 0; i < needed && chosen.size < pool.length; i++) {
-    let idx = (base + i * 17 + i * i * 3) % pool.length;
-    while (chosen.has(idx)) idx = (idx + 1) % pool.length;
-    chosen.add(idx);
-    result.push({ nickname: pool[idx].nickname, isLeader: false });
-  }
-  return result;
+function getRankLabel(rank: number | null) {
+  if (!rank) return '-';
+  return `${rank}`;
 }
 
-/* ─── Component ──────────────────────────────────── */
-export default function LeaderboardSection({ leaderboard, hackathonDetail, submissions }: LeaderboardSectionProps) {
-  const router = useRouter();
-  const { currentUser, allUsers } = useUserStore();
-  const { teams } = useTeamStore();
-  const { votes: allVotes } = useHackathonStore();
+function formatScore(value: number | null) {
+  if (value === null || Number.isNaN(value)) return '-';
+  return value.toFixed(1);
+}
 
-  const [searchTerm, setSearchTerm] = React.useState('');
-  const [filterType, setFilterType] = React.useState<'all' | 'submitted'>('all');
+function formatDate(value?: string | null) {
+  if (!value) return '미제출';
+  return new Intl.DateTimeFormat('ko-KR', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(value));
+}
 
-  const currentPhase = useMemo(() => getHackathonPhase(hackathonDetail), [hackathonDetail]);
-  const hackathonVotes = allVotes[hackathonDetail.slug] || {};
+function getStageColumns(detail: HackathonDetail): StageColumn[] {
+  return (detail.sections.submit.submissionItems || []).map((item, index) => ({
+    key: item.key,
+    label: item.title,
+    shortLabel: `단계 ${index + 1}`,
+  }));
+}
 
-  const sortedEntries = useMemo(() => {
-    return calculateCompetitionStandings(
-      currentPhase,
-      teams.filter(t => t.hackathonSlug === hackathonDetail.slug),
-      submissions,
-      hackathonVotes,
-      leaderboard?.entries || [],
-      currentUser?.teamCodes[0]
+function buildRoster(team: Team, allUsers: UserProfile[], currentUserId?: string) {
+  const usersById = new Map(allUsers.map((user) => [user.id, user]));
+  const leader =
+    usersById.get(team.leaderId) ||
+    (currentUserId === team.leaderId ? allUsers.find((user) => user.id === currentUserId) : undefined);
+  const candidates = allUsers.filter((user) => user.id !== team.leaderId);
+  const size = Math.max(0, (team.memberCount || 1) - 1);
+  const start = candidates.length > 0 ? hashSeed(team.teamCode) % candidates.length : 0;
+  const members = Array.from({ length: size })
+    .map((_, index) => candidates[(start + index) % Math.max(candidates.length, 1)])
+    .filter(Boolean);
+  return { leader, members };
+}
+
+function SubmissionStateCell({ submittedAt }: { submittedAt?: string | null }) {
+  if (!submittedAt) {
+    return (
+      <div className="flex items-center justify-center">
+        <span className="h-5 w-5 rounded-full border border-dashed border-slate-300 bg-slate-100 dark:border-slate-700 dark:bg-slate-900" />
+      </div>
     );
-  }, [currentPhase, teams, submissions, hackathonVotes, leaderboard, hackathonDetail, currentUser]);
-
-  const filteredEntries = useMemo(() => {
-    return sortedEntries.filter(entry => {
-      const matchesSearch = entry.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesFilter =
-        filterType === 'all' ||
-        (filterType === 'submitted' && Object.keys(entry.submissions).length > 0);
-      return matchesSearch && matchesFilter;
-    });
-  }, [sortedEntries, searchTerm, filterType]);
-
-  const myEntry = useMemo(() => sortedEntries.find(e => e.isMyTeam), [sortedEntries]);
-  const participatingTeamsCount = sortedEntries.length;
-  const submissionPhases = hackathonDetail.sections.submit.submissionItems || [];
-
-  const phaseStats = useMemo(() => {
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
-
-    return submissionPhases.map(phase => {
-      const submissionsForPhase = submissions.filter(s => s.artifacts.some(a => a.key === phase.key));
-      const deadline = phase.deadline ? new Date(phase.deadline) : null;
-      const isPast = deadline ? deadline < now : false;
-      const dDay = deadline ? Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null;
-
-      const todayCount = submissionsForPhase.filter(s => {
-        const art = s.artifacts.find(a => a.key === phase.key);
-        return art && art.uploadedAt.startsWith(todayStr);
-      }).length;
-
-      return {
-        ...phase,
-        submittedCount: submissionsForPhase.length,
-        todayCount,
-        submissionRate: participatingTeamsCount > 0 ? (submissionsForPhase.length / participatingTeamsCount) * 100 : 0,
-        dDay,
-        isPast,
-        isImminent: !isPast && dDay !== null && dDay >= 0 && dDay <= 3,
-      };
-    });
-  }, [submissionPhases, submissions, participatingTeamsCount]);
-
-  const activePhaseIndex = useMemo(() => {
-    if (!currentPhase.itemKey) return -1;
-    return submissionPhases.findIndex(p => p.key === currentPhase.itemKey);
-  }, [submissionPhases, currentPhase]);
+  }
 
   return (
-    <div className="space-y-8">
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex items-center justify-center">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm">
+              <Check className="h-3 w-3" />
+            </span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>{formatDate(submittedAt)}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
 
-      {/* ── 대회 진행 현황 ── */}
-      {submissionPhases.length > 0 && (
-        <Card className="overflow-hidden border-slate-200 dark:border-slate-800 shadow-md bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/50">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-indigo-500" />
-                대회 진행 현황
-              </CardTitle>
-              <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground">
-                <Badge variant="outline" className="bg-indigo-50/50 border-indigo-100 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300">
-                  {currentPhase.name} {currentPhase.votingEnabled ? '🗳️ 투표 중' : currentPhase.type === 'SUBMISSION' ? '📝 제출 중' : ''}
-                </Badge>
-                <div className="flex items-center gap-1.5 ml-2">
-                  <span className="text-indigo-600 dark:text-indigo-400">결선 진출: {participatingTeamsCount}팀</span>
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {phaseStats.map((phase, idx) => {
-                const isCurrent = activePhaseIndex === idx;
-                const isPast = phase.isPast && !isCurrent;
-                return (
-                  <div key={phase.key} className={cn(
-                    "relative p-4 rounded-xl border transition-all",
-                    isCurrent ? "bg-indigo-50/40 dark:bg-indigo-900/10 border-indigo-200 dark:border-indigo-800 ring-1 ring-indigo-500/20" : "bg-white dark:bg-slate-900/40 border-slate-100 dark:border-slate-800",
-                    isPast && "opacity-70 grayscale-[0.2]"
+function getCurrentMetricLabel(phaseType: string) {
+  if (phaseType === 'RESULT') return '최종 점수';
+  if (phaseType === 'JUDGING') return '심사 점수';
+  if (phaseType === 'VOTING') return '투표 수';
+  return '제출 진행도';
+}
+
+function getCurrentMetricValue(
+  entry: {
+    votes: number;
+    judgeScore: number | null;
+    finalScore: number | null;
+    submissions: Record<string, string | null>;
+  },
+  phaseType: string
+) {
+  if (phaseType === 'RESULT') return entry.finalScore ?? null;
+  if (phaseType === 'JUDGING') return entry.judgeScore ?? null;
+  if (phaseType === 'VOTING') return entry.votes;
+  return Object.keys(entry.submissions).length;
+}
+
+function formatMetricGap(value: number | null, phaseType: string) {
+  if (value === null) return '집계 중';
+  if (phaseType === 'RESULT' || phaseType === 'JUDGING') return `${value.toFixed(1)}점 차`;
+  if (phaseType === 'VOTING') return `${Math.round(value).toLocaleString()}표 차`;
+  return `${Math.round(value).toLocaleString()}개 차`;
+}
+
+function getRankChange(previousRank: number | null, currentRank: number | null) {
+  if (!previousRank || !currentRank) {
+    return { icon: ChevronsUpDown, label: '신규', color: 'text-slate-400', chip: 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400' };
+  }
+  const diff = previousRank - currentRank;
+  if (diff > 0) {
+    return { icon: ArrowUpRight, label: `${diff}↑`, color: 'text-emerald-500', chip: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400' };
+  }
+  if (diff < 0) {
+    return { icon: ArrowDownRight, label: `${Math.abs(diff)}↓`, color: 'text-rose-500', chip: 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400' };
+  }
+  return { icon: Minus, label: '—', color: 'text-slate-400', chip: 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400' };
+}
+
+export default function LeaderboardSection({ leaderboard, hackathonDetail, submissions }: LeaderboardSectionProps) {
+  const { currentUser, allUsers } = useUserStore();
+  const { teams } = useTeamStore();
+  const { votes } = useHackathonStore();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const currentPhase = useMemo(() => getHackathonPhase(hackathonDetail), [hackathonDetail]);
+  const stageColumns = useMemo(() => getStageColumns(hackathonDetail), [hackathonDetail]);
+  const scheduleMilestones = hackathonDetail.sections.schedule.milestones || [];
+
+  const hasVotingStage = useMemo(
+    () => scheduleMilestones.some((m) => m.type === 'voting'),
+    [scheduleMilestones]
+  );
+  const hasJudgeReveal = useMemo(
+    () => scheduleMilestones.some((m) => m.type === 'result' || m.type === 'judging'),
+    [scheduleMilestones]
+  );
+
+  const hackathonTeams = useMemo(
+    () => teams.filter((team) => team.hackathonSlug === hackathonDetail.slug),
+    [teams, hackathonDetail.slug]
+  );
+
+  const myTeamCode = useMemo(
+    () => hackathonTeams.find((team) => currentUser?.teamCodes.includes(team.teamCode))?.teamCode,
+    [hackathonTeams, currentUser]
+  );
+
+  const standings = useMemo(
+    () =>
+      calculateCompetitionStandings(
+        currentPhase,
+        hackathonTeams,
+        submissions,
+        votes[hackathonDetail.slug] || {},
+        leaderboard?.entries || [],
+        myTeamCode
+      ),
+    [currentPhase, hackathonTeams, submissions, votes, hackathonDetail.slug, leaderboard, myTeamCode]
+  );
+
+  const standingsWithTeams = useMemo(
+    () => standings.map((entry) => ({ ...entry, team: hackathonTeams.find((t) => t.teamCode === entry.teamCode) })),
+    [standings, hackathonTeams]
+  );
+
+  const filteredStandings = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) return standingsWithTeams;
+    return standingsWithTeams.filter((entry) => {
+      const leader = entry.team ? buildRoster(entry.team, allUsers, currentUser?.id).leader : undefined;
+      return entry.name.toLowerCase().includes(query) || leader?.nickname.toLowerCase().includes(query);
+    });
+  }, [allUsers, currentUser, searchTerm, standingsWithTeams]);
+
+  const myStanding = useMemo(() => standingsWithTeams.find((e) => e.isMyTeam), [standingsWithTeams]);
+
+  // 제출 단계 카드만 (제출 milestone만 필터링)
+  const submissionStageCards = useMemo<SubmissionStageCard[]>(() => {
+    const totalTeams = Math.max(standingsWithTeams.length, 1);
+    let submissionIndex = 0;
+
+    return scheduleMilestones
+      .filter((m) => m.type === 'submission')
+      .map((milestone, _, arr) => {
+        const idx = scheduleMilestones.indexOf(milestone);
+        const itemKey = milestone.itemKey;
+        const submittedCount = itemKey
+          ? standingsWithTeams.filter((e) => Boolean(e.submissions[itemKey])).length
+          : standingsWithTeams.filter((e) => Object.keys(e.submissions).length > 0).length;
+
+        const status: 'completed' | 'current' | 'upcoming' =
+          idx < currentPhase.milestoneIndex
+            ? 'completed'
+            : idx === currentPhase.milestoneIndex
+              ? 'current'
+              : 'upcoming';
+
+        const card: SubmissionStageCard = {
+          key: `submission-${idx}`,
+          title: milestone.name,
+          shortLabel: `제출 ${submissionIndex + 1}단계`,
+          status,
+          submittedCount,
+          totalTeams,
+          percent: (submittedCount / totalTeams) * 100,
+        };
+        submissionIndex += 1;
+        return card;
+      });
+  }, [currentPhase.milestoneIndex, scheduleMilestones, standingsWithTeams]);
+
+  // 전체 진행도: 제출 milestone 기준
+  const totalSubmissionSteps = submissionStageCards.length;
+  const completedSubmissionSteps = submissionStageCards.filter((c) => c.status === 'completed').length;
+  const overallProgress = totalSubmissionSteps > 0 ? (completedSubmissionSteps / totalSubmissionSteps) * 100 : 0;
+
+  const myPreviousRank = useMemo(() => {
+    if (!myStanding) return null;
+    const saved = leaderboard?.entries.find((e) => e.teamName === myStanding.name);
+    return saved?.rank ?? myStanding.rank;
+  }, [leaderboard, myStanding]);
+
+  const rankChange = useMemo(
+    () => getRankChange(myPreviousRank, myStanding?.rank ?? null),
+    [myPreviousRank, myStanding?.rank]
+  );
+
+  const nextRankGapLabel = useMemo(() => {
+    if (!myStanding?.rank) return '집계 중';
+    if (myStanding.rank === 1) {
+      const second = standingsWithTeams.find((e) => e.rank === 2);
+      if (!second) return '선두';
+      const my = getCurrentMetricValue(myStanding, currentPhase.type);
+      const rival = getCurrentMetricValue(second, currentPhase.type);
+      if (my === null || rival === null) return '선두';
+      return `2위와 ${formatMetricGap(Math.abs(Number(my) - Number(rival)), currentPhase.type)}`;
+    }
+    const upper = standingsWithTeams.find((e) => e.rank === myStanding.rank! - 1);
+    if (!upper) return '집계 중';
+    const my = getCurrentMetricValue(myStanding, currentPhase.type);
+    const up = getCurrentMetricValue(upper, currentPhase.type);
+    if (my === null || up === null) return '집계 중';
+    return `${upper.rank}위까지 ${formatMetricGap(Math.abs(Number(up) - Number(my)), currentPhase.type)}`;
+  }, [currentPhase.type, myStanding, standingsWithTeams]);
+
+  const isFinalized = currentPhase.type === 'RESULT';
+  const RankChangeIcon = rankChange.icon;
+
+  return (
+    <div className="space-y-4">
+
+      {/* ── 요약 카드 ── */}
+      <Card className="border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <CardContent className="p-5 space-y-4">
+          {/* 헤더 라인 */}
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">진행 현황</p>
+            <span className="text-xs text-slate-400 dark:text-slate-500">
+              {completedSubmissionSteps}/{totalSubmissionSteps} 단계 완료
+            </span>
+          </div>
+
+          {/* 전체 진행 프로그레스 바 */}
+          {totalSubmissionSteps > 0 && (
+            <Progress
+              value={overallProgress}
+              className="h-2 bg-slate-100 dark:bg-slate-800"
+              indicatorClassName="bg-gradient-to-r from-violet-500 to-fuchsia-400 transition-all"
+            />
+          )}
+
+          {/* 제출 단계 카드 그리드 */}
+          {submissionStageCards.length > 0 && (
+            <div className={cn(
+              'grid gap-2',
+              submissionStageCards.length === 1 && 'grid-cols-1',
+              submissionStageCards.length === 2 && 'grid-cols-2',
+              submissionStageCards.length >= 3 && 'grid-cols-2 sm:grid-cols-3',
+            )}>
+              {submissionStageCards.map((card) => (
+                <div
+                  key={card.key}
+                  className={cn(
+                    'rounded-xl border px-4 py-3 transition-colors',
+                    card.status === 'current' &&
+                      'border-violet-200 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/30',
+                    card.status === 'completed' &&
+                      'border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50',
+                    card.status === 'upcoming' &&
+                      'border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-950'
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <p className={cn(
+                      'text-xs font-medium',
+                      card.status === 'current' ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400 dark:text-slate-500'
+                    )}>
+                      {card.shortLabel}
+                    </p>
+                    <span className={cn(
+                      'text-[10px] font-medium px-1.5 py-0.5 rounded-full',
+                      card.status === 'current' && 'bg-violet-100 text-violet-600 dark:bg-violet-900/50 dark:text-violet-300',
+                      card.status === 'completed' && 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500',
+                      card.status === 'upcoming' && 'bg-slate-50 text-slate-300 dark:bg-slate-900 dark:text-slate-600',
+                    )}>
+                      {card.status === 'completed' ? '완료' : card.status === 'current' ? '진행' : '예정'}
+                    </span>
+                  </div>
+                  <p className={cn(
+                    'text-xs truncate mb-2',
+                    card.status === 'current' ? 'text-slate-700 dark:text-slate-200 font-medium' : 'text-slate-400 dark:text-slate-500'
                   )}>
-                    {isCurrent && <Badge className="absolute -top-2.5 right-3 bg-indigo-600">진행 중</Badge>}
-                    {isPast && <CheckCircle2 className="absolute -top-2.5 right-3 w-5 h-5 text-emerald-500 bg-white dark:bg-slate-900 rounded-full" />}
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Phase {idx + 1}</p>
-                        <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200">{phase.title}</h4>
-                      </div>
-                      {phase.deadline && (
-                        <Badge variant={phase.isPast ? "secondary" : phase.isImminent ? "destructive" : "outline"} className="text-[10px]">
-                          {phase.isPast ? "마감됨" : phase.dDay === 0 ? "D-Day" : `D-${phase.dDay}`}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Progress value={phase.submissionRate} className="h-1.5 bg-slate-100 dark:bg-slate-800" indicatorClassName={isCurrent ? "bg-indigo-600" : "bg-slate-400"} />
-                      <div className="flex justify-between text-[11px] font-medium text-slate-500">
-                        <span>제출: {phase.submittedCount}팀 <span className="text-indigo-500 ml-1">(오늘 {phase.todayCount}팀)</span></span>
-                        <span className={cn(isCurrent && "text-indigo-600 font-bold")}>{Math.round(phase.submissionRate)}%</span>
-                      </div>
-                    </div>
+                    {card.title}
+                  </p>
+                  <div className="flex items-end justify-between gap-1">
+                    <span className={cn(
+                      'text-lg font-bold leading-none',
+                      card.status === 'current' ? 'text-violet-700 dark:text-violet-300' : 'text-slate-400 dark:text-slate-500'
+                    )}>
+                      {card.submittedCount}
+                      <span className="text-xs font-normal ml-0.5">명</span>
+                    </span>
+                    <span className="text-xs text-slate-400">{Math.round(card.percent)}%</span>
                   </div>
-                );
-              })}
+                  <Progress
+                    value={card.percent}
+                    className={cn('mt-2 h-1', card.status === 'current' ? 'bg-violet-100 dark:bg-violet-950' : 'bg-slate-100 dark:bg-slate-800')}
+                    indicatorClassName={cn(
+                      card.status === 'current' && 'bg-violet-500',
+                      card.status === 'completed' && 'bg-slate-300 dark:bg-slate-600',
+                      card.status === 'upcoming' && 'bg-slate-200 dark:bg-slate-700',
+                    )}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── 내 순위 카드 ── */}
+      {myStanding && (
+        <Card className="border-violet-200/80 bg-white shadow-sm dark:border-violet-900/60 dark:bg-slate-950">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              {/* 순위 숫자 */}
+              <div className="relative flex-shrink-0">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-600 text-white">
+                  <span className="text-2xl font-bold leading-none">{getRankLabel(myStanding.rank)}</span>
+                </div>
+                <div className={cn('absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold', rankChange.chip)}>
+                  <RankChangeIcon className="h-3 w-3" />
+                </div>
+              </div>
+
+              {/* 팀 정보 */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <Badge className="bg-violet-600 text-white hover:bg-violet-600 text-[11px] px-1.5 py-0 h-4">내 순위</Badge>
+                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">{myStanding.name}</span>
+                </div>
+                <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                  {/* 순위 변동 */}
+                  <span className={cn('inline-flex items-center gap-0.5 text-xs font-medium', rankChange.color)}>
+                    <RankChangeIcon className="h-3.5 w-3.5" />
+                    {rankChange.label}
+                  </span>
+                  {/* 다음 순위까지 차이 */}
+                  <span className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                    <Target className="h-3 w-3" />
+                    {nextRankGapLabel}
+                  </span>
+                </div>
+              </div>
+
+              {/* 현재 지표 */}
+              <div className="flex-shrink-0 text-right">
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider">{getCurrentMetricLabel(currentPhase.type)}</p>
+                <p className="text-base font-bold text-slate-900 dark:text-slate-100 mt-0.5">
+                  {currentPhase.type === 'RESULT'
+                    ? formatScore(myStanding.finalScore)
+                    : currentPhase.type === 'VOTING'
+                      ? myStanding.votes.toLocaleString()
+                      : `${Object.keys(myStanding.submissions).length}/${stageColumns.length}`}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* ── 나의 팀 카드 ── */}
-      {myEntry && (
-        <Card className="bg-gradient-to-r from-indigo-900 to-slate-900 text-white border-indigo-500/30 shadow-xl relative overflow-hidden group border-2">
-          <CardContent className="p-6">
-            <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="flex items-center gap-5">
-                <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-3xl font-bold text-yellow-300">
-                  {(currentPhase.type === 'RESULT' || currentPhase.type === 'VOTING' || Object.keys(myEntry.submissions).length > 0) && myEntry.rank ? getRankIndicator(myEntry.rank) : "—"}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="text-xl font-bold text-white">{myEntry.name} <span className="text-sm font-normal text-indigo-300">(나의 팀)</span></h4>
+      {/* ── 리더보드 테이블 ── */}
+      <Card className="border-slate-200 shadow-sm dark:border-slate-800">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Medal className="h-4 w-4 text-violet-500" />
+              리더보드
+            </CardTitle>
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="참가자 또는 팀명 검색"
+                className="pl-9 h-8 text-sm"
+              />
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4 pt-0">
+          {/* 데스크탑 테이블 */}
+          <div className="hidden overflow-x-auto lg:block">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-slate-100 dark:border-slate-800">
+                  <TableHead className="w-16 text-center text-xs">순위</TableHead>
+                  <TableHead className="min-w-[220px] text-xs">참가자</TableHead>
+                  {stageColumns.map((col) => (
+                    <TableHead key={col.key} className="min-w-[80px] text-center text-xs">
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span>{col.shortLabel}</span>
+                        <span className="text-[10px] font-normal text-muted-foreground leading-tight">{col.label}</span>
+                      </div>
+                    </TableHead>
+                  ))}
+                  {hasVotingStage && <TableHead className="min-w-[70px] text-center text-xs">투표</TableHead>}
+                  {hasJudgeReveal && <TableHead className="min-w-[72px] text-center text-xs">심사</TableHead>}
+                  <TableHead className="min-w-[72px] text-center text-xs">최종</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredStandings.map((entry) => {
+                  const isMyRow = entry.isMyTeam;
+                  const cellBase = cn(
+                    isMyRow && 'bg-violet-50/60 dark:bg-violet-950/10'
+                  );
+                  const roster = !entry.isSolo && entry.team
+                    ? buildRoster(entry.team, allUsers, currentUser?.id)
+                    : null;
+                  return (
+                    <TableRow
+                      key={entry.teamCode}
+                      className={cn(
+                        'hover:bg-slate-50/60 dark:hover:bg-slate-900/30 transition-colors',
+                        isMyRow && 'border-y border-violet-100 dark:border-violet-900/50'
+                      )}
+                    >
+                      <TableCell className={cn(cellBase, isMyRow && 'border-l-2 border-l-violet-400', 'text-center py-3.5')}>
+                        <span className={cn('font-semibold text-sm', isMyRow && 'text-violet-700 dark:text-violet-300')}>
+                          {getRankLabel(entry.rank)}
+                        </span>
+                      </TableCell>
+
+                      <TableCell className={cn(cellBase, 'py-3.5')}>
+                        {roster ? (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center gap-1.5 flex-wrap cursor-pointer w-fit group">
+                                  <span className="text-sm font-medium group-hover:text-violet-600 transition-colors">{entry.name}</span>
+                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-slate-200 text-slate-500">팀</Badge>
+                                  {isMyRow && <Badge className="text-[10px] px-1.5 py-0 h-4 bg-violet-600 text-white hover:bg-violet-600">내 팀</Badge>}
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent side="right" sideOffset={2} className="p-3 space-y-1.5 text-xs max-w-[180px]">
+                                {roster.leader && (
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide w-8 shrink-0">팀장</span>
+                                    <span className="font-medium text-slate-800 dark:text-slate-100">{roster.leader.nickname}</span>
+                                  </div>
+                                )}
+                                {roster.members.length > 0 && (
+                                  <div className="space-y-1 pt-1 border-t border-slate-100 dark:border-slate-800">
+                                    {roster.members.map((member) => (
+                                      <div key={member.id} className="flex items-center gap-1.5">
+                                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide w-8 shrink-0">팀원</span>
+                                        <span className="text-slate-700 dark:text-slate-200">{member.nickname}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ) : (
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-sm font-medium">{entry.name}</span>
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-blue-200 text-blue-500">개인</Badge>
+                            {isMyRow && <Badge className="text-[10px] px-1.5 py-0 h-4 bg-violet-600 text-white hover:bg-violet-600">내 팀</Badge>}
+                          </div>
+                        )}
+                      </TableCell>
+
+                      {stageColumns.map((col) => (
+                        <TableCell key={`${entry.teamCode}-${col.key}`} className={cn(cellBase, 'text-center py-3.5')}>
+                          <SubmissionStateCell submittedAt={entry.submissions[col.key]} />
+                        </TableCell>
+                      ))}
+
+                      {hasVotingStage && (
+                        <TableCell className={cn(cellBase, 'text-center text-sm font-medium py-3.5')}>
+                          {entry.votes.toLocaleString()}
+                        </TableCell>
+                      )}
+                      {hasJudgeReveal && (
+                        <TableCell className={cn(cellBase, 'text-center text-sm font-medium py-3.5')}>
+                          {formatScore(entry.judgeScore)}
+                        </TableCell>
+                      )}
+                      <TableCell className={cn(cellBase, isMyRow && 'border-r-2 border-r-violet-400', 'text-center text-sm font-medium py-3.5')}>
+                        {isFinalized ? formatScore(entry.finalScore) : '—'}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* 모바일 카드 뷰 */}
+          <div className="grid gap-2 lg:hidden">
+            {filteredStandings.map((entry) => (
+              <div
+                key={entry.teamCode}
+                className={cn(
+                  'rounded-xl border p-3',
+                  entry.isMyTeam
+                    ? 'border-violet-200 bg-violet-50/60 dark:border-violet-800 dark:bg-violet-950/10'
+                    : 'border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-950'
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <span className={cn('w-8 text-center text-lg font-bold', entry.isMyTeam && 'text-violet-600')}>
+                    {getRankLabel(entry.rank)}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-sm font-medium">{entry.name}</span>
+                      {!entry.isSolo
+                        ? <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-slate-200 text-slate-500">팀</Badge>
+                        : <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-blue-200 text-blue-500">개인</Badge>
+                      }
+                      {entry.isMyTeam && <Badge className="text-[10px] px-1.5 py-0 h-4 bg-violet-600 text-white hover:bg-violet-600">내 팀</Badge>}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 text-indigo-200 text-sm font-medium">
-                    {(currentPhase.type === 'RESULT' || currentPhase.type === 'VOTING' || Object.keys(myEntry.submissions).length > 0) && myEntry.rank ? (
-                      <span className="text-white font-bold px-2 py-0.5 bg-indigo-500/40 rounded-md">
-                        상위 {Math.max(1, Math.round((myEntry.rank / participatingTeamsCount) * 100))}%
-                      </span>
-                    ) : <span className="opacity-50">제출 대기 중</span>}
-                    <span className="opacity-20 text-slate-700">|</span>
-                    {currentPhase.type === 'RESULT' ? (
-                      <span className="text-amber-300 font-bold">최종 {myEntry.finalScore?.toFixed(1)}점</span>
-                    ) : currentPhase.type === 'VOTING' ? (
-                      <span className="text-emerald-300 font-bold">{myEntry.votes.toLocaleString()} 투표 획득</span>
-                    ) : (
-                      <span>{Object.keys(myEntry.submissions).length > 0 ? `${Object.keys(myEntry.submissions).length}단계 완료` : '미제출 상태'}</span>
-                    )}
+                  <div className="flex gap-1.5">
+                    {stageColumns.map((col) => (
+                      <SubmissionStateCell key={col.key} submittedAt={entry.submissions[col.key]} />
+                    ))}
                   </div>
                 </div>
               </div>
-              <Button onClick={() => router.push(`?tab=submit`, { scroll: false })} className="bg-white text-indigo-900 hover:bg-indigo-50 px-8 h-12 rounded-full font-bold shadow-lg">
-                작품 관리하기
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ── 실시간 리더보드 테이블 ── */}
-      <div className="bg-card rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        {/* 헤더 */}
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
-            <h3 className="font-extrabold text-xl flex items-center gap-2">
-              <Medal className="w-6 h-6 text-amber-500" />
-              실시간 리더보드
-            </h3>
-            <Popover>
-              <PopoverTrigger asChild>
-                <button className="text-slate-400 hover:text-indigo-500 transition-colors bg-slate-50 hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-indigo-900/30 p-1 rounded-full">
-                  <Info className="w-4 h-4" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 text-sm ml-4 mb-2 z-50">
-                <div className="space-y-3">
-                  <h4 className="font-bold text-slate-800 dark:text-slate-200">MAXER 글로벌 랭킹 시스템 🏆</h4>
-                  <p className="text-muted-foreground leading-relaxed">이 실시간 리더보드의 순위가 최종 확정되면 참가자의 <span className="font-bold text-black dark:text-white">글로벌 랭킹 포인트</span>에 즉시 반영됩니다.</p>
-                  <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg space-y-2 border border-slate-100 dark:border-slate-800">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-slate-600 dark:text-slate-400">참여 기본 / 결과물 제출 (단계당)</span>
-                      <span className="text-indigo-600 dark:text-indigo-400 font-bold">+50 P / +100 P</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-slate-600 dark:text-slate-400 text-[13px]">우승 (1위, 2위, 3위)</span>
-                      <span className="text-amber-500 font-bold tracking-tight text-[13px]">+500, +400, +300</span>
-                    </div>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
+            ))}
           </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="팀명 검색" className="pl-9 h-10 rounded-xl" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+
+          {filteredStandings.length === 0 && (
+            <div className="rounded-xl border border-dashed border-slate-200 py-10 text-center text-sm text-muted-foreground dark:border-slate-800">
+              검색 결과가 없습니다.
             </div>
-            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-              {(['all', 'submitted'] as const).map(type => (
-                <button key={type} onClick={() => setFilterType(type)} className={cn("px-4 py-1.5 text-xs font-bold rounded-lg transition-all", filterType === type ? "bg-white dark:bg-slate-700 shadow-sm text-indigo-600" : "text-slate-500")}>
-                  {type === 'all' ? '전체' : '제출완료'}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* 테이블 */}
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-slate-50/50 dark:bg-slate-900/50 hover:bg-transparent">
-              <TableHead className="w-20 text-center font-bold">순위</TableHead>
-              <TableHead className="min-w-[220px] font-bold">팀/참가자</TableHead>
-              {submissionPhases.map((phase, idx) => (
-                <TableHead key={phase.key} className="text-center font-bold text-[10px] uppercase tracking-tighter w-16">
-                  {idx + 1}단계
-                </TableHead>
-              ))}
-              {currentPhase.type !== 'SUBMISSION' && (
-                <TableHead className="text-center font-bold">실시간 득표</TableHead>
-              )}
-              {currentPhase.type === 'RESULT' && (
-                <TableHead className="text-center font-bold">심사 점수</TableHead>
-              )}
-              <TableHead className="text-center font-bold">
-                {currentPhase.type === 'RESULT' ? '최종 합산 점수' : '진행 상태'}
-              </TableHead>
-              <TableHead className="text-right font-bold pr-6">최근 업데이트</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredEntries.map((entry) => {
-              const subCount = Object.keys(entry.submissions).length;
-              const totalPhases = submissionPhases.length;
-
-              let statusText = '대기중';
-              if (subCount === totalPhases) statusText = '최종 완료';
-              else if (subCount > 0) statusText = `${subCount}단계 완료`;
-
-              // 팀원 목록 계산
-              const memberList = getTeamMemberList(
-                entry.teamCode,
-                entry.leaderId,
-                entry.memberCount ?? 1,
-                allUsers ?? []
-              );
-
-              return (
-                <TableRow key={entry.teamCode} className={cn(getRowClass(entry.rank, entry.isMyTeam), 'h-16 border-slate-100 dark:border-slate-800/50 transition-colors')}>
-                  {/* 순위 */}
-                  <TableCell className="text-center font-bold">
-                    {entry.rank ? getRankIndicator(entry.rank) : <span className="text-slate-200">-</span>}
-                  </TableCell>
-
-                  {/* 팀명 + 배지 + 호버 툴팁 */}
-                  <TableCell>
-                    <div className="flex items-center gap-2.5">
-                      {/* 제출 상태 도트 */}
-                      <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", subCount > 0 ? "bg-indigo-500" : "bg-slate-300 dark:bg-slate-700")} />
-
-                      <TooltipProvider delayDuration={150}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="flex items-center gap-2 cursor-default">
-                              {/* 팀/개인 배지 */}
-                              {entry.isSolo ? (
-                                <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-sky-50 text-sky-600 border border-sky-200 dark:bg-sky-900/30 dark:text-sky-400 dark:border-sky-800 shrink-0">
-                                  <User className="w-2.5 h-2.5" />
-                                  개인
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-violet-50 text-violet-600 border border-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-800 shrink-0">
-                                  <Users className="w-2.5 h-2.5" />
-                                  팀
-                                </span>
-                              )}
-                              {/* 팀명 */}
-                              <span className={cn(
-                                "font-bold text-slate-800 dark:text-slate-100",
-                                entry.isMyTeam && "text-indigo-700 dark:text-indigo-400"
-                              )}>
-                                {entry.name} {entry.isMyTeam && " ⭐"}
-                              </span>
-                            </div>
-                          </TooltipTrigger>
-
-                          {/* ── 팀원 툴팁 ── */}
-                          <TooltipContent
-                            side="right"
-                            sideOffset={10}
-                            className="p-0 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xl bg-white dark:bg-slate-900 w-56"
-                          >
-                            {/* 헤더 */}
-                            <div className="px-3.5 py-2.5 bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-950/50 dark:to-indigo-950/50 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                              <p className="text-[10px] font-extrabold text-violet-700 dark:text-violet-400 uppercase tracking-widest">
-                                {entry.isSolo ? '개인 참가자' : '팀 구성원'}
-                              </p>
-                              {!entry.isSolo && (
-                                <span className="text-[9px] font-bold text-violet-500 bg-violet-100 dark:bg-violet-900/50 dark:text-violet-400 px-1.5 py-0.5 rounded-full">
-                                  {memberList.length}명
-                                </span>
-                              )}
-                            </div>
-                            {/* 멤버 리스트 */}
-                            <ul className="px-3 py-2.5 space-y-1.5">
-                              {memberList.map((member, mIdx) => (
-                                <li key={mIdx} className="flex items-center gap-2.5">
-                                  {/* 아바타 */}
-                                  <span className={cn(
-                                    "w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black shrink-0",
-                                    member.isLeader
-                                      ? "bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400"
-                                      : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                                  )}>
-                                    {member.isLeader ? '👑' : mIdx}
-                                  </span>
-                                  {/* 닉네임 */}
-                                  <span className={cn(
-                                    "text-xs font-semibold flex-1",
-                                    member.isLeader
-                                      ? "text-slate-800 dark:text-slate-100"
-                                      : "text-slate-600 dark:text-slate-400"
-                                  )}>
-                                    {member.nickname}
-                                  </span>
-                                  {/* 팀장 뱃지 */}
-                                  {member.isLeader && (
-                                    <span className="text-[9px] text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-900/30 px-1.5 py-0.5 rounded-full">
-                                      팀장
-                                    </span>
-                                  )}
-                                </li>
-                              ))}
-                            </ul>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </TableCell>
-
-                  {/* 단계별 제출 현황 */}
-                  {submissionPhases.map((phase) => (
-                    <TableCell key={phase.key} className="text-center">
-                      {entry.submissions[phase.key] ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 mx-auto" />
-                      ) : (
-                        <span className="text-slate-200 dark:text-slate-800">—</span>
-                      )}
-                    </TableCell>
-                  ))}
-
-                  {/* 실시간 득표 */}
-                  {currentPhase.type !== 'SUBMISSION' && (
-                    <TableCell>
-                      <div className="flex flex-col items-center justify-center">
-                        <span className={cn("font-mono font-bold text-sm", currentPhase.type === 'VOTING' ? "text-indigo-600 dark:text-indigo-400" : "text-slate-600 dark:text-slate-400")}>
-                          {entry.votes.toLocaleString()} <span className="text-[10px] text-muted-foreground">표</span>
-                        </span>
-                        {currentPhase.type === 'RESULT' && <span className="text-[9px] text-slate-400 font-bold mt-0.5">환산: {(Math.min(100, (entry.votes / 200) * 100) * 0.3).toFixed(1)}점</span>}
-                      </div>
-                    </TableCell>
-                  )}
-
-                  {/* 심사 점수 */}
-                  {currentPhase.type === 'RESULT' && (
-                    <TableCell>
-                      <div className="flex flex-col items-center justify-center">
-                        <span className="font-mono font-bold text-sm text-slate-600 dark:text-slate-400">
-                          {entry.judgeScore !== null ? `${entry.judgeScore}` : '—'} <span className="text-[10px] text-muted-foreground">점</span>
-                        </span>
-                        {entry.judgeScore !== null && <span className="text-[9px] text-slate-400 font-bold mt-0.5">환산: {(entry.judgeScore * 0.7).toFixed(1)}점</span>}
-                      </div>
-                    </TableCell>
-                  )}
-
-                  {/* 진행 상태 / 최종 점수 */}
-                  <TableCell>
-                    <div className="flex flex-col items-center justify-center">
-                      {currentPhase.type === 'RESULT' ? (
-                        <div className="bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-lg border border-indigo-100 dark:border-indigo-800/50 flex flex-col items-center shadow-sm">
-                          <span className="font-mono font-black text-indigo-700 dark:text-indigo-300">
-                            {entry.finalScore !== null ? entry.finalScore.toFixed(1) + '점' : '—'}
-                          </span>
-                          {entry.finalScore !== null && <span className="text-[8px] text-indigo-400/80 font-bold mt-0.5 tracking-wider">TOTAL</span>}
-                        </div>
-                      ) : (
-                        <Badge variant="outline" className={cn("text-[10px]",
-                          subCount === totalPhases ? "text-emerald-600 border-emerald-200 bg-emerald-50" :
-                            subCount > 0 ? "text-indigo-600 border-indigo-200 bg-indigo-50" :
-                              "text-slate-400"
-                        )}>
-                          {statusText}
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-
-                  {/* 최근 업데이트 */}
-                  <TableCell className="text-right text-[11px] text-muted-foreground pr-6 font-medium">
-                    {subCount > 0 ? formatDate(new Date(Math.max(...Object.values(entry.submissions).filter(Boolean).map(d => new Date(d as string).getTime()))).toISOString()) : '—'}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-        {filteredEntries.length === 0 && (
-          <div className="py-20 text-center text-muted-foreground">데이터가 없습니다.</div>
-        )}
-      </div>
-
-      {/* 하단 안내 */}
-      <div className="flex items-start gap-4 p-5 bg-amber-50/30 dark:bg-amber-900/10 border border-amber-100/50 dark:border-amber-900/30 rounded-xl text-[11px] text-slate-600 dark:text-slate-400">
-        <Info className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-        <p className="leading-relaxed">
-          {hackathonDetail.sections.leaderboard.note} 현재 단계에 따라 리더보드 정렬 기준(제출순 ➔ 득표순 ➔ 최종 점수순)이 자동으로 전환됩니다. 갤러리는 부정행위 방지를 위해 <strong>제출 마감 이후</strong> 공개됩니다.
-        </p>
+      {/* 안내 */}
+      <div className="flex items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50/80 p-3.5 text-xs text-muted-foreground dark:border-slate-800 dark:bg-slate-900/40">
+        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-violet-400" />
+        <p>제출 체크는 단계별 완료 여부, 투표·심사는 대회 진행에 따라 공개됩니다.</p>
       </div>
     </div>
   );

@@ -1,6 +1,24 @@
-import { HackathonDetail, LeaderboardEntry } from '@/types';
+import type { Hackathon, HackathonDetail } from '@/types';
 
 export type PhaseType = 'SUBMISSION' | 'VOTING' | 'JUDGING' | 'RESULT' | 'PREPARATION';
+
+export function computeHackathonStatus(
+  hackathon: Pick<Hackathon, 'period'>,
+  detail?: HackathonDetail,
+  now: Date = new Date()
+): 'ongoing' | 'upcoming' | 'ended' {
+  const endAt = new Date(hackathon.period.endAt);
+  if (now >= endAt) return 'ended';
+
+  if (detail) {
+    const firstMilestoneAt = detail.sections.schedule.milestones?.[0]?.at;
+    if (firstMilestoneAt && now < new Date(firstMilestoneAt)) {
+      return 'upcoming';
+    }
+  }
+
+  return 'ongoing';
+}
 
 export interface HackathonPhase {
   type: PhaseType;
@@ -14,70 +32,114 @@ export interface HackathonPhase {
   galleryEnabled: boolean;
 }
 
-/**
- * 현재 시간에 기반하여 해커톤의 활성 단계를 계산합니다.
- */
 export function getHackathonPhase(detail: HackathonDetail, now: Date = new Date()): HackathonPhase {
   const milestones = detail.sections.schedule.milestones || [];
+  const submissionItems = detail.sections.submit.submissionItems || [];
 
   if (milestones.length === 0) {
     return {
       type: 'PREPARATION',
-      name: '준비 중',
+      name: 'Preparation',
       endDate: null,
       milestoneIndex: -1,
       step: 0,
       votingEnabled: false,
       judgingEnabled: false,
-      galleryEnabled: true
+      galleryEnabled: false,
     };
   }
 
-  // 시간순으로 정렬된 마일스톤 확인
-  for (let i = 0; i < milestones.length; i++) {
-    const start = new Date(milestones[i].at);
-    const end = milestones[i + 1] ? new Date(milestones[i + 1].at) : null;
+  const firstMilestoneAt = new Date(milestones[0].at);
+  if (now < firstMilestoneAt) {
+    return {
+      type: 'PREPARATION',
+      name: 'Before Start',
+      endDate: firstMilestoneAt,
+      milestoneIndex: -1,
+      step: 0,
+      votingEnabled: false,
+      judgingEnabled: false,
+      galleryEnabled: false,
+    };
+  }
 
-    // 현재 시간이 이 마일스톤 범위 안에 있는가?
-    if (now >= start && (!end || now < end)) {
-      const m = milestones[i];
-      let type: PhaseType = 'PREPARATION';
+  for (let i = 0; i < milestones.length; i += 1) {
+    const milestone = milestones[i];
+    if (milestone.type !== 'submission') continue;
 
-      switch (m.type) {
-        case 'submission': type = 'SUBMISSION'; break;
-        case 'voting': type = 'VOTING'; break;
-        case 'judging': type = 'JUDGING'; break;
-        case 'result': type = 'RESULT'; break;
-      }
+    const phaseStart = new Date(milestones[i - 1]?.at ?? milestones[0].at);
+    const phaseEnd = new Date(milestone.at);
 
-      // 🌟 핵심: 제출 기간(SUBMISSION)에는 표절 방지를 위해 갤러리 강제 차단
-      const isGalleryEnabled = m.galleryEnabled !== undefined ? m.galleryEnabled : (type !== 'SUBMISSION' && type !== 'PREPARATION');
-
+    if (now >= phaseStart && now < phaseEnd) {
       return {
-        type,
-        itemKey: m.itemKey,
-        name: m.name,
-        endDate: end,
+        type: 'SUBMISSION',
+        itemKey: milestone.itemKey ?? submissionItems[Math.max(0, i - 1)]?.key,
+        name: milestone.name,
+        endDate: phaseEnd,
         milestoneIndex: i,
-        step: m.step ?? 1,
-        votingEnabled: m.votingEnabled !== undefined ? m.votingEnabled : type === 'VOTING',
-        judgingEnabled: m.judgingEnabled !== undefined ? m.judgingEnabled : type === 'RESULT' || type === 'JUDGING',
-        galleryEnabled: isGalleryEnabled
+        step: milestone.step ?? i,
+        votingEnabled: false,
+        judgingEnabled: false,
+        galleryEnabled: false,
       };
     }
   }
 
-  // 모든 마일스톤이 지났다면 결과 단계
+  for (let i = 0; i < milestones.length; i += 1) {
+    const milestone = milestones[i];
+    if (!milestone.type || milestone.type === 'submission') continue;
+
+    const phaseStart = new Date(milestone.at);
+    const phaseEnd = milestones[i + 1] ? new Date(milestones[i + 1].at) : null;
+    if (now < phaseStart || (phaseEnd && now >= phaseEnd)) continue;
+
+    const type =
+      milestone.type === 'voting'
+        ? 'VOTING'
+        : milestone.type === 'judging'
+          ? 'JUDGING'
+          : 'RESULT';
+
+    return {
+      type,
+      itemKey: milestone.itemKey,
+      name: milestone.name,
+      endDate: phaseEnd,
+      milestoneIndex: i,
+      step: milestone.step ?? i,
+      votingEnabled: milestone.votingEnabled !== undefined ? milestone.votingEnabled : type === 'VOTING',
+      judgingEnabled: milestone.judgingEnabled !== undefined ? milestone.judgingEnabled : type === 'JUDGING' || type === 'RESULT',
+      galleryEnabled:
+        milestone.galleryEnabled !== undefined
+          ? milestone.galleryEnabled
+          : type === 'VOTING' || type === 'JUDGING' || type === 'RESULT',
+    };
+  }
+
   const lastMilestone = milestones[milestones.length - 1];
+  if (lastMilestone.type === 'result' && now >= new Date(lastMilestone.at)) {
+    return {
+      type: 'RESULT',
+      itemKey: lastMilestone.itemKey,
+      name: lastMilestone.name,
+      endDate: null,
+      milestoneIndex: milestones.length - 1,
+      step: lastMilestone.step ?? milestones.length,
+      votingEnabled: false,
+      judgingEnabled: true,
+      galleryEnabled: true,
+    };
+  }
+
   return {
-    type: 'RESULT',
-    name: '최종 결과 발표',
+    type: 'PREPARATION',
+    name: 'Preparation',
     endDate: null,
-    milestoneIndex: milestones.length - 1,
-    step: lastMilestone.step ?? 3,
+    milestoneIndex: -1,
+    step: 0,
     votingEnabled: false,
-    judgingEnabled: true,
-    galleryEnabled: true
+    judgingEnabled: false,
+    galleryEnabled: false,
   };
 }
 
@@ -85,19 +147,16 @@ export interface CompetitionEntry {
   teamCode: string;
   name: string;
   isSolo: boolean;
-  leaderId?: string;       // 팀장 ID — allUsers로 닉네임 역추적
-  memberCount?: number;   // 팀원 수
+  leaderId?: string;
+  memberCount?: number;
   rank: number | null;
   votes: number;
   judgeScore: number | null;
   finalScore: number | null;
-  submissions: Record<string, string | null>; // { itemKey: submittedAt }
+  submissions: Record<string, string | null>;
   isMyTeam: boolean;
 }
 
-/**
- * 단계별 복합 로직을 적용하여 실시간 순위를 산정합니다.
- */
 export function calculateCompetitionStandings(
   phase: HackathonPhase,
   teams: any[],
@@ -106,28 +165,26 @@ export function calculateCompetitionStandings(
   leaderboardEntries: any[],
   myTeamCode?: string
 ): CompetitionEntry[] {
-  const standings = teams.map(team => {
-    const teamSubmissions = submissions.filter(s => s.teamCode === team.teamCode);
+  const standings = teams.map((team) => {
+    const teamSubmissions = submissions.filter((submission) => submission.teamCode === team.teamCode);
     const submissionMap: Record<string, string | null> = {};
 
-    // 각 제출 항목별 상태 매핑
-    teamSubmissions.forEach(sub => {
-      sub.artifacts.forEach((art: any) => {
-        if (art.key) {
-          submissionMap[art.key] = art.uploadedAt || sub.submittedAt || new Date().toISOString();
+    teamSubmissions.forEach((submission) => {
+      submission.artifacts.forEach((artifact: any) => {
+        if (artifact.key) {
+          submissionMap[artifact.key] = artifact.uploadedAt || submission.submittedAt || new Date().toISOString();
         }
       });
     });
 
-    const lbEntry = leaderboardEntries.find(e => e.teamName === team.name);
-    const teamVotes = (lbEntry?.votes ?? 0) + (votes[team.name] || 0);
-    const judgeScore = lbEntry?.score ?? null;
+    const leaderboardEntry = leaderboardEntries.find((entry) => entry.teamName === team.name);
+    const teamVotes = (leaderboardEntry?.votes ?? 0) + (votes[team.name] || 0);
+    const judgeScore = leaderboardEntry?.score ?? null;
 
-    // 최종 점수 계산 (30/70 비율) - RESULT 단계에서만 적용됨
     let finalScore = null;
     if (phase.judgingEnabled && judgeScore !== null) {
       const voteScoreEquivalent = Math.min(100, (teamVotes / 200) * 100);
-      finalScore = (voteScoreEquivalent * 0.3) + (judgeScore * 0.7);
+      finalScore = voteScoreEquivalent * 0.3 + judgeScore * 0.7;
     }
 
     return {
@@ -141,53 +198,51 @@ export function calculateCompetitionStandings(
       judgeScore,
       finalScore,
       submissions: submissionMap,
-      isMyTeam: team.teamCode === myTeamCode
+      isMyTeam: team.teamCode === myTeamCode,
     };
   });
 
-  // 🌟 여기서 정렬 로직을 완벽하게 수정했어! 🌟
-  standings.sort((a, b) => {
-    // 1. 최종 결과 단계: 최종 점수 높은 팀 우선
-    if (phase.type === 'RESULT' && a.finalScore !== null && b.finalScore !== null) {
-      return b.finalScore - a.finalScore;
+  standings.sort((left, right) => {
+    if (phase.type === 'RESULT' && left.finalScore !== null && right.finalScore !== null) {
+      return right.finalScore - left.finalScore;
     }
 
-    // 2. 투표 단계: 투표 수 많은 팀 우선
-    if (phase.votingEnabled) {
-      if (a.votes !== b.votes) return b.votes - a.votes;
+    if (phase.votingEnabled && left.votes !== right.votes) {
+      return right.votes - left.votes;
     }
 
-    // 3. 제출 단계: 제출한 총 단계(항목) 수가 많은 팀 무조건 우선! (3단계 > 2단계 > 1단계)
-    const aSubCount = Object.keys(a.submissions).length;
-    const bSubCount = Object.keys(b.submissions).length;
-
-    if (aSubCount !== bSubCount) {
-      return bSubCount - aSubCount; // 내림차순 (숫자가 클수록 위로)
+    const leftSubmissionCount = Object.keys(left.submissions).length;
+    const rightSubmissionCount = Object.keys(right.submissions).length;
+    if (leftSubmissionCount !== rightSubmissionCount) {
+      return rightSubmissionCount - leftSubmissionCount;
     }
 
-    // 4. 제출한 단계 수가 같다면, 더 '먼저' 제출한 팀 우선 (빠른 시간 우대)
-    if (aSubCount > 0 && bSubCount > 0) {
-      const aLastTime = Math.max(...Object.values(a.submissions).filter(Boolean).map(d => new Date(d as string).getTime()));
-      const bLastTime = Math.max(...Object.values(b.submissions).filter(Boolean).map(d => new Date(d as string).getTime()));
-      if (aLastTime !== bLastTime) {
-        return aLastTime - bLastTime; // 오름차순 (시간값이 작을수록 먼저 낸 것이므로 위로)
+    if (leftSubmissionCount > 0 && rightSubmissionCount > 0) {
+      const leftLastSubmittedAt = Math.max(
+        ...Object.values(left.submissions)
+          .filter(Boolean)
+          .map((value) => new Date(value as string).getTime())
+      );
+      const rightLastSubmittedAt = Math.max(
+        ...Object.values(right.submissions)
+          .filter(Boolean)
+          .map((value) => new Date(value as string).getTime())
+      );
+
+      if (leftLastSubmittedAt !== rightLastSubmittedAt) {
+        return leftLastSubmittedAt - rightLastSubmittedAt;
       }
     }
 
-    // 5. 위 조건이 모두 같다면 기본 이름순
-    return a.name.localeCompare(b.name);
+    return left.name.localeCompare(right.name);
   });
 
-  // 순위 부여 (제출을 하나라도 했거나 투표를 1표라도 받은 팀만 랭크 부여)
-  return standings.map((entry, idx) => ({
+  return standings.map((entry, index) => ({
     ...entry,
-    rank: (Object.keys(entry.submissions).length > 0 || entry.votes > 0) ? idx + 1 : null
+    rank: Object.keys(entry.submissions).length > 0 || entry.votes > 0 ? index + 1 : null,
   }));
 }
 
-/**
- * 단계에 맞는 리더보드 정렬 함수를 반환합니다.
- */
 export function getLeaderboardSortingMode(phase: HackathonPhase) {
   switch (phase.type) {
     case 'VOTING':

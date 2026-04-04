@@ -61,6 +61,7 @@ export default function ApplyModal({
         hackathonSlug,
         name: `${currentUser.nickname} (Solo)`,
         isOpen: false, // 개인 참가는 모집하지 않음
+        isPrivate: true,
         isSolo: true,
         leaderId: currentUser.id,
         memberCount: 1,

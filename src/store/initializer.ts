@@ -1,57 +1,85 @@
 'use client';
 
+import { useBoardStore } from '@/store/useBoardStore';
 import { useHackathonStore } from '@/store/useHackathonStore';
-import { useUserStore } from '@/store/useUserStore';
-import { useTeamStore } from '@/store/useTeamStore';
+import { useNotificationStore } from '@/store/useNotificationStore';
 import { useRankingStore } from '@/store/useRankingStore';
 import { useSubmissionStore } from '@/store/useSubmissionStore';
-import { useBoardStore } from '@/store/useBoardStore';
+import { useTeamStore } from '@/store/useTeamStore';
+import { useUserStore } from '@/store/useUserStore';
+import { computeHackathonStatus } from '@/lib/hackathon-utils';
+import { normalizeSeedLeaderboards, normalizeSeedSubmissions } from '@/lib/seed-runtime';
 import {
-  hackathons,
-  hackathonDetails,
-  leaderboards,
-  teams,
-  submissions,
   boards,
   currentUser as seedUser,
+  hackathonDetails,
+  hackathons,
+  leaderboards,
   personaPool,
+  submissions,
+  teams,
 } from '@/data/seed';
-import { useNotificationStore } from './useNotificationStore';
 
-export const SEED_VERSION = 'v5.1';
+export const SEED_VERSION = 'v5.3';
+
+function buildDetailsRecord() {
+  return hackathonDetails.reduce(
+    (accumulator, detail) => {
+      accumulator[detail.slug] = detail;
+      return accumulator;
+    },
+    {} as Record<string, typeof hackathonDetails[number]>
+  );
+}
 
 export function initializeStore() {
-  const detailsRecord = hackathonDetails.reduce((acc, detail) => {
-    acc[detail.slug] = detail;
-    return acc;
-  }, {} as Record<string, typeof hackathonDetails[0]>);
+  const detailsRecord = buildDetailsRecord();
+  const now = new Date();
+  const computedHackathons = hackathons.map((hackathon) => ({
+    ...hackathon,
+    status: computeHackathonStatus(hackathon, detailsRecord[hackathon.slug], now),
+  }));
 
-  // hackathon, team, submission은 시드로 덮어쓰기
-  useHackathonStore.setState({ hackathons, hackathonDetails: detailsRecord, leaderboards });
+  const normalizedSubmissions = normalizeSeedSubmissions({
+    details: detailsRecord,
+    hackathons: computedHackathons,
+    teams,
+    submissions,
+    leaderboards,
+    now,
+  });
+  const normalizedLeaderboards = normalizeSeedLeaderboards({
+    details: detailsRecord,
+    hackathons: computedHackathons,
+    teams,
+    submissions: normalizedSubmissions,
+    leaderboards,
+    now,
+  });
+
+  useHackathonStore.setState({
+    hackathons: computedHackathons,
+    hackathonDetails: detailsRecord,
+    leaderboards: normalizedLeaderboards,
+  });
   useTeamStore.setState({ teams });
-  useSubmissionStore.setState({ submissions });
+  useSubmissionStore.setState({ submissions: normalizedSubmissions });
   useBoardStore.setState({ posts: boards });
 
-  // 페르소나 풀은 allUsers Store에 동기화
-  const { setAllUsers } = useUserStore.getState();
-  setAllUsers([seedUser, ...personaPool] as any);
+  useUserStore.getState().setAllUsers([seedUser, ...personaPool] as any);
 
-  // 유저: 시드 유저(강유진)이거나 비로그인이면 시드 데이터로 강제 업데이트
   const existingUser = useUserStore.getState().currentUser;
-  if (!existingUser || existingUser.id === 'user-001-yujin') {
+  if (!existingUser || existingUser.id === seedUser.id) {
     useUserStore.setState({ currentUser: seedUser });
   }
 
-  // 랭킹 포인트 계산
   useRankingStore.getState().recalculateRankings();
 
-  // 샘플 알림 주입 (기본적으로 3개 초대장 설정, 모집 중인 팀으로만 구성)
-  useNotificationStore.setState({ notifications: [], sentInvitations: [] }); // Reset for version bump
-  
+  useNotificationStore.setState({ notifications: [], sentInvitations: [] });
   useNotificationStore.getState().addNotification({
     type: 'invitation',
     fromTeamName: 'Prompt Wizards',
-    hackathonTitle: '제1회 생성형 AI 스타트업 챌린지',
+    hackathonTitle: '생성형 AI 스타트업 챌린지',
     teamCode: 'T-GEN-1',
   });
   useNotificationStore.getState().addNotification({
@@ -63,48 +91,51 @@ export function initializeStore() {
   useNotificationStore.getState().addNotification({
     type: 'invitation',
     fromTeamName: 'Pixel Perfect',
-    hackathonTitle: '글로벌 UX/UI 디자인 리디자인 챌린지 2026',
+    hackathonTitle: '글로벌 UX/UI 사용자 리디자인 챌린지 2026',
     teamCode: 'T-UX--1',
   });
 
-    // Sample Sent Invitations (from '강유진''s team 404found)
-    useNotificationStore.getState().addSentInvitation({
-      teamCode: 'T-HANDOVER-01',
-      toUserNickname: '김프론트',
-    });
-    // set it as accepted for demo
-    useNotificationStore.getState().updateSentInvitationStatus('T-HANDOVER-01', '김프론트', 'accepted');
-
-    useNotificationStore.getState().addSentInvitation({
-      teamCode: 'T-HANDOVER-01',
-      toUserNickname: '이백엔드',
-    });
-
-    useNotificationStore.getState().addSentInvitation({
-      teamCode: 'T-HANDOVER-01',
-      toUserNickname: '박디자인',
-    });
-
-    // invitations for current user from other teams (to show sync)
-    useNotificationStore.getState().addSentInvitation({
-      teamCode: 'T-GEN-5',
-      toUserNickname: '강유진',
-    });
-    useNotificationStore.getState().addSentInvitation({
-      teamCode: 'T-CLO-3',
-      toUserNickname: '강유진',
-    });
+  useNotificationStore.getState().addSentInvitation({
+    teamCode: 'T-HANDOVER-01',
+    toUserNickname: '김프론트',
+  });
+  useNotificationStore.getState().updateSentInvitationStatus('T-HANDOVER-01', '김프론트', 'accepted');
+  useNotificationStore.getState().addSentInvitation({
+    teamCode: 'T-HANDOVER-01',
+    toUserNickname: '이백엔드',
+  });
+  useNotificationStore.getState().addSentInvitation({
+    teamCode: 'T-HANDOVER-01',
+    toUserNickname: '박디자인',
+  });
+  useNotificationStore.getState().addSentInvitation({
+    teamCode: 'T-GEN-5',
+    toUserNickname: '강유진',
+  });
+  useNotificationStore.getState().addSentInvitation({
+    teamCode: 'T-CLO-3',
+    toUserNickname: '강유진',
+  });
 
   localStorage.setItem('vibehack-seed-version', SEED_VERSION);
-  console.log('[Initializer] 시드 데이터 초기화 완료 ✅');
 }
 
 export function initializeIfNeeded() {
   const storedVersion = localStorage.getItem('vibehack-seed-version');
-  if (storedVersion === SEED_VERSION) {
-    console.log('[Initializer] 시드 데이터 최신 — 스킵');
-    return false;
+  if (storedVersion !== SEED_VERSION) {
+    initializeStore();
+    return true;
   }
-  initializeStore();
-  return true;
+
+  const existingDetails = useHackathonStore.getState().hackathonDetails;
+  const detailsRecord = Object.keys(existingDetails).length > 0 ? existingDetails : buildDetailsRecord();
+  const now = new Date();
+  const refreshedHackathons = useHackathonStore.getState().hackathons.map((hackathon) => ({
+    ...hackathon,
+    status: computeHackathonStatus(hackathon, detailsRecord[hackathon.slug], now),
+  }));
+
+  useHackathonStore.setState({ hackathons: refreshedHackathons, hackathonDetails: detailsRecord });
+  useRankingStore.getState().recalculateRankings();
+  return false;
 }
