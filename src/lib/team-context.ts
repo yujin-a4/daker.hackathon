@@ -46,7 +46,7 @@ function getAvailabilitySummary(team: Team, hackathon?: Hackathon | null) {
       : '평일 19:30~23:30, 주말 14:00~20:00 중심으로 설계와 화면 정의를 진행하고 있습니다.';
   }
 
-  if (hackathon?.status === 'upcoming') {
+  if (hackathon?.status === 'recruiting') {
     return '평일 20:00~23:30, 주말 오후 작업 가능합니다. 킥오프 이후에는 공통 회의 시간을 다시 고정할 예정입니다.';
   }
 
@@ -115,7 +115,7 @@ function getVolatilitySentence(team: Team, hackathon?: Hackathon | null) {
     return '변동성은 다소 있는 편이라 사용자 흐름과 범위를 이번 주 안에 고정하는 것을 목표로 합니다.';
   }
 
-  if (hackathon?.status === 'upcoming') {
+  if (hackathon?.status === 'recruiting') {
     return '변동성은 높을 수 있어 킥오프 전까지 역할과 요구사항을 가볍게 유지하고 있습니다.';
   }
 

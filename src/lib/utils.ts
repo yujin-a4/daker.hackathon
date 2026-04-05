@@ -13,12 +13,12 @@ export function generateId(prefix: string = 'id'): string {
   return `${prefix}-${Math.random().toString(36).substring(2, 11)}`;
 }
 
-export function getStatusColor(status: "ongoing" | "upcoming" | "ended"): string {
+export function getStatusColor(status: "recruiting" | "ongoing" | "ended"): string {
   switch (status) {
+    case "recruiting":
+      return "bg-amber-100 text-amber-700";
     case "ongoing":
       return "bg-green-100 text-green-700";
-    case "upcoming":
-      return "bg-blue-100 text-blue-700";
     case "ended":
       return "bg-slate-100 text-slate-500";
     default:

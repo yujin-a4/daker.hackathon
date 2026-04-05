@@ -89,7 +89,7 @@ export const hackathons: Hackathon[] = [
   {
     slug: 'web3-defi-innovation',
     title: 'Web 3.0 디파이(DeFi) 혁신 챌린지',
-    status: 'upcoming',
+    status: 'recruiting',
     type: 'SW개발',
     tags: ['Web3', 'Blockchain', 'DeFi'],
     thumbnailUrl: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&q=80',
@@ -101,7 +101,7 @@ export const hackathons: Hackathon[] = [
   {
     slug: 'lowcode-nocode-2026',
     title: '로우코드/노코드 생산성 해커톤',
-    status: 'upcoming',
+    status: 'recruiting',
     type: '서비스기획',
     tags: ['LowCode', 'NoCode', 'Productivity'],
     thumbnailUrl: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=80',
@@ -113,7 +113,7 @@ export const hackathons: Hackathon[] = [
   {
     slug: 'gamification-startup-2026',
     title: '게임화(Gamification) 스타트업 아이디어톤',
-    status: 'upcoming',
+    status: 'recruiting',
     type: '전략기획',
     tags: ['Gaming', 'Business', 'Idea'],
     thumbnailUrl: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&q=80',
@@ -125,7 +125,7 @@ export const hackathons: Hackathon[] = [
   {
     slug: 'green-tech-zero-waste',
     title: '2026 그린테크: 제로 웨이스트 솔루션',
-    status: 'upcoming',
+    status: 'recruiting',
     type: 'SW개발',
     tags: ['GreenTech', 'ESG', 'Environment'],
     thumbnailUrl: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800&q=80',

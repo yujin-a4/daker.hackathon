@@ -11,6 +11,7 @@ import { useHackathonStore } from '@/store/useHackathonStore';
 import { useUserStore } from '@/store/useUserStore';
 import type { Team } from '@/types';
 import { calculateMatchScore, MatchingResult } from '@/lib/matching';
+import { isHackathonRecruiting } from '@/lib/hackathon-utils';
 import RecommendedTeamSection from '@/components/camp/RecommendedTeamSection';
 
 import TeamFilters from '@/components/camp/TeamFilters';
@@ -58,7 +59,7 @@ function CampContent() {
   const recommendedTeams = useMemo(() => {
     if (!currentUser) return [];
     const activeHackathonSlugs = new Set(
-      hackathons.filter(h => h.status === 'ongoing' || h.status === 'upcoming').map(h => h.slug)
+      hackathons.filter(isHackathonRecruiting).map(h => h.slug)
     );
     const eligibleTeams = teams.filter(t =>
       !t.isSolo &&
@@ -109,7 +110,7 @@ function CampContent() {
   
   // 진행 중/예정인 해커톤 slug 세트 (ended 팀 필터링용)
   const activeHackathonSlugs = useMemo(() =>
-    new Set(hackathons.filter(h => h.status === 'ongoing' || h.status === 'upcoming').map(h => h.slug)),
+    new Set(hackathons.filter(isHackathonRecruiting).map(h => h.slug)),
     [hackathons]
   );
 
@@ -187,7 +188,7 @@ function CampContent() {
             setSearchQuery={setSearchQuery}
             positionFilter={positionFilter}
             setPositionFilter={setPositionFilter}
-            hackathons={hackathons.filter(h => h.status === 'ongoing' || h.status === 'upcoming')}
+            hackathons={hackathons.filter(isHackathonRecruiting)}
           />
           <Button onClick={handleCreateNew} className="w-full md:w-auto shadow-sm">
             <Plus className="mr-2 h-4 w-4" /> 팀 모집글 작성

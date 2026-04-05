@@ -12,6 +12,7 @@ import { useHackathonStore } from '@/store/useHackathonStore';
 import { useThemeStore } from '@/store/useThemeStore';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { isHackathonRecruiting } from '@/lib/hackathon-utils';
 
 import AuthModal from '@/components/auth/AuthModal';
 import UserDropdown from '@/components/auth/UserDropdown';
@@ -52,7 +53,7 @@ export default function Navbar() {
       }))).filter(Boolean);
 
       myActiveHackathons.forEach(slug => {
-        const hackathon = hackathons.find(h => h.slug === slug && h.status === 'ongoing');
+        const hackathon = hackathons.find(h => h.slug === slug && isHackathonRecruiting(h));
         if (hackathon) {
           const deadline = new Date(hackathon.period.submissionDeadlineAt);
           const diffMs = deadline.getTime() - now.getTime();
@@ -92,7 +93,7 @@ export default function Navbar() {
       type: '랭킹업데이트',
       icon: Trophy,
       bgClass: 'bg-blue-600', 
-      text: `🏆 현재 <span class="font-bold text-yellow-300">${hackathons.filter(h => h.status === 'ongoing').length}개</span>의 해커톤이 진행 중입니다!`
+      text: `🏆 현재 <span class="font-bold text-yellow-300">${hackathons.filter(isHackathonRecruiting).length}개</span>의 해커톤이 모집 중입니다!`
     });
 
     dynamicNotices.push({

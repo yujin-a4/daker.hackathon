@@ -50,7 +50,7 @@ import DeadlineWidget from '@/components/hackathon/DeadlineWidget';
 import ApplyModal from '@/components/hackathon/ApplyModal';
 import DocumentModal from '@/components/hackathon/DocumentModal';
 import MatchStatusTag from '@/components/hackathon/MatchStatusTag';
-import { getHackathonPhase } from '@/lib/hackathon-utils';
+import { getHackathonPhase, getHackathonStatusLabel, isHackathonRecruiting } from '@/lib/hackathon-utils';
 import { useTeamStore } from '@/store/useTeamStore';
 import { useSubmissionStore } from '@/store/useSubmissionStore';
 
@@ -196,18 +196,8 @@ export default function HackathonDetailPage() {
     );
   }
 
-  let statusText = '';
-  switch (hackathon.status) {
-    case 'ongoing':
-      statusText = '진행중';
-      break;
-    case 'upcoming':
-      statusText = '예정';
-      break;
-    case 'ended':
-      statusText = '종료';
-      break;
-  }
+  const statusText = getHackathonStatusLabel(hackathon.status);
+  const isRecruiting = isHackathonRecruiting(hackathon);
 
   const schedule = details.sections.schedule;
   const firstMilestone = schedule.milestones?.[0];
@@ -417,14 +407,20 @@ export default function HackathonDetailPage() {
                   ) : (
                     <Button 
                       onClick={() => setIsApplyModalOpen(true)} 
-                      disabled={hackathon.status === 'ended'}
+                      disabled={!isRecruiting}
                       className="w-full bg-indigo-600 hover:bg-indigo-700 h-10 font-bold shadow-lg shadow-indigo-600/20"
                     >
                       참가 신청하기
                     </Button>
                   )}
                   <p className="text-[11px] text-slate-400 text-center">
-                    {hackathon.status === 'ended' ? '이 대회는 종료되었습니다.' : isParticipating ? '이미 참가 중인 대회입니다.' : '현재 많은 분석가들이 참여하고 있습니다.'}
+                    {hackathon.status === 'ended'
+                      ? '이 대회는 종료되었습니다.'
+                      : isParticipating
+                        ? '이미 참가 중인 대회입니다.'
+                        : isRecruiting
+                          ? '첫 제출 마감 전까지 참가 신청이 가능합니다.'
+                          : '모집이 마감되어 더 이상 참가 신청할 수 없습니다.'}
                   </p>
                 </div>
 
@@ -503,7 +499,7 @@ export default function HackathonDetailPage() {
             ) : (
               <Button 
                 onClick={() => setIsApplyModalOpen(true)}
-                disabled={hackathon.status === 'ended'}
+                disabled={!isRecruiting}
                 className="flex-1 bg-indigo-600 hover:bg-indigo-700 h-12 rounded-xl font-bold text-base shadow-lg shadow-indigo-600/20"
               >
                 참가 신청하기 <ArrowRight className="w-5 h-5 ml-2" />

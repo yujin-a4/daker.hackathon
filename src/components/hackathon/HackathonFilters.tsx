@@ -16,7 +16,7 @@ type HackathonFiltersProps = {
   onShowBookmarkedOnlyChange: (show: boolean) => void;
 };
 
-const statusOptions = ['전체', '진행중', '예정', '종료'];
+const statusOptions = ['전체', '모집중', '진행중', '종료'];
 
 export default function HackathonFilters({
   status,
@@ -34,7 +34,6 @@ export default function HackathonFilters({
 
   return (
     <div className="space-y-3">
-      {/* 1행: 상태 탭 + 북마크 + 검색창(오른쪽) */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap">
           {statusOptions.map((option) => (
@@ -62,7 +61,6 @@ export default function HackathonFilters({
           </Button>
         </div>
 
-        {/* 검색창 — 오른쪽 정렬 */}
         <div className="relative w-56 flex-shrink-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
           <input
@@ -83,7 +81,6 @@ export default function HackathonFilters({
         </div>
       </div>
 
-      {/* 2행: 유형 필터 */}
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-xs font-medium text-muted-foreground mr-1">유형</span>
         {['전체', ...allTypes].map((t) => (
@@ -102,7 +99,6 @@ export default function HackathonFilters({
         ))}
       </div>
 
-      {/* 활성 필터 요약 + 초기화 */}
       {hasActiveFilters && (
         <div className="flex items-center gap-2">
           {selectedType !== '전체' && (

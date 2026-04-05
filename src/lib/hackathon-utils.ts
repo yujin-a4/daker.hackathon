@@ -1,23 +1,53 @@
 import type { Hackathon, HackathonDetail } from '@/types';
 
 export type PhaseType = 'SUBMISSION' | 'VOTING' | 'JUDGING' | 'RESULT' | 'PREPARATION';
+export type HackathonStatus = Hackathon['status'];
+
+export function getHackathonRecruitingDeadline(
+  hackathon: Pick<Hackathon, 'period'>,
+  detail?: HackathonDetail
+): Date {
+  const firstSubmissionMilestone = detail?.sections.schedule.milestones?.find(
+    (milestone) => milestone.type === 'submission'
+  );
+  const fallbackDeadline = detail?.sections.submit.submissionItems?.[0]?.deadline ?? hackathon.period.submissionDeadlineAt;
+
+  return new Date(firstSubmissionMilestone?.at ?? fallbackDeadline);
+}
 
 export function computeHackathonStatus(
   hackathon: Pick<Hackathon, 'period'>,
   detail?: HackathonDetail,
   now: Date = new Date()
-): 'ongoing' | 'upcoming' | 'ended' {
+): HackathonStatus {
   const endAt = new Date(hackathon.period.endAt);
   if (now >= endAt) return 'ended';
 
-  if (detail) {
-    const firstMilestoneAt = detail.sections.schedule.milestones?.[0]?.at;
-    if (firstMilestoneAt && now < new Date(firstMilestoneAt)) {
-      return 'upcoming';
-    }
-  }
+  const recruitingDeadline = getHackathonRecruitingDeadline(hackathon, detail);
+  if (now < recruitingDeadline) return 'recruiting';
 
   return 'ongoing';
+}
+
+export function isHackathonRecruiting(hackathon: Pick<Hackathon, 'status'>) {
+  return hackathon.status === 'recruiting';
+}
+
+export function isHackathonActive(hackathon: Pick<Hackathon, 'status'>) {
+  return hackathon.status !== 'ended';
+}
+
+export function getHackathonStatusLabel(status: HackathonStatus) {
+  switch (status) {
+    case 'recruiting':
+      return '모집중';
+    case 'ongoing':
+      return '진행중';
+    case 'ended':
+      return '종료';
+    default:
+      return status;
+  }
 }
 
 export interface HackathonPhase {

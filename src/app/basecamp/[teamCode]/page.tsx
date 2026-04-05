@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useUserStore } from '@/store/useUserStore';
 import { useTeamStore } from '@/store/useTeamStore';
 import { useHackathonStore } from '@/store/useHackathonStore';
-import { ArrowLeft, BookOpen, Presentation, StickyNote, Activity, Target } from 'lucide-react';
+import { ArrowLeft, BookOpen, StickyNote, Activity, Target } from 'lucide-react';
 import { getTeamComposition } from '@/lib/teamComposition';
+import { getHackathonStatusLabel } from '@/lib/hackathon-utils';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,13 +34,12 @@ export default function BasecampPage() {
 
   const [activeTab, setActiveTab] = useState<TabId>('info');
 
-  const team = teams.find(t => t.teamCode === teamCode);
+  const team = teams.find((t) => t.teamCode === teamCode);
   const isMember = currentUser && currentUser.teamCodes.includes(teamCode);
-  const hackathon = team ? hackathons.find(h => h.slug === team.hackathonSlug) : null;
+  const hackathon = team ? hackathons.find((h) => h.slug === team.hackathonSlug) : null;
   const composition = team ? getTeamComposition(team, allUsers, currentUser) : null;
 
   useEffect(() => {
-    // 권한 체크
     if (!currentUser || !team || !isMember) {
       router.replace('/');
     }
@@ -58,7 +58,7 @@ export default function BasecampPage() {
             <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 h-5 px-1.5 text-[10px] font-bold uppercase tracking-wider">
-                  작전실
+                  Basecamp
                 </Badge>
                 <h1 className="text-base font-black tracking-tight">{team.name}</h1>
               </div>
@@ -69,16 +69,15 @@ export default function BasecampPage() {
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={() => router.push(`/hackathons/${hackathon.slug}`)} className="text-xs font-bold text-primary group">
-            대회 본선 페이지 <ArrowLeft className="ml-1 h-3.5 w-3.5 rotate-180 transition-transform group-hover:translate-x-0.5" />
+            대회 상세 <ArrowLeft className="ml-1 h-3.5 w-3.5 rotate-180 transition-transform group-hover:translate-x-0.5" />
           </Button>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 mt-6 flex flex-col md:flex-row gap-6">
-        {/* Left Sidebar (Desktop) / Top Nav (Mobile) */}
         <aside className="w-full md:w-56 shrink-0 flex flex-col gap-4">
           <nav className="bg-background rounded-xl border p-2 flex md:flex-col gap-1 overflow-x-auto snap-x">
-            {TABS.map(tab => {
+            {TABS.map((tab) => {
               const isActive = activeTab === tab.id;
               const Icon = tab.icon;
               return (
@@ -98,7 +97,6 @@ export default function BasecampPage() {
             })}
           </nav>
 
-          {/* 팀 요약 정보 카드 */}
           <div className="bg-background rounded-xl border p-5 hidden md:block">
             <h3 className="text-sm font-bold mb-4 flex items-center gap-1.5 min-w-0">
               <Activity className="w-4 h-4 text-primary shrink-0" />
@@ -110,9 +108,9 @@ export default function BasecampPage() {
                 <span className="font-semibold">{composition?.confirmedMemberCount ?? team.memberCount} / {team.maxTeamSize}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">목표 해커톤</span>
-                <span className={hackathon.status === 'ongoing' ? 'text-blue-600 font-semibold' : ''}>
-                  {hackathon.status === 'ongoing' ? '진행중' : '종료/예정'}
+                <span className="text-muted-foreground">대회 상태</span>
+                <span className={hackathon.status !== 'ended' ? 'text-blue-600 font-semibold' : ''}>
+                  {getHackathonStatusLabel(hackathon.status)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
@@ -125,7 +123,6 @@ export default function BasecampPage() {
           </div>
         </aside>
 
-        {/* Content Area */}
         <main className="flex-1 min-w-0">
           <div className="bg-background rounded-xl border p-4 md:p-6 lg:p-8 min-h-[600px] shadow-sm">
             {activeTab === 'info' && <BasecampInfoTab team={team} hackathon={hackathon} />}

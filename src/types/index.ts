@@ -1,7 +1,7 @@
 export interface Hackathon {
   slug: string;
   title: string;
-  status: 'ongoing' | 'upcoming' | 'ended';
+  status: 'recruiting' | 'ongoing' | 'ended';
   type: string;
   tags: string[];
   thumbnailUrl: string;

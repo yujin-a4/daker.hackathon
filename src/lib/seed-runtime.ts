@@ -155,7 +155,7 @@ export function normalizeSeedSubmissions(params: {
       })
       .filter((artifact): artifact is NonNullable<typeof artifact> => Boolean(artifact));
 
-    if (hackathon.status === 'upcoming' || artifacts.length === 0) {
+    if (artifacts.length === 0) {
       continue;
     }
 
@@ -284,7 +284,7 @@ function buildInProgressEntries(params: {
       rank: null,
       teamName: team.name,
       score: null,
-      votes: hackathon.status === 'upcoming' ? 0 : raw?.votes ?? 0,
+      votes: hackathon.status === 'recruiting' ? 0 : raw?.votes ?? 0,
       submittedAt: submission?.submittedAt ?? null,
     } satisfies LeaderboardEntry;
   });

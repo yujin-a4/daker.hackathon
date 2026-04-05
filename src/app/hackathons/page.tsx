@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useHackathonStore } from '@/store/useHackathonStore';
@@ -12,10 +12,10 @@ import EmptyState from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/button';
 
 const statusMap: { [key: string]: string | undefined } = {
-  '전체': undefined,
-  '진행중': 'ongoing',
-  '예정': 'upcoming',
-  '종료': 'ended',
+  전체: undefined,
+  모집중: 'recruiting',
+  진행중: 'ongoing',
+  종료: 'ended',
 };
 
 const ITEMS_PER_PAGE = 10;
@@ -64,7 +64,7 @@ export default function HackathonsPage() {
 
     return [...hackathons]
       .sort((a, b) => {
-        const statusOrder = { ongoing: 0, upcoming: 1, ended: 2 };
+        const statusOrder = { recruiting: 0, ongoing: 1, ended: 2 };
         const statusDiff = statusOrder[a.status] - statusOrder[b.status];
         if (statusDiff !== 0) return statusDiff;
 
@@ -73,32 +73,26 @@ export default function HackathonsPage() {
             ? b.participantCount - a.participantCount
             : a.participantCount - b.participantCount;
         }
-        
+
         if (sortOption.startsWith('prize')) {
           const prizeA = parseInt(a.prizeTotal?.replace(/[^0-9]/g, '') || '0', 10);
           const prizeB = parseInt(b.prizeTotal?.replace(/[^0-9]/g, '') || '0', 10);
           return sortOption === 'prizeDesc' ? prizeB - prizeA : prizeA - prizeB;
         }
 
-        // default: deadline
-        return (
-          new Date(a.period.endAt).getTime() -
-          new Date(b.period.endAt).getTime()
-        );
+        return new Date(a.period.endAt).getTime() - new Date(b.period.endAt).getTime();
       })
       .filter((hackathon) => {
         const statusMatch =
           !statusMap[statusFilter] || hackathon.status === statusMap[statusFilter];
-        const typeMatch =
-          selectedType === '전체' || hackathon.type === selectedType;
+        const typeMatch = selectedType === '전체' || hackathon.type === selectedType;
         const searchMatch =
           !query ||
           hackathon.title.toLowerCase().includes(query) ||
           hackathon.tags.some((tag) => tag.toLowerCase().includes(query)) ||
           (hackathon.type?.toLowerCase().includes(query) ?? false);
         const bookmarkMatch =
-          !showBookmarkedOnly ||
-          currentUser?.bookmarkedSlugs?.includes(hackathon.slug);
+          !showBookmarkedOnly || currentUser?.bookmarkedSlugs?.includes(hackathon.slug);
         return statusMatch && typeMatch && searchMatch && bookmarkMatch;
       });
   }, [hackathons, statusFilter, selectedType, searchQuery, showBookmarkedOnly, currentUser, sortOption]);
@@ -132,7 +126,6 @@ export default function HackathonsPage() {
     setCurrentPage(1);
   };
 
-  // 필터가 기본 상태인지 확인
   const isDefaultFilter =
     statusFilter === '전체' &&
     selectedType === '전체' &&
@@ -144,7 +137,7 @@ export default function HackathonsPage() {
       <header className="mb-8">
         <h1 className="text-3xl font-bold font-headline">해커톤</h1>
         <p className="mt-2 text-muted-foreground">
-          다양한 해커톤에 참가하고 실력을 증명하세요.
+          지금 참가 가능한 해커톤과 진행 중인 대회를 한 번에 살펴보세요.
         </p>
       </header>
 
@@ -161,7 +154,6 @@ export default function HackathonsPage() {
           onShowBookmarkedOnlyChange={handleBookmarkChange}
         />
 
-        {/* 추천 섹션: 필터가 기본 상태일 때만 표시 */}
         {isDefaultFilter && <RecommendedSection />}
 
         <div className="flex items-center justify-between text-sm text-muted-foreground font-medium">
@@ -169,16 +161,16 @@ export default function HackathonsPage() {
           <select
             value={sortOption}
             onChange={(e) => {
-              setSortOption(e.target.value as any);
+              setSortOption(e.target.value as typeof sortOption);
               setCurrentPage(1);
             }}
             className="bg-transparent border-none outline-none focus:ring-0 text-foreground cursor-pointer hover:text-primary transition-colors pr-2"
           >
             <option value="deadline">마감일 임박순</option>
-            <option value="participantsDesc">참가인원 많은 순</option>
-            <option value="participantsAsc">참가인원 적은 순</option>
-            <option value="prizeDesc">상금 높은 순</option>
-            <option value="prizeAsc">상금 낮은 순</option>
+            <option value="participantsDesc">참가 인원 많은순</option>
+            <option value="participantsAsc">참가 인원 적은순</option>
+            <option value="prizeDesc">상금 높은순</option>
+            <option value="prizeAsc">상금 낮은순</option>
           </select>
         </div>
 

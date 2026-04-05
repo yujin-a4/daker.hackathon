@@ -14,22 +14,10 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { formatDate, getDday, isExpired } from '@/lib/date';
 import { cn, getStatusColor } from '@/lib/utils';
+import { getHackathonStatusLabel } from '@/lib/hackathon-utils';
 
 interface HackathonCardProps {
   hackathon: Hackathon;
-}
-
-function statusLabel(status: Hackathon['status']) {
-  switch (status) {
-    case 'ongoing':
-      return '진행 중';
-    case 'upcoming':
-      return '예정';
-    case 'ended':
-      return '종료';
-    default:
-      return status;
-  }
 }
 
 export default function HackathonCard({ hackathon }: HackathonCardProps) {
@@ -54,7 +42,7 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
       setProgress(100);
       return;
     }
-    if (hackathon.status === 'upcoming') {
+    if (hackathon.status === 'recruiting') {
       setProgress(0);
       return;
     }
@@ -95,7 +83,7 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
 
           <div className="flex flex-wrap items-center gap-2">
             <Badge className={cn('text-[10px] font-bold uppercase tracking-wider', getStatusColor(hackathon.status))}>
-              {statusLabel(hackathon.status)}
+              {getHackathonStatusLabel(hackathon.status)}
             </Badge>
             <Badge variant="outline" className="bg-slate-50/50 text-[10px] font-medium text-muted-foreground dark:border-white/10 dark:bg-transparent">
               {hackathon.type}
