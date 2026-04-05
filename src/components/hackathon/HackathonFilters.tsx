@@ -16,7 +16,7 @@ type HackathonFiltersProps = {
   onShowBookmarkedOnlyChange: (show: boolean) => void;
 };
 
-const statusOptions = ['전체', '모집중', '진행중', '종료'];
+const statusOptions = ['전체', '예정', '진행중', '종료'];
 
 export default function HackathonFilters({
   status,
@@ -30,7 +30,7 @@ export default function HackathonFilters({
   onShowBookmarkedOnlyChange,
 }: HackathonFiltersProps) {
   const hasActiveFilters =
-    selectedType !== '전체' || searchQuery.length > 0 || showBookmarkedOnly;
+    status !== '전체' || selectedType !== '전체' || searchQuery.length > 0 || showBookmarkedOnly;
 
   return (
     <div className="space-y-3">
@@ -83,24 +83,32 @@ export default function HackathonFilters({
 
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-xs font-medium text-muted-foreground mr-1">유형</span>
-        {['전체', ...allTypes].map((t) => (
+        {['전체', ...allTypes].map((type) => (
           <button
-            key={t}
-            onClick={() => onSelectedTypeChange(t)}
+            key={type}
+            onClick={() => onSelectedTypeChange(type)}
             className={cn(
               'px-3 py-1 text-sm rounded-full transition-all duration-200',
-              selectedType === t
+              selectedType === type
                 ? 'bg-primary text-primary-foreground font-medium shadow-sm'
                 : 'bg-muted text-muted-foreground hover:bg-accent'
             )}
           >
-            {t}
+            {type}
           </button>
         ))}
       </div>
 
       {hasActiveFilters && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {status !== '전체' && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs rounded-full bg-primary/10 text-primary font-medium">
+              {status}
+              <button onClick={() => onStatusChange('전체')} className="hover:text-primary/70">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
           {selectedType !== '전체' && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs rounded-full bg-primary/10 text-primary font-medium">
               {selectedType}
@@ -121,6 +129,7 @@ export default function HackathonFilters({
             variant="link"
             size="sm"
             onClick={() => {
+              onStatusChange('전체');
               onSelectedTypeChange('전체');
               onSearchQueryChange('');
               onShowBookmarkedOnlyChange(false);

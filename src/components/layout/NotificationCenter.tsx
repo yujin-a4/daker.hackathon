@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Bell, Check, X, Users, Calendar, Info, Trash2 } from 'lucide-react';
+import { Bell, Check, X, Users, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Popover, 
@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { useNotificationStore, Notification } from '@/store/useNotificationStore';
+import { useUserStore } from '@/store/useUserStore';
 import { useTeamStore } from '@/store/useTeamStore';
 import TeamDetailModal from '@/components/camp/TeamDetailModal';
 import { cn } from '@/lib/utils';
@@ -19,13 +20,14 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function NotificationCenter() {
   const { 
-    notifications, 
+    getMyNotifications,
     acceptInvitation, 
     cancelAcceptance,
     declineInvitation, 
     markAllAsRead,
     markAsRead 
   } = useNotificationStore();
+  const { currentUser } = useUserStore();
 
   const { teams } = useTeamStore();
   
@@ -33,9 +35,11 @@ export default function NotificationCenter() {
   const [selectedTeamData, setSelectedTeamData] = React.useState<any>(null);
   
   const { toast } = useToast();
-  
-  const pendingCount = notifications.filter(n => n.status === 'pending').length;
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  // 현재 로그인 유저의 알림만 표시
+  const myNotifications = getMyNotifications();
+  const pendingCount = myNotifications.filter(n => n.status === 'pending').length;
+  const unreadCount = myNotifications.filter(n => !n.isRead).length;
 
   const handleAccept = (e: React.MouseEvent, id: string, teamName: string) => {
     e.stopPropagation();
@@ -113,9 +117,9 @@ export default function NotificationCenter() {
           
           <div className="max-h-[450px] overflow-y-auto overflow-x-hidden">
             <AnimatePresence initial={false}>
-              {notifications.length > 0 ? (
+              {myNotifications.length > 0 ? (
                 <div className="divide-y divide-border/40">
-                  {notifications.map((notification) => (
+                  {myNotifications.map((notification) => (
                     <NotificationItem 
                       key={notification.id} 
                       notification={notification}
@@ -138,7 +142,7 @@ export default function NotificationCenter() {
             </AnimatePresence>
           </div>
           
-          {notifications.length > 0 && (
+          {myNotifications.length > 0 && (
             <div className="border-t p-2 text-center bg-slate-50/30 dark:bg-slate-900/30">
               <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground h-8">
                 이전 알림 모두 보기

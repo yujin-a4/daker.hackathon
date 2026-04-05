@@ -1,7 +1,7 @@
 export interface Hackathon {
   slug: string;
   title: string;
-  status: 'recruiting' | 'ongoing' | 'ended';
+  status: 'upcoming' | 'recruiting' | 'ongoing' | 'ended';
   type: string;
   tags: string[];
   thumbnailUrl: string;
@@ -43,12 +43,12 @@ export interface HackathonDetail {
     };
     schedule: {
       timezone: string;
-      milestones: { 
-        name: string; 
-        at: string; 
+      milestones: {
+        name: string;
+        at: string;
         type?: 'submission' | 'voting' | 'judging' | 'result';
-        itemKey?: string; // Links to submission.artifacts.key
-        step?: number; // 1, 2, 3...
+        itemKey?: string;
+        step?: number;
         votingEnabled?: boolean;
         judgingEnabled?: boolean;
         galleryEnabled?: boolean;
@@ -78,7 +78,7 @@ export interface LeaderboardEntry {
   rank: number | null;
   teamName: string;
   score: number | null;
-  votes?: number; // Real-time user votes during voting phase
+  votes?: number;
   submittedAt: string | null;
   scoreBreakdown?: Record<string, number>;
   artifacts?: {
@@ -105,9 +105,9 @@ export interface Team {
   hackathonSlug: string | null;
   name: string;
   isOpen: boolean;
-  isPrivate: boolean; // 초대 전용(비공개) 팀 여부
-  isSolo?: boolean; // 개인 참가 여부 — true이면 팀 찾기 목록에 노출 안 됨
-  leaderId: string; // 팀장을 식별하는 ID
+  isPrivate: boolean;
+  isSolo?: boolean;
+  leaderId: string;
   memberCount: number;
   maxTeamSize: number;
   lookingFor: { position: string; description: string }[];
@@ -118,7 +118,7 @@ export interface Team {
   createdAt: string;
   progressStatus?: 'planning' | 'designing' | 'developing' | 'completed';
   progressPercent?: number;
-  checklist?: string[]; // 체크된 항목들의 인덱스나 ID 저장
+  checklist?: string[];
   aiChecklists?: Record<string, { id: string; text: string; completed: boolean }[]>;
   aiStrategy?: Record<string, string>;
   teamMemos?: TeamMemo[];
@@ -133,6 +133,9 @@ export interface RankingUser {
   hackathonsJoined: number;
   winsCount: number;
   lastActiveAt: string;
+  // 프로필 카드용 — UserProfile에서 매핑
+  role?: string;
+  skills?: string[];
 }
 
 export interface Submission {

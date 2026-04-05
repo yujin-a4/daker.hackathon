@@ -9,12 +9,21 @@ import { motion } from 'framer-motion';
 import type { Hackathon } from '@/types';
 import { useTeamStore } from '@/store/useTeamStore';
 import { useUserStore } from '@/store/useUserStore';
+import { useHackathonStore } from '@/store/useHackathonStore';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { formatDate, getDday, isExpired } from '@/lib/date';
 import { cn, getStatusColor } from '@/lib/utils';
-import { getHackathonStatusLabel } from '@/lib/hackathon-utils';
+import {
+  computeHackathonRecruitmentStatus,
+  getHackathonEndAt,
+  getHackathonEndMeta,
+  getHackathonStageMeta,
+  getHackathonStartAt,
+  getHackathonStatusLabel,
+  getRecruitmentStatusLabel,
+} from '@/lib/hackathon-utils';
 
 interface HackathonCardProps {
   hackathon: Hackathon;
@@ -25,7 +34,14 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
   const { toast } = useToast();
   const { teams } = useTeamStore();
   const { currentUser, toggleBookmark } = useUserStore();
+  const { hackathonDetails } = useHackathonStore();
   const [progress, setProgress] = useState(0);
+  const detail = hackathonDetails[hackathon.slug];
+  const startAt = getHackathonStartAt(hackathon, detail).toISOString();
+  const endAt = getHackathonEndAt(hackathon, detail).toISOString();
+  const endMeta = getHackathonEndMeta(hackathon, detail);
+  const stageMeta = getHackathonStageMeta(hackathon, detail);
+  const recruitmentStatus = computeHackathonRecruitmentStatus(hackathon, detail);
 
   const isBookmarked = currentUser?.bookmarkedSlugs?.includes(hackathon.slug);
   const participantCount = useMemo(() => {
@@ -34,15 +50,16 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
     return matchingTeams.reduce((sum, team) => sum + (team.memberCount || 0), 0);
   }, [teams, hackathon.slug, hackathon.participantCount]);
 
-  const daysLeft = differenceInDays(new Date(hackathon.period.endAt), new Date());
-  const isUrgent = !isExpired(hackathon.period.endAt) && daysLeft <= 7;
+  const targetAt = endMeta.targetAt.toISOString();
+  const daysLeft = differenceInDays(endMeta.targetAt, new Date());
+  const isUrgent = !isExpired(targetAt) && daysLeft <= 7;
 
   useEffect(() => {
     if (hackathon.status === 'ended') {
       setProgress(100);
       return;
     }
-    if (hackathon.status === 'recruiting') {
+    if (hackathon.status === 'upcoming') {
       setProgress(0);
       return;
     }
@@ -85,6 +102,19 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
             <Badge className={cn('text-[10px] font-bold uppercase tracking-wider', getStatusColor(hackathon.status))}>
               {getHackathonStatusLabel(hackathon.status)}
             </Badge>
+            {hackathon.status === 'ongoing' && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  'text-[10px] font-bold tracking-wider',
+                  recruitmentStatus === 'recruiting'
+                    ? 'border-emerald-200 text-emerald-700 bg-emerald-50'
+                    : 'border-slate-200 text-slate-500 bg-slate-50'
+                )}
+              >
+                {getRecruitmentStatusLabel(recruitmentStatus)}
+              </Badge>
+            )}
             <Badge variant="outline" className="bg-slate-50/50 text-[10px] font-medium text-muted-foreground dark:border-white/10 dark:bg-transparent">
               {hackathon.type}
             </Badge>
@@ -97,7 +127,7 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
                     : 'border-slate-200 bg-slate-50/50 text-muted-foreground dark:border-white/10 dark:bg-transparent'
                 )}
               >
-                {getDday(hackathon.period.endAt)}
+                {endMeta.label} {getDday(targetAt)}
               </div>
             )}
           </div>
@@ -119,6 +149,11 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
         <div className="flex-grow" />
 
         <div className="space-y-1.5">
+          {stageMeta && (
+            <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+              현재 단계: {stageMeta.label} {getDday(stageMeta.targetAt.toISOString())}
+            </div>
+          )}
           <div className="flex justify-between text-[10px] font-bold uppercase tracking-tighter text-slate-400 dark:text-slate-500">
             <span>Progress</span>
             <span className={cn('font-black', isUrgent ? 'text-rose-500' : 'text-indigo-600 dark:text-indigo-400')}>
@@ -148,7 +183,7 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
             </div>
             <div className="flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5 opacity-70" />
-              <span>~{formatDate(hackathon.period.endAt)}</span>
+              <span>{formatDate(startAt)} ~ {formatDate(endAt)}</span>
             </div>
           </div>
           <ArrowRight className="h-4 w-4 text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:text-indigo-600 dark:text-slate-700 dark:group-hover:text-indigo-400" />

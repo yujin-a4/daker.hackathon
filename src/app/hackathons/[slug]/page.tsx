@@ -51,7 +51,17 @@ import ApplyModal from '@/components/hackathon/ApplyModal';
 import DocumentModal from '@/components/hackathon/DocumentModal';
 import MatchStatusTag from '@/components/hackathon/MatchStatusTag';
 import AuthModal from '@/components/auth/AuthModal';
-import { getHackathonPhase, getHackathonStatusLabel, isHackathonRecruiting } from '@/lib/hackathon-utils';
+import {
+  computeHackathonRecruitmentStatus,
+  getHackathonEndAt,
+  getHackathonEndMeta,
+  getHackathonPhase,
+  getHackathonStageMeta,
+  getHackathonStartAt,
+  getRecruitmentStatusLabel,
+  getHackathonStatusLabel,
+  isHackathonRecruiting,
+} from '@/lib/hackathon-utils';
 import { useTeamStore } from '@/store/useTeamStore';
 import { useSubmissionStore } from '@/store/useSubmissionStore';
 import { hasMatchingProfile } from '@/lib/user-profile';
@@ -218,16 +228,21 @@ export default function HackathonDetailPage() {
   }
 
   const statusText = getHackathonStatusLabel(hackathon.status);
-  const isRecruiting = isHackathonRecruiting(hackathon);
+  const isRecruiting = isHackathonRecruiting(hackathon, details);
+  const recruitmentStatus = computeHackathonRecruitmentStatus(hackathon, details);
+  const endMeta = getHackathonEndMeta(hackathon, details);
+  const stageMeta = getHackathonStageMeta(hackathon, details);
 
   const schedule = details.sections.schedule;
   const firstMilestone = schedule.milestones?.[0];
   const lastMilestone = schedule.milestones?.length
     ? schedule.milestones[schedule.milestones.length - 1]
     : undefined;
+  const displayStartAt = getHackathonStartAt(hackathon, details).toISOString();
+  const displayEndAt = getHackathonEndAt(hackathon, details).toISOString();
 
   const milestones = details.sections.schedule.milestones || [];
-  const deadlineAt = hackathon.period.endAt;
+  const deadlineAt = endMeta.targetAt.toISOString();
 
   // D-Day 계산
   const diffTime = new Date(deadlineAt).getTime() - new Date().getTime();
@@ -322,6 +337,19 @@ export default function HackathonDetailPage() {
                   <Badge className={cn('px-2.5 py-0.5 rounded-full font-bold', getStatusColor(hackathon.status))}>
                     {statusText}
                   </Badge>
+                  {hackathon.status === 'ongoing' && (
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        'px-2.5 py-0.5 rounded-full font-bold',
+                        recruitmentStatus === 'recruiting'
+                          ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                          : 'border-slate-200 bg-slate-50 text-slate-500'
+                      )}
+                    >
+                      {getRecruitmentStatusLabel(recruitmentStatus)}
+                    </Badge>
+                  )}
                   <div className="flex gap-2">
                     {hackathon.tags.slice(0, 3).map((tag) => (
                       <span key={tag} className="text-xs text-muted-foreground bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
@@ -365,9 +393,9 @@ export default function HackathonDetailPage() {
                 {firstMilestone && lastMilestone && (
                   <p className="text-muted-foreground flex items-center gap-2">
                     <CalendarIcon className="w-4 h-4" />
-                    <span className="font-semibold">{formatDate(firstMilestone.at)}</span>
+                    <span className="font-semibold">{formatDate(displayStartAt)}</span>
                     <span className="opacity-50">—</span>
-                    <span className="font-semibold">{formatDate(lastMilestone.at)}</span>
+                    <span className="font-semibold">{formatDate(displayEndAt)}</span>
                   </p>
                 )}
               </div>

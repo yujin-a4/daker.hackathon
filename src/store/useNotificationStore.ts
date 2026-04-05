@@ -7,6 +7,7 @@ export type NotificationType = 'invitation' | 'message' | 'system';
 
 export interface Notification {
   id: string;
+  toUserNickname: string;  // 수신자 — 계정 전환 시 필터링 기준
   type: NotificationType;
   fromTeamName: string;
   hackathonTitle: string;
@@ -27,7 +28,10 @@ export interface SentInvitation {
 interface NotificationState {
   notifications: Notification[];
   sentInvitations: SentInvitation[];
-  
+
+  // 현재 로그인 유저의 알림만 필터링
+  getMyNotifications: () => Notification[];
+
   // 수신측 액션
   addNotification: (notification: Omit<Notification, 'id' | 'isRead' | 'status' | 'createdAt'>) => void;
   acceptInvitation: (id: string) => void;
@@ -35,7 +39,7 @@ interface NotificationState {
   declineInvitation: (id: string) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
-  
+
   // 발신측(팀장) 액션
   addSentInvitation: (invitation: Omit<SentInvitation, 'id' | 'status' | 'sentAt'>) => void;
   updateSentInvitationStatus: (teamCode: string, toUserNickname: string, status: 'pending' | 'accepted' | 'declined') => void;
@@ -46,6 +50,14 @@ export const useNotificationStore = create<NotificationState>()(
     (set, get) => ({
       notifications: [],
       sentInvitations: [],
+
+      getMyNotifications: () => {
+        const currentUser = useUserStore.getState().currentUser;
+        if (!currentUser) return [];
+        return get().notifications.filter(
+          (n) => n.toUserNickname === currentUser.nickname
+        );
+      },
       
       addNotification: (data) => {
         const newNotification: Notification = {

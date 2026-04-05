@@ -97,6 +97,7 @@ export default function TeamMemberManager({ team }: TeamMemberManagerProps) {
       fromTeamName: team.name,
       hackathonTitle: hackathon?.title || '참가 해커톤',
       teamCode: team.teamCode,
+      toUserNickname: nickname,
     });
 
     // 2. 발신 측 기록 추가

@@ -2,6 +2,26 @@ import type { Hackathon, HackathonDetail } from '@/types';
 
 export type PhaseType = 'SUBMISSION' | 'VOTING' | 'JUDGING' | 'RESULT' | 'PREPARATION';
 export type HackathonStatus = Hackathon['status'];
+export type RecruitmentStatus = 'recruiting' | 'closed';
+
+export interface HackathonTimeline {
+  startAt: Date;
+  recruitingDeadline: Date;
+  endAt: Date;
+}
+
+export interface HackathonStageMeta {
+  label: string;
+  targetAt: Date;
+}
+
+export function getHackathonStartAt(
+  hackathon: Pick<Hackathon, 'period'>,
+  detail?: HackathonDetail
+): Date {
+  const firstMilestoneAt = detail?.sections.schedule.milestones?.[0]?.at;
+  return new Date(firstMilestoneAt ?? hackathon.period.submissionDeadlineAt);
+}
 
 export function getHackathonRecruitingDeadline(
   hackathon: Pick<Hackathon, 'period'>,
@@ -10,9 +30,30 @@ export function getHackathonRecruitingDeadline(
   const firstSubmissionMilestone = detail?.sections.schedule.milestones?.find(
     (milestone) => milestone.type === 'submission'
   );
-  const fallbackDeadline = detail?.sections.submit.submissionItems?.[0]?.deadline ?? hackathon.period.submissionDeadlineAt;
+  const fallbackDeadline =
+    detail?.sections.submit.submissionItems?.[0]?.deadline ?? hackathon.period.submissionDeadlineAt;
 
   return new Date(firstSubmissionMilestone?.at ?? fallbackDeadline);
+}
+
+export function getHackathonEndAt(
+  hackathon: Pick<Hackathon, 'period'>,
+  detail?: HackathonDetail
+): Date {
+  const milestones = detail?.sections.schedule.milestones ?? [];
+  const lastMilestoneAt = milestones.length > 0 ? milestones[milestones.length - 1].at : undefined;
+  return new Date(lastMilestoneAt ?? hackathon.period.endAt);
+}
+
+export function getHackathonTimeline(
+  hackathon: Pick<Hackathon, 'period'>,
+  detail?: HackathonDetail
+): HackathonTimeline {
+  return {
+    startAt: getHackathonStartAt(hackathon, detail),
+    recruitingDeadline: getHackathonRecruitingDeadline(hackathon, detail),
+    endAt: getHackathonEndAt(hackathon, detail),
+  };
 }
 
 export function computeHackathonStatus(
@@ -20,17 +61,67 @@ export function computeHackathonStatus(
   detail?: HackathonDetail,
   now: Date = new Date()
 ): HackathonStatus {
-  const endAt = new Date(hackathon.period.endAt);
-  if (now >= endAt) return 'ended';
+  const timeline = getHackathonTimeline(hackathon, detail);
 
-  const recruitingDeadline = getHackathonRecruitingDeadline(hackathon, detail);
-  if (now < recruitingDeadline) return 'recruiting';
-
+  if (now >= timeline.endAt) return 'ended';
+  if (now < timeline.startAt) return 'upcoming';
   return 'ongoing';
 }
 
-export function isHackathonRecruiting(hackathon: Pick<Hackathon, 'status'>) {
-  return hackathon.status === 'recruiting';
+export function computeHackathonRecruitmentStatus(
+  hackathon: Pick<Hackathon, 'period' | 'status'>,
+  detail?: HackathonDetail,
+  now: Date = new Date()
+): RecruitmentStatus {
+  if (hackathon.status === 'upcoming' || hackathon.status === 'ended') return 'closed';
+  return now < getHackathonRecruitingDeadline(hackathon, detail) ? 'recruiting' : 'closed';
+}
+
+export function getHackathonEndMeta(
+  hackathon: Pick<Hackathon, 'period'>,
+  detail?: HackathonDetail
+): HackathonStageMeta {
+  return {
+    label: '종료까지',
+    targetAt: getHackathonEndAt(hackathon, detail),
+  };
+}
+
+export function getHackathonStageMeta(
+  hackathon: Pick<Hackathon, 'status' | 'period'>,
+  detail?: HackathonDetail,
+  now: Date = new Date()
+): HackathonStageMeta | null {
+  const timeline = getHackathonTimeline(hackathon, detail);
+
+  if (hackathon.status === 'upcoming') {
+    return { label: '대회 시작', targetAt: timeline.startAt };
+  }
+
+  if (hackathon.status === 'ended') {
+    return null;
+  }
+
+  if (now < timeline.recruitingDeadline) {
+    return { label: '팀 모집 마감', targetAt: timeline.recruitingDeadline };
+  }
+
+  const nextMilestone = detail?.sections.schedule.milestones?.find((milestone) => new Date(milestone.at) > now);
+  if (nextMilestone) {
+    return { label: nextMilestone.name, targetAt: new Date(nextMilestone.at) };
+  }
+
+  return { label: '대회 종료', targetAt: timeline.endAt };
+}
+
+export function isHackathonRecruiting(
+  hackathon: Pick<Hackathon, 'status' | 'period'>,
+  detail?: HackathonDetail | number
+) {
+  return computeHackathonRecruitmentStatus(
+    hackathon,
+    typeof detail === 'object' && detail !== null ? detail : undefined
+  ) === 'recruiting';
 }
 
 export function isHackathonActive(hackathon: Pick<Hackathon, 'status'>) {
@@ -39,8 +130,9 @@ export function isHackathonActive(hackathon: Pick<Hackathon, 'status'>) {
 
 export function getHackathonStatusLabel(status: HackathonStatus) {
   switch (status) {
+    case 'upcoming':
+      return '예정';
     case 'recruiting':
-      return '모집중';
     case 'ongoing':
       return '진행중';
     case 'ended':
@@ -48,6 +140,10 @@ export function getHackathonStatusLabel(status: HackathonStatus) {
     default:
       return status;
   }
+}
+
+export function getRecruitmentStatusLabel(status: RecruitmentStatus) {
+  return status === 'recruiting' ? '모집중' : '모집마감';
 }
 
 export interface HackathonPhase {
@@ -138,7 +234,8 @@ export function getHackathonPhase(detail: HackathonDetail, now: Date = new Date(
       milestoneIndex: i,
       step: milestone.step ?? i,
       votingEnabled: milestone.votingEnabled !== undefined ? milestone.votingEnabled : type === 'VOTING',
-      judgingEnabled: milestone.judgingEnabled !== undefined ? milestone.judgingEnabled : type === 'JUDGING' || type === 'RESULT',
+      judgingEnabled:
+        milestone.judgingEnabled !== undefined ? milestone.judgingEnabled : type === 'JUDGING' || type === 'RESULT',
       galleryEnabled:
         milestone.galleryEnabled !== undefined
           ? milestone.galleryEnabled

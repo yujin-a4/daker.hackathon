@@ -7,11 +7,18 @@ import { differenceInDays } from 'date-fns';
 
 import type { Hackathon } from '@/types';
 import { useUserStore } from '@/store/useUserStore';
+import { useHackathonStore } from '@/store/useHackathonStore';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { getDday, isExpired } from '@/lib/date';
 import { getStatusColor, getGradientBySlug, cn } from '@/lib/utils';
-import { getHackathonStatusLabel } from '@/lib/hackathon-utils';
+import {
+  computeHackathonRecruitmentStatus,
+  getHackathonEndMeta,
+  getHackathonStageMeta,
+  getHackathonStatusLabel,
+  getRecruitmentStatusLabel,
+} from '@/lib/hackathon-utils';
 
 interface HackathonListItemProps {
   hackathon: Hackathon;
@@ -21,10 +28,15 @@ export default function HackathonListItem({ hackathon }: HackathonListItemProps)
   const router = useRouter();
   const { toast } = useToast();
   const { currentUser, toggleBookmark } = useUserStore();
+  const { hackathonDetails } = useHackathonStore();
 
   const isBookmarked = currentUser?.bookmarkedSlugs?.includes(hackathon.slug);
   const [color1, color2] = getGradientBySlug(hackathon.slug);
   const statusText = getHackathonStatusLabel(hackathon.status);
+  const detail = hackathonDetails[hackathon.slug];
+  const endMeta = getHackathonEndMeta(hackathon, detail);
+  const stageMeta = getHackathonStageMeta(hackathon, detail);
+  const recruitmentStatus = computeHackathonRecruitmentStatus(hackathon, detail);
 
   const handleBookmarkClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -34,10 +46,11 @@ export default function HackathonListItem({ hackathon }: HackathonListItemProps)
     });
   };
 
-  const dday = getDday(hackathon.period.endAt);
+  const targetAt = endMeta.targetAt.toISOString();
+  const dday = getDday(targetAt);
   const isDdayUrgent =
-    !isExpired(hackathon.period.endAt) &&
-    differenceInDays(new Date(hackathon.period.endAt), new Date()) <= 7;
+    !isExpired(targetAt) &&
+    differenceInDays(endMeta.targetAt, new Date()) <= 7;
 
   return (
     <div
@@ -55,6 +68,19 @@ export default function HackathonListItem({ hackathon }: HackathonListItemProps)
         <Badge className={cn('font-bold text-[10px] sm:text-xs px-2 px-1.5', getStatusColor(hackathon.status))}>
           {statusText}
         </Badge>
+        {hackathon.status === 'ongoing' && (
+          <Badge
+            variant="outline"
+            className={cn(
+              'font-bold text-[10px] sm:text-xs px-2 py-0.5',
+              recruitmentStatus === 'recruiting'
+                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                : 'border-white/10 bg-white/5 text-gray-400'
+            )}
+          >
+            {getRecruitmentStatusLabel(recruitmentStatus)}
+          </Badge>
+        )}
         {hackathon.status !== 'ended' && (
           <div
             className={cn(
@@ -94,6 +120,11 @@ export default function HackathonListItem({ hackathon }: HackathonListItemProps)
             </span>
           )}
         </div>
+        {stageMeta && (
+          <p className="text-[10px] sm:text-xs text-gray-500">
+            현재 단계: {stageMeta.label} {getDday(stageMeta.targetAt.toISOString())}
+          </p>
+        )}
       </div>
 
       <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 flex-shrink-0 border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0 mt-1 sm:mt-0">

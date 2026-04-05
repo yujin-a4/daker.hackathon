@@ -11,11 +11,17 @@ import RecommendedSection from '@/components/hackathon/RecommendedSection';
 import EmptyState from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/button';
 
-const statusMap: { [key: string]: string | undefined } = {
+const statusMap: Record<string, string | undefined> = {
   전체: undefined,
-  모집중: 'recruiting',
+  예정: 'upcoming',
   진행중: 'ongoing',
   종료: 'ended',
+};
+
+const statusOrder: Record<string, number> = {
+  upcoming: 0,
+  ongoing: 1,
+  ended: 2,
 };
 
 const ITEMS_PER_PAGE = 10;
@@ -48,23 +54,17 @@ export default function HackathonsPage() {
 
   const allTypes = useMemo(() => {
     const types = new Set<string>();
-    hackathons.forEach((h) => {
-      if (h.type) types.add(h.type);
+    hackathons.forEach((hackathon) => {
+      if (hackathon.type) types.add(hackathon.type);
     });
     return Array.from(types).sort();
   }, [hackathons]);
-
-  const handleTypeChange = (type: string) => {
-    setSelectedType(type);
-    setCurrentPage(1);
-  };
 
   const filteredHackathons = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
 
     return [...hackathons]
       .sort((a, b) => {
-        const statusOrder = { recruiting: 0, ongoing: 1, ended: 2 };
         const statusDiff = statusOrder[a.status] - statusOrder[b.status];
         if (statusDiff !== 0) return statusDiff;
 
@@ -83,8 +83,8 @@ export default function HackathonsPage() {
         return new Date(a.period.endAt).getTime() - new Date(b.period.endAt).getTime();
       })
       .filter((hackathon) => {
-        const statusMatch =
-          !statusMap[statusFilter] || hackathon.status === statusMap[statusFilter];
+        const expectedStatus = statusMap[statusFilter];
+        const statusMatch = !expectedStatus || hackathon.status === expectedStatus;
         const typeMatch = selectedType === '전체' || hackathon.type === selectedType;
         const searchMatch =
           !query ||
@@ -93,30 +93,16 @@ export default function HackathonsPage() {
           (hackathon.type?.toLowerCase().includes(query) ?? false);
         const bookmarkMatch =
           !showBookmarkedOnly || currentUser?.bookmarkedSlugs?.includes(hackathon.slug);
+
         return statusMatch && typeMatch && searchMatch && bookmarkMatch;
       });
-  }, [hackathons, statusFilter, selectedType, searchQuery, showBookmarkedOnly, currentUser, sortOption]);
+  }, [currentUser, hackathons, searchQuery, selectedType, showBookmarkedOnly, sortOption, statusFilter]);
 
   const totalPages = Math.ceil(filteredHackathons.length / ITEMS_PER_PAGE);
   const paginatedHackathons = filteredHackathons.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
-
-  const handleStatusChange = (status: string) => {
-    setStatusFilter(status);
-    setCurrentPage(1);
-  };
-
-  const handleSearchChange = (query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
-  };
-
-  const handleBookmarkChange = (show: boolean) => {
-    setShowBookmarkedOnly(show);
-    setCurrentPage(1);
-  };
 
   const resetFilters = () => {
     setStatusFilter('전체');
@@ -137,26 +123,38 @@ export default function HackathonsPage() {
       <header className="mb-8">
         <h1 className="text-3xl font-bold font-headline">해커톤</h1>
         <p className="mt-2 text-muted-foreground">
-          지금 참가 가능한 해커톤과 진행 중인 대회를 한 번에 살펴보세요.
+          현재 일정 기준으로 예정, 모집중, 진행중, 종료 상태를 자동 반영해 보여줍니다.
         </p>
       </header>
 
       <div className="space-y-6">
         <HackathonFilters
           status={statusFilter}
-          onStatusChange={handleStatusChange}
+          onStatusChange={(status) => {
+            setStatusFilter(status);
+            setCurrentPage(1);
+          }}
           selectedType={selectedType}
-          onSelectedTypeChange={handleTypeChange}
+          onSelectedTypeChange={(type) => {
+            setSelectedType(type);
+            setCurrentPage(1);
+          }}
           allTypes={allTypes}
           searchQuery={searchQuery}
-          onSearchQueryChange={handleSearchChange}
+          onSearchQueryChange={(query) => {
+            setSearchQuery(query);
+            setCurrentPage(1);
+          }}
           showBookmarkedOnly={showBookmarkedOnly}
-          onShowBookmarkedOnlyChange={handleBookmarkChange}
+          onShowBookmarkedOnlyChange={(show) => {
+            setShowBookmarkedOnly(show);
+            setCurrentPage(1);
+          }}
         />
 
         {isDefaultFilter && <RecommendedSection />}
 
-        <div className="flex items-center justify-between text-sm text-muted-foreground font-medium">
+        <div className="flex items-center justify-between text-sm font-medium text-muted-foreground">
           <span>총 {filteredHackathons.length}개</span>
           <select
             value={sortOption}
@@ -166,7 +164,7 @@ export default function HackathonsPage() {
             }}
             className="bg-transparent border-none outline-none focus:ring-0 text-foreground cursor-pointer hover:text-primary transition-colors pr-2"
           >
-            <option value="deadline">마감일 임박순</option>
+            <option value="deadline">종료일 빠른순</option>
             <option value="participantsDesc">참가 인원 많은순</option>
             <option value="participantsAsc">참가 인원 적은순</option>
             <option value="prizeDesc">상금 높은순</option>
@@ -195,12 +193,12 @@ export default function HackathonsPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                   disabled={currentPage === 1}
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
                   <Button
                     key={page}
                     variant={currentPage === page ? 'default' : 'outline'}
@@ -214,7 +212,7 @@ export default function HackathonsPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
                   disabled={currentPage === totalPages}
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -227,7 +225,7 @@ export default function HackathonsPage() {
             <EmptyState
               icon={Search}
               title="조건에 맞는 해커톤이 없습니다"
-              description="필터를 변경하거나 초기화해보세요."
+              description="필터를 바꾸거나 검색어를 지워보세요."
               actionLabel="필터 초기화"
               onAction={resetFilters}
             />

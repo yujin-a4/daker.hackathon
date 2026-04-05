@@ -83,18 +83,21 @@ export function initializeStore() {
     fromTeamName: 'Prompt Wizards',
     hackathonTitle: '제1회 생성형 AI 스타트업 챌린지',
     teamCode: 'T-PERSONA-GEN--1',
+    toUserNickname: seedUser.nickname,
   });
   useNotificationStore.getState().addNotification({
     type: 'invitation',
     fromTeamName: 'Data Driven',
     hackathonTitle: '제1회 생성형 AI 스타트업 챌린지',
     teamCode: 'T-PERSONA-GEN--5',
+    toUserNickname: seedUser.nickname,
   });
   useNotificationStore.getState().addNotification({
     type: 'invitation',
     fromTeamName: 'Pixel Perfect',
     hackathonTitle: '2026 사용자 경험 리디자인 챌린지',
     teamCode: 'T-PERSONA-UX-U-1',
+    toUserNickname: seedUser.nickname,
   });
 
   useNotificationStore.getState().addSentInvitation({

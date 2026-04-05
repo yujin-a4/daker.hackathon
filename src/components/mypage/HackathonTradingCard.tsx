@@ -9,6 +9,13 @@ import type { Hackathon, Submission, Team } from '@/types';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { getDday } from '@/lib/date';
+import { useHackathonStore } from '@/store/useHackathonStore';
+import {
+  computeHackathonRecruitmentStatus,
+  getHackathonEndMeta,
+  getHackathonStageMeta,
+  getRecruitmentStatusLabel,
+} from '@/lib/hackathon-utils';
 
 interface Props {
   hackathon: Hackathon;
@@ -19,8 +26,8 @@ interface Props {
 
 const getStatusBadge = (status: string) => {
   switch (status) {
-    case 'recruiting':
-      return <Badge className="bg-amber-100 text-amber-700 border-none font-bold">모집중</Badge>;
+    case 'upcoming':
+      return <Badge className="bg-sky-100 text-sky-700 border-none font-bold">예정</Badge>;
     case 'ongoing':
       return <Badge className="bg-emerald-100 text-emerald-700 border-none font-bold">진행중</Badge>;
     case 'ended':
@@ -43,6 +50,7 @@ const getSubmissionStatus = (status: string) => {
 
 export default function HackathonTradingCard({ hackathon, team, submission, variant = 'default' }: Props) {
   const router = useRouter();
+  const { hackathonDetails } = useHackathonStore();
   const ref = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [glarePosition, setGlarePosition] = useState({ x: 50, y: 50 });
@@ -79,7 +87,11 @@ export default function HackathonTradingCard({ hackathon, team, submission, vari
     setGlarePosition({ x: 50, y: 50 });
   };
 
-  const deadline = hackathon.period.endAt;
+  const detail = hackathonDetails[hackathon.slug];
+  const endMeta = getHackathonEndMeta(hackathon, detail);
+  const stageMeta = getHackathonStageMeta(hackathon, detail);
+  const recruitmentStatus = computeHackathonRecruitmentStatus(hackathon, detail);
+  const deadline = endMeta.targetAt.toISOString();
   const subStatus = getSubmissionStatus(submission?.status || 'none');
 
   const gradients = [
@@ -87,7 +99,7 @@ export default function HackathonTradingCard({ hackathon, team, submission, vari
     'from-purple-700 to-indigo-900',
     'from-slate-700 to-indigo-900',
     'from-indigo-800 to-purple-950',
-    'from-violet-700 to-slate-900'
+    'from-violet-700 to-slate-900',
   ];
   const stringToId = hackathon.slug.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const bgGradient = gradients[stringToId % gradients.length];
@@ -129,7 +141,7 @@ export default function HackathonTradingCard({ hackathon, team, submission, vari
           )}
           style={{
             background: `radial-gradient(circle 200px at ${glarePosition.x}% ${glarePosition.y}%, rgba(255,255,255,0.4), transparent 80%)`,
-            zIndex: 10
+            zIndex: 10,
           }}
         />
 
@@ -139,7 +151,8 @@ export default function HackathonTradingCard({ hackathon, team, submission, vari
             isHovered ? 'opacity-40' : 'opacity-0'
           )}
           style={{
-            backgroundImage: 'linear-gradient(135deg, transparent 40%, rgba(255,150,255,0.2) 45%, rgba(150,255,255,0.4) 50%, rgba(255,255,150,0.2) 55%, transparent 60%)',
+            backgroundImage:
+              'linear-gradient(135deg, transparent 40%, rgba(255,150,255,0.2) 45%, rgba(150,255,255,0.4) 50%, rgba(255,255,150,0.2) 55%, transparent 60%)',
             backgroundSize: '250% 250%',
             backgroundPosition: isHovered ? `${glarePosition.x}% ${glarePosition.y}%` : '100% 100%',
           }}
@@ -154,13 +167,35 @@ export default function HackathonTradingCard({ hackathon, team, submission, vari
               <div className="bg-black/30 backdrop-blur-md rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wider w-fit border border-white/20 uppercase shadow-sm">
                 {hackathon.type}
               </div>
-              {getStatusBadge(hackathon.status)}
+              <div className="flex flex-wrap gap-2">
+                {getStatusBadge(hackathon.status)}
+                {hackathon.status === 'ongoing' && (
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      'border-white/20 font-bold',
+                      recruitmentStatus === 'recruiting'
+                        ? 'bg-emerald-500/20 text-emerald-200'
+                        : 'bg-white/10 text-slate-200'
+                    )}
+                  >
+                    {getRecruitmentStatusLabel(recruitmentStatus)}
+                  </Badge>
+                )}
+              </div>
             </div>
-            <div className={cn(
-              'rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.2)]',
-              variant === 'default' ? 'w-11 h-11' : 'w-8 h-8'
-            )}>
-              <Trophy className={cn('text-yellow-300 drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]', variant === 'default' ? 'w-5 h-5' : 'w-4 h-4')} />
+            <div
+              className={cn(
+                'rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.2)]',
+                variant === 'default' ? 'w-11 h-11' : 'w-8 h-8'
+              )}
+            >
+              <Trophy
+                className={cn(
+                  'text-yellow-300 drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]',
+                  variant === 'default' ? 'w-5 h-5' : 'w-4 h-4'
+                )}
+              />
             </div>
           </div>
 
@@ -173,11 +208,23 @@ export default function HackathonTradingCard({ hackathon, team, submission, vari
           <div className="space-y-3">
             <div className="bg-black/40 backdrop-blur-md rounded-xl p-3 border border-white/10 shadow-inner space-y-2">
               <div className="flex justify-between items-center opacity-95">
-                <span className={cn('flex items-center gap-1.5 font-medium text-slate-200 line-clamp-1', variant === 'default' ? 'text-[13px]' : 'text-[11px]')}>
+                <span
+                  className={cn(
+                    'flex items-center gap-1.5 font-medium text-slate-200 line-clamp-1',
+                    variant === 'default' ? 'text-[13px]' : 'text-[11px]'
+                  )}
+                >
                   <Users className="w-3.5 h-3.5 text-pink-300 shrink-0" />
                   <span className="truncate max-w-[100px]">{team ? team.name : '참여 팀 없음'}</span>
                 </span>
-                <span className={cn('px-2 py-0.5 rounded-md font-bold tracking-wide border border-white/10 whitespace-nowrap shrink-0', subStatus.bg, subStatus.color, variant === 'default' ? 'text-[11px]' : 'text-[10px]')}>
+                <span
+                  className={cn(
+                    'px-2 py-0.5 rounded-md font-bold tracking-wide border border-white/10 whitespace-nowrap shrink-0',
+                    subStatus.bg,
+                    subStatus.color,
+                    variant === 'default' ? 'text-[11px]' : 'text-[10px]'
+                  )}
+                >
                   {subStatus.text}
                 </span>
               </div>
@@ -185,12 +232,31 @@ export default function HackathonTradingCard({ hackathon, team, submission, vari
               <div className="flex justify-between items-center opacity-95">
                 <span className={cn('flex items-center gap-1.5 font-medium text-slate-200', variant === 'default' ? 'text-[13px]' : 'text-[11px]')}>
                   <Calendar className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
-                  마감일
+                  {endMeta.label}
                 </span>
-                <span className={cn('font-bold', getDday(deadline).startsWith('D-') && parseInt(getDday(deadline).slice(2)) <= 7 ? 'text-rose-400' : 'text-slate-100', variant === 'default' ? 'text-[13px]' : 'text-[11px]')}>
+                <span
+                  className={cn(
+                    'font-bold',
+                    getDday(deadline).startsWith('D-') && parseInt(getDday(deadline).slice(2), 10) <= 7
+                      ? 'text-rose-400'
+                      : 'text-slate-100',
+                    variant === 'default' ? 'text-[13px]' : 'text-[11px]'
+                  )}
+                >
                   {getDday(deadline)}
                 </span>
               </div>
+
+              {stageMeta && (
+                <div className="flex justify-between items-center opacity-90 text-slate-300">
+                  <span className={cn('truncate', variant === 'default' ? 'text-[12px]' : 'text-[10px]')}>
+                    현재 단계
+                  </span>
+                  <span className={cn('font-medium', variant === 'default' ? 'text-[12px]' : 'text-[10px]')}>
+                    {stageMeta.label} {getDday(stageMeta.targetAt.toISOString())}
+                  </span>
+                </div>
+              )}
             </div>
 
             {variant === 'default' && (
