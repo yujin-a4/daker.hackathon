@@ -59,7 +59,7 @@ export default function BasecampWarroomTab({
     });
   }, [team.availabilitySummary, team.projectStatusDetail, team.teamCode]);
 
-  const role = currentUser?.role || '팀원';
+  const role = currentUser?.primaryRoles?.[0] || '팀원';
   const isLeader = currentUser?.id === team.leaderId;
 
   const handleProgressChange = (status: ProgressStep, percent: number) => {

@@ -203,26 +203,58 @@ export default function UserProfileSheet({ user, onClose }: UserProfileSheetProp
                   <Badge variant="secondary" className="ml-2 text-xs align-middle">나</Badge>
                 )}
               </SheetTitle>
-              {user.role && (
-                <p className="text-sm text-muted-foreground mt-0.5">{user.role}</p>
+              {user.primaryRoles && user.primaryRoles.length > 0 && (
+                <p className="text-sm text-muted-foreground mt-0.5">{user.primaryRoles.join(', ')}</p>
               )}
             </div>
           </div>
         </SheetHeader>
 
         <div className="px-6 py-4 space-y-5">
-          {/* 스킬 태그 */}
-          {user.skills && user.skills.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {user.skills.map((skill) => (
-                <span
-                  key={skill}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary/10 dark:bg-primary/15 text-primary text-xs font-semibold border border-primary/20"
-                >
-                  <Zap className="w-3 h-3" />
-                  {skill}
-                </span>
-              ))}
+          {(user.primaryRoles?.length || user.interestDomains?.length || user.techStacks?.length) && (
+            <div className="space-y-3 rounded-2xl border border-border/60 bg-muted/20 p-4">
+              {user.primaryRoles && user.primaryRoles.length > 0 && (
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">주 역할</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {user.primaryRoles.map((role) => (
+                      <Badge key={role} variant="secondary" className="text-xs font-medium">
+                        {role}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {user.interestDomains && user.interestDomains.length > 0 && (
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">관심 분야</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {user.interestDomains.map((domain) => (
+                      <Badge key={domain} variant="outline" className="text-xs font-medium">
+                        {domain}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {user.techStacks && user.techStacks.length > 0 && (
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">기술 스택</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {user.techStacks.map((skill) => (
+                      <span
+                        key={skill}
+                        className="inline-flex items-center gap-1 rounded-lg border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary dark:bg-primary/15"
+                      >
+                        <Zap className="w-3 h-3" />
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

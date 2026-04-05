@@ -241,9 +241,9 @@ export default function MyPage() {
               <div className="flex-1">
                 <div className="flex items-center gap-3">
                   <h1 className="text-2xl font-bold">{currentUser.nickname}</h1>
-                  {currentUser.role && (
+                  {currentUser.primaryRoles && currentUser.primaryRoles.length > 0 && (
                     <Badge variant="secondary" className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 border-transparent hover:bg-indigo-100">
-                      {currentUser.role}
+                      {currentUser.primaryRoles.join(', ')}
                     </Badge>
                   )}
                   <Badge
@@ -267,25 +267,37 @@ export default function MyPage() {
                 </div>
 
                 <div className="mt-5 space-y-3">
-                  {currentUser.preferredTypes && currentUser.preferredTypes.length > 0 && (
+                  {currentUser.interestDomains && currentUser.interestDomains.length > 0 && (
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-semibold text-muted-foreground w-16">선호 분야</span>
+                      <span className="text-xs font-semibold text-muted-foreground w-16">관심 분야</span>
                       <div className="flex flex-wrap gap-1.5">
-                        {currentUser.preferredTypes.map((type) => (
-                          <Badge key={type} variant="outline" className="text-xs font-medium">
-                            {type}
+                        {currentUser.interestDomains.map((domain) => (
+                          <Badge key={domain} variant="outline" className="text-xs font-medium">
+                            {domain}
                           </Badge>
                         ))}
                       </div>
                     </div>
                   )}
-                  {currentUser.skills && currentUser.skills.length > 0 && (
+                  {currentUser.techStacks && currentUser.techStacks.length > 0 && (
                     <div className="flex items-start gap-3">
-                      <span className="text-xs font-semibold text-muted-foreground w-16 pt-1">보유 스킬</span>
+                      <span className="text-xs font-semibold text-muted-foreground w-16 pt-1">기술 스택</span>
                       <div className="flex flex-wrap gap-1.5 flex-1">
-                        {currentUser.skills.map((skill) => (
-                          <Badge key={skill} variant="secondary" className="text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200">
-                            {skill}
+                        {currentUser.techStacks.map((stack) => (
+                          <Badge key={stack} variant="secondary" className="text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200">
+                            {stack}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {currentUser.collaborationStrengths && currentUser.collaborationStrengths.length > 0 && (
+                    <div className="flex items-start gap-3">
+                      <span className="text-xs font-semibold text-muted-foreground w-16 pt-1">협업 강점</span>
+                      <div className="flex flex-wrap gap-1.5 flex-1">
+                        {currentUser.collaborationStrengths.map((strength) => (
+                          <Badge key={strength} variant="outline" className="text-xs font-medium">
+                            {strength}
                           </Badge>
                         ))}
                       </div>

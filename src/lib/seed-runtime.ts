@@ -13,6 +13,9 @@ const ARTIFACT_KEY_ALIASES: Record<string, Record<string, string>> = {
   'daker-handover-2026-03': {
     web: 'final',
   },
+  'university-sw-challenge-2025': {
+    web: 'work',
+  },
 };
 
 function hashSeed(value: string) {
@@ -274,17 +277,16 @@ function buildInProgressEntries(params: {
   submissionsByTeamCode: Map<string, Submission>;
   rawEntries: Map<string, LeaderboardEntry>;
 }) {
-  const { hackathon, teams, submissionsByTeamCode, rawEntries } = params;
+  const { teams, submissionsByTeamCode } = params;
 
   return teams.map((team) => {
-    const raw = rawEntries.get(team.name);
     const submission = submissionsByTeamCode.get(team.teamCode);
 
     return {
       rank: null,
       teamName: team.name,
       score: null,
-      votes: hackathon.status === 'recruiting' ? 0 : raw?.votes ?? 0,
+      votes: 0,
       submittedAt: submission?.submittedAt ?? null,
     } satisfies LeaderboardEntry;
   });

@@ -19,9 +19,10 @@ export async function getAiMatchAnalysis(hackathon: Hackathon, user: CurrentUser
 
       USER:
       - Nickname: ${user.nickname}
-      - Role: ${user.role}
-      - Skills: ${user.skills?.join(', ')}
-      - Preferred Types: ${user.preferredTypes?.join(', ')}
+      - Primary Roles: ${user.primaryRoles?.join(', ')}
+      - Interest Domains: ${user.interestDomains?.join(', ')}
+      - Tech Stacks: ${user.techStacks?.join(', ')}
+      - Collaboration Strengths: ${user.collaborationStrengths?.join(', ')}
 
       HACKATHON:
       - Title: ${hackathon.title}
@@ -62,7 +63,7 @@ export async function getAiMatchAnalysis(hackathon: Hackathon, user: CurrentUser
     // Fallback if AI fails
     return {
       matchRate: 70,
-      suggestedRole: user.role || '참가자',
+      suggestedRole: user.primaryRoles?.[0] || '참가자',
       insight: '당신의 뛰어난 역량은 이 해커톤의 성공에 큰 기여를 할 것입니다.',
       neededTeamRoles: ['개발자', '디자이너']
     };

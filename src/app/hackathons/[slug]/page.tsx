@@ -516,10 +516,9 @@ export default function HackathonDetailPage() {
 
               <TabsContent value="gallery" className="mt-0">
                 <SectionWrapper id="gallery" title="갤러리" icon={Rocket} className="py-0">
-                  <GallerySection 
-                    leaderboard={leaderboard} 
-                    hackathonDetail={details} 
-                    submissions={hackathonSubmissions} 
+                  <GallerySection
+                    hackathonDetail={details}
+                    submissions={hackathonSubmissions}
                   />
                 </SectionWrapper>
               </TabsContent>

@@ -1102,7 +1102,11 @@ export const submissions: Submission[] = [
     teamCode: 'T-HANDOVER-01',
     teamName: '404found',
     status: 'submitted',
-    artifacts: [{ type: 'url', key: 'web', content: 'https://vibe.app', uploadedAt: '2026-03-28T09:58:00Z' }],
+    artifacts: [
+      { type: 'pdf', key: 'problem', content: 'handover-problem-definition.pdf', uploadedAt: '2026-03-09T18:20:00Z' },
+      { type: 'url', key: 'solution', content: 'https://notion.so/handover-solution-draft', uploadedAt: '2026-03-19T21:10:00Z' },
+      { type: 'url', key: 'final', content: 'https://vibe.app', uploadedAt: '2026-03-28T09:58:00Z' }
+    ],
     notes: '최종 구현 완료!',
     submittedAt: '2026-03-28T09:58:00Z',
   },
@@ -1112,7 +1116,7 @@ export const submissions: Submission[] = [
     teamCode: 'T-YUJIN-SOLO-01',
     teamName: '강유진 (개인)',
     status: 'submitted',
-    artifacts: [{ type: 'pdf', key: 'plan', content: 'yujin_plan.pdf', uploadedAt: '2026-03-27T09:58:00Z' }],
+    artifacts: [{ type: 'pdf', key: 'idea', content: 'yujin_plan.pdf', uploadedAt: '2026-03-27T09:58:00Z' }],
     notes: '기획서 제출',
     submittedAt: '2026-03-27T09:58:00Z',
   },
@@ -1124,7 +1128,7 @@ export const submissions: Submission[] = [
     status: 'submitted',
     artifacts: [
       { type: 'pdf', key: 'plan', content: 'plan.pdf', uploadedAt: '2025-11-20T09:58:00Z' },
-      { type: 'url', key: 'web', content: 'https://vibe.app', uploadedAt: '2025-12-05T09:58:00Z' }
+      { type: 'url', key: 'work', content: 'https://vibe.app', uploadedAt: '2025-12-05T09:58:00Z' }
     ],
     notes: '완료',
     submittedAt: '2025-12-05T09:58:00Z',
@@ -1139,12 +1143,12 @@ export const submissions: Submission[] = [
     notes: '완료',
     submittedAt: '2025-10-01T09:58:00Z',
   },
-  // GenAI (3 stages: plan, demo, deck)
+  // GenAI (3 stages: idea, prototype, demo)
   ...Array.from({ length: 40 }).flatMap((_, i) => {
     const arts: any[] = [];
-    if (i < 36) arts.push({ type: 'pdf', key: 'plan', content: 'plan.pdf', uploadedAt: '2026-03-20T10:00:00Z' });
-    if (i < 16) arts.push({ type: 'url', key: 'demo', content: 'https://youtube.com/demo', uploadedAt: '2026-04-01T10:00:00Z' });
-    if (i < 4) arts.push({ type: 'pdf', key: 'deck', content: 'deck.pdf', uploadedAt: '2026-04-10T10:00:00Z' });
+    if (i < 36) arts.push({ type: 'pdf', key: 'idea', content: 'plan.pdf', uploadedAt: '2026-03-20T10:00:00Z' });
+    if (i < 16) arts.push({ type: 'url', key: 'prototype', content: 'https://youtube.com/demo', uploadedAt: '2026-04-01T10:00:00Z' });
+    if (i < 4) arts.push({ type: 'url', key: 'demo', content: 'https://youtube.com/final-demo', uploadedAt: '2026-04-10T10:00:00Z' });
 
     if (arts.length === 0) return [];
     return [{
@@ -1158,11 +1162,11 @@ export const submissions: Submission[] = [
       submittedAt: arts[arts.length - 1].uploadedAt,
     }];
   }),
-  // Cloud (2 stages: arch, repo)
+  // Cloud (2 stages: arch, code)
   ...Array.from({ length: 30 }).flatMap((_, i) => {
     const arts: any[] = [];
     if (i < 21) arts.push({ type: 'pdf', key: 'arch', content: 'arch.pdf', uploadedAt: '2026-03-30T10:00:00Z' });
-    if (i < 9) arts.push({ type: 'url', key: 'repo', content: 'https://github.com/repo', uploadedAt: '2026-04-10T10:00:00Z' });
+    if (i < 9) arts.push({ type: 'url', key: 'code', content: 'https://github.com/repo', uploadedAt: '2026-04-10T10:00:00Z' });
 
     if (arts.length === 0) return [];
     return [{

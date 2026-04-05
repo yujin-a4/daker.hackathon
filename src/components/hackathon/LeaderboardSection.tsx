@@ -541,12 +541,14 @@ export default function LeaderboardSection({ leaderboard, hackathonDetail, submi
 
                       {hasVotingStage && (
                         <TableCell className={cn(cellBase, 'text-center text-sm font-medium py-3.5')}>
-                          {entry.votes.toLocaleString()}
+                          {currentPhase.votingEnabled || currentPhase.type === 'RESULT'
+                            ? entry.votes.toLocaleString()
+                            : '-'}
                         </TableCell>
                       )}
                       {hasJudgeReveal && (
                         <TableCell className={cn(cellBase, 'text-center text-sm font-medium py-3.5')}>
-                          {formatScore(entry.judgeScore)}
+                          {currentPhase.judgingEnabled ? formatScore(entry.judgeScore) : '-'}
                         </TableCell>
                       )}
                       <TableCell className={cn(cellBase, isMyRow && 'border-r-2 border-r-violet-400', 'text-center text-sm font-medium py-3.5')}>

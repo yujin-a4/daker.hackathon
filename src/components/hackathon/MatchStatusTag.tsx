@@ -1,7 +1,9 @@
+'use client';
+
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { ArrowRight, Briefcase, Layers3, Sparkles, Wrench } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { analyzeHackathonMatch } from '@/lib/match-analysis';
@@ -17,6 +19,15 @@ interface MatchStatusTagProps {
   onGoToTeamBuilding?: () => void;
 }
 
+function SectionLabel({ icon, title }: { icon: React.ReactNode; title: string }) {
+  return (
+    <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+      {icon}
+      <span>{title}</span>
+    </div>
+  );
+}
+
 export default function MatchStatusTag({
   hackathon,
   currentUser,
@@ -26,32 +37,18 @@ export default function MatchStatusTag({
 }: MatchStatusTagProps) {
   const [isOpen, setIsOpen] = useState(false);
   const analysis = analyzeHackathonMatch(hackathon, currentUser);
-  // 추천 섹션과 동일한 알고리즘으로 점수 계산
   const matchRate = calculateHackathonMatchScore(hackathon, currentUser);
 
   if (!currentUser || !analysis) return null;
 
-  const {
-    suggestedRole,
-    matchedSkills,
-    missingSkills,
-    roleDescription,
-    neededTeamRoles,
-  } = analysis;
+  const { suggestedRole, matchedRoles, matchedDomains, matchedSkills, missingSkills, neededTeamRoles } = analysis;
 
-  const fitHeadline =
+  const scoreTone =
     matchRate >= 70
-      ? '주역 적합도가 높은 편입니다.'
+      ? '지금 바로 참여를 검토해도 좋은 편입니다.'
       : matchRate >= 40
-        ? '핵심 기여 역할로 참여할 여지가 있습니다.'
-        : '주역 적합도는 낮지만 팀 기여 가능성은 남아 있습니다.';
-
-  const contributionGuide =
-    matchRate >= 70
-      ? '현재 프로필만으로도 방향 설정과 실행 전개를 함께 이끌기 좋은 편입니다.'
-      : matchRate >= 40
-        ? '직접 일치 항목은 일부만 맞더라도, 강한 역량을 특정 파트에 집중하면 충분히 기여할 수 있습니다.'
-        : '이 점수는 대회 전체와의 직접 일치도가 낮다는 뜻에 가깝습니다. 팀원으로서의 기여 가능성까지 낮다는 뜻은 아니며, 기획 보조, 운영, 문서화, QA, 발표, 리서치 역할에서 강점을 낼 수 있습니다.';
+        ? '역할이나 팀 구성을 맞추면 충분히 참여할 만합니다.'
+        : '관심 주제는 볼 만하지만 역할 적합도는 낮은 편입니다.';
 
   const getThemeColor = () => {
     if (matchRate >= 70) return 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20';
@@ -77,86 +74,81 @@ export default function MatchStatusTag({
       </PopoverTrigger>
 
       <PopoverContent
-        className="w-[340px] overflow-hidden rounded-2xl border-slate-200 p-0 shadow-2xl dark:border-slate-800"
+        className="w-[360px] overflow-hidden rounded-2xl border border-slate-200 p-0 shadow-2xl dark:border-slate-800"
         sideOffset={12}
         onMouseLeave={() => setIsOpen(false)}
       >
-        <div className="bg-[#615AFA] p-6 text-white">
-          <div className="text-[12px] font-bold uppercase tracking-wider mb-2 opacity-90">
-            AI MATCH
-          </div>
-          <div className="text-4xl font-extrabold mb-4">
-            {matchRate}%
-          </div>
-          <div className="w-full h-1.5 bg-white/30 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-white rounded-full" 
-              style={{ width: `${matchRate}%` }} 
-            />
+        <div className="border-b bg-slate-950 px-5 py-4 text-white dark:bg-slate-900">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Match Score</p>
+              <div className="mt-1 flex items-end gap-2">
+                <span className="text-3xl font-black">{matchRate}%</span>
+                <span className="pb-1 text-xs text-slate-400">{scoreTone}</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="bg-[#F9F9F6] dark:bg-slate-950 flex flex-col">
-          <div className="px-6 py-5">
-            <span className="mb-3 block text-[13px] font-bold text-gray-500 dark:text-slate-400">
-              추천 역할
-            </span>
-            <div className="flex items-center gap-3">
-              <Badge className="bg-[#E7E4F9] text-[#615AFA] hover:bg-[#E7E4F9] dark:bg-indigo-900/50 dark:text-indigo-300 font-bold px-3 py-1.5 text-[13px] shadow-none rounded-lg border-none">
-                {suggestedRole}
-              </Badge>
-              <span className="text-[14px] font-medium text-gray-700 dark:text-slate-300">
-                {roleDescription}
-              </span>
-            </div>
-          </div>
+        <div className="space-y-5 bg-white px-5 py-5 dark:bg-slate-950">
+          <section>
+            <SectionLabel icon={<Briefcase className="h-3.5 w-3.5" />} title="추천 역할" />
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{suggestedRole}</p>
+            {(matchedRoles.length > 0 || matchedDomains.length > 0) && (
+              <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-400">
+                {matchedRoles.length > 0 ? `${matchedRoles.join(', ')} 역할 기준으로 적합도가 잡혔고, ` : ''}
+                {matchedDomains.length > 0 ? `${matchedDomains.join(', ')} 분야와도 연결됩니다.` : '현재 프로필 기준으로 가장 자연스러운 포지션입니다.'}
+              </p>
+            )}
+          </section>
 
-          <div className="w-full h-px bg-gray-200/60 dark:bg-slate-800" />
-
-          <div className="px-6 py-5">
-            <span className="mb-3 block text-[13px] font-bold text-gray-500 dark:text-slate-400">
-              보유 스킬
-            </span>
+          <section>
+            <SectionLabel icon={<Layers3 className="h-3.5 w-3.5" />} title="맞는 포인트" />
             <div className="flex flex-wrap gap-2">
-              {matchedSkills.length > 0 ? (
-                matchedSkills.slice(0, 5).map((skill) => (
-                  <Badge
-                    key={skill}
-                    variant="outline"
-                    className="bg-[#E7E4F9]/50 text-[#615AFA] border border-gray-200 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400 shadow-sm font-medium px-3 py-1.5 text-[13px] rounded-lg"
-                  >
-                    {skill}
-                  </Badge>
-                ))
-              ) : (
-                <span className="text-[13px] text-gray-500">등록된 스킬이 없습니다.</span>
+              {matchedDomains.map((domain) => (
+                <Badge key={`domain-${domain}`} variant="secondary" className="bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
+                  {domain}
+                </Badge>
+              ))}
+              {matchedRoles.map((role) => (
+                <Badge key={`role-${role}`} variant="secondary" className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                  {role}
+                </Badge>
+              ))}
+              {matchedSkills.slice(0, 4).map((skill) => (
+                <Badge key={`skill-${skill}`} variant="outline">
+                  {skill}
+                </Badge>
+              ))}
+              {matchedDomains.length === 0 && matchedRoles.length === 0 && matchedSkills.length === 0 && (
+                <p className="text-xs text-slate-500 dark:text-slate-400">직접 맞는 항목은 아직 적습니다.</p>
               )}
             </div>
-          </div>
+          </section>
 
-          <div className="w-full h-px bg-gray-200/60 dark:bg-slate-800" />
-
-          <div className="px-6 py-5">
-            <span className="mb-3 block text-[13px] font-bold text-gray-500 dark:text-slate-400">
-              함께하면 좋은 팀원
-            </span>
-            <div className="flex flex-col gap-1.5">
-              <p className="text-[15px] font-bold text-gray-900 dark:text-slate-200">
-                {neededTeamRoles.length > 0 ? neededTeamRoles[0] : 'AI/ML 개발자'}
+          <section>
+            <SectionLabel icon={<Wrench className="h-3.5 w-3.5" />} title="부족한 포인트" />
+            <div className="space-y-2">
+              <p className="text-xs leading-5 text-slate-600 dark:text-slate-400">
+                {missingSkills.length > 0
+                  ? `현재 프로필에 없는 관련 기술은 ${missingSkills.slice(0, 3).join(', ')} 쪽입니다.`
+                  : '기술 스택 기준으로 크게 비는 항목은 없습니다.'}
               </p>
-              <p className="text-[13px] font-medium text-gray-500 dark:text-slate-400">
-                부족한 역할을 채워줄 보완형 파트너
+              <p className="text-xs leading-5 text-slate-600 dark:text-slate-400">
+                {neededTeamRoles.length > 0
+                  ? `팀을 꾸린다면 ${neededTeamRoles.slice(0, 2).join(', ')} 역할을 같이 찾는 편이 좋습니다.`
+                  : '현재 프로필만으로도 핵심 역할 축은 어느 정도 갖춰져 있습니다.'}
               </p>
             </div>
-          </div>
+          </section>
 
-          <div className="px-6 pb-6 pt-2">
+          <div className="pt-1">
             {isParticipating && basecampUrl ? (
               <Link
                 href={basecampUrl}
-                className="flex w-full items-center justify-center rounded-xl bg-[#615AFA] py-3.5 text-white transition-colors hover:bg-[#504ada] shadow-sm"
+                className="flex w-full items-center justify-center rounded-xl bg-slate-900 py-3 text-sm font-bold text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
               >
-                <span className="text-[14px] font-bold">내 베이스캠프로 가기</span>
+                베이스캠프로 이동
               </Link>
             ) : (
               <button
@@ -164,9 +156,10 @@ export default function MatchStatusTag({
                   setIsOpen(false);
                   onGoToTeamBuilding?.();
                 }}
-                className="flex w-full items-center justify-center rounded-xl bg-[#615AFA] py-3.5 text-white transition-colors hover:bg-[#504ada] shadow-sm"
+                className="flex w-full items-center justify-center gap-1 rounded-xl bg-slate-900 py-3 text-sm font-bold text-white transition-colors hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
               >
-                <span className="text-[14px] font-bold">팀 빌딩 시작하기</span>
+                팀 빌딩 보러가기
+                <ArrowRight className="h-4 w-4" />
               </button>
             )}
           </div>

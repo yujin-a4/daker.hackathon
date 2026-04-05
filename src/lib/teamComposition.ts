@@ -3,8 +3,8 @@ import type { CurrentUser, Team, UserProfile } from '@/types';
 export type TeamCompositionMember = {
   id: string;
   nickname: string;
-  role?: string;
-  skills?: string[];
+  primaryRoles?: string[];
+  techStacks?: string[];
   isLeader: boolean;
   isSynthetic?: boolean;
 };
@@ -52,16 +52,13 @@ function buildSyntheticMembers(
 
   const seed = hashString(`${team.teamCode}:${team.name}:${team.leaderId}`);
   const offset = seed % candidatePool.length;
-  const rotatedCandidates = [
-    ...candidatePool.slice(offset),
-    ...candidatePool.slice(0, offset),
-  ];
+  const rotatedCandidates = [...candidatePool.slice(offset), ...candidatePool.slice(0, offset)];
 
   return rotatedCandidates.slice(0, neededCount).map((member) => ({
     id: `${team.teamCode}:${member.id}`,
     nickname: member.nickname,
-    role: member.role,
-    skills: member.skills,
+    primaryRoles: member.primaryRoles,
+    techStacks: member.techStacks,
     isLeader: false,
     isSynthetic: true,
   }));
@@ -69,9 +66,7 @@ function buildSyntheticMembers(
 
 export function getTeamComposition(team: Team, allUsers: UserProfile[], currentUser: CurrentUser | null): TeamComposition {
   const users = dedupeUsers(allUsers, currentUser);
-  const knownMembers = users.filter(
-    (user) => user.id === team.leaderId || user.teamCodes.includes(team.teamCode)
-  );
+  const knownMembers = users.filter((user) => user.id === team.leaderId || user.teamCodes.includes(team.teamCode));
   const uniqueKnownMembers = Array.from(new Map(knownMembers.map((member) => [member.id, member])).values());
 
   const confirmedMemberCount = Math.max(team.memberCount, uniqueKnownMembers.length);
@@ -85,8 +80,8 @@ export function getTeamComposition(team: Team, allUsers: UserProfile[], currentU
     ...uniqueKnownMembers.map((member) => ({
       id: member.id,
       nickname: member.nickname,
-      role: member.role,
-      skills: member.skills,
+      primaryRoles: member.primaryRoles,
+      techStacks: member.techStacks,
       isLeader: member.id === team.leaderId,
       isSynthetic: false,
     })),

@@ -19,10 +19,18 @@ const statusMap: Record<string, string | undefined> = {
 };
 
 const statusOrder: Record<string, number> = {
-  upcoming: 0,
-  ongoing: 1,
+  ongoing: 0,
+  upcoming: 1,
   ended: 2,
 };
+
+function getPrizeAmount(prizeTotal?: string) {
+  return parseInt(prizeTotal?.replace(/[^0-9]/g, '') || '0', 10);
+}
+
+function compareStatus(leftStatus: string, rightStatus: string) {
+  return (statusOrder[leftStatus] ?? 99) - (statusOrder[rightStatus] ?? 99);
+}
 
 const ITEMS_PER_PAGE = 10;
 
@@ -51,6 +59,7 @@ export default function HackathonsPage() {
   const [sortOption, setSortOption] = useState<
     'deadline' | 'participantsDesc' | 'participantsAsc' | 'prizeDesc' | 'prizeAsc'
   >('deadline');
+  const isAllStatus = statusFilter === '전체';
 
   const allTypes = useMemo(() => {
     const types = new Set<string>();
@@ -65,22 +74,37 @@ export default function HackathonsPage() {
 
     return [...hackathons]
       .sort((a, b) => {
-        const statusDiff = statusOrder[a.status] - statusOrder[b.status];
+        const deadlineDiff = new Date(a.period.endAt).getTime() - new Date(b.period.endAt).getTime();
+        const statusDiff = compareStatus(a.status, b.status);
+        const effectiveSortOption = isAllStatus ? 'deadline' : sortOption;
+
+        if (effectiveSortOption === 'deadline') {
+          if (statusDiff !== 0) return statusDiff;
+          if (deadlineDiff !== 0) return deadlineDiff;
+          return a.title.localeCompare(b.title);
+        }
+
+        if (effectiveSortOption === 'participantsDesc' || effectiveSortOption === 'participantsAsc') {
+          const participantDiff =
+            effectiveSortOption === 'participantsDesc'
+              ? b.participantCount - a.participantCount
+              : a.participantCount - b.participantCount;
+
+          if (participantDiff !== 0) return participantDiff;
+          if (statusDiff !== 0) return statusDiff;
+          if (deadlineDiff !== 0) return deadlineDiff;
+          return a.title.localeCompare(b.title);
+        }
+
+        const prizeDiff =
+          effectiveSortOption === 'prizeDesc'
+            ? getPrizeAmount(b.prizeTotal) - getPrizeAmount(a.prizeTotal)
+            : getPrizeAmount(a.prizeTotal) - getPrizeAmount(b.prizeTotal);
+
+        if (prizeDiff !== 0) return prizeDiff;
         if (statusDiff !== 0) return statusDiff;
-
-        if (sortOption.startsWith('participants')) {
-          return sortOption === 'participantsDesc'
-            ? b.participantCount - a.participantCount
-            : a.participantCount - b.participantCount;
-        }
-
-        if (sortOption.startsWith('prize')) {
-          const prizeA = parseInt(a.prizeTotal?.replace(/[^0-9]/g, '') || '0', 10);
-          const prizeB = parseInt(b.prizeTotal?.replace(/[^0-9]/g, '') || '0', 10);
-          return sortOption === 'prizeDesc' ? prizeB - prizeA : prizeA - prizeB;
-        }
-
-        return new Date(a.period.endAt).getTime() - new Date(b.period.endAt).getTime();
+        if (deadlineDiff !== 0) return deadlineDiff;
+        return a.title.localeCompare(b.title);
       })
       .filter((hackathon) => {
         const expectedStatus = statusMap[statusFilter];
@@ -96,7 +120,7 @@ export default function HackathonsPage() {
 
         return statusMatch && typeMatch && searchMatch && bookmarkMatch;
       });
-  }, [currentUser, hackathons, searchQuery, selectedType, showBookmarkedOnly, sortOption, statusFilter]);
+  }, [currentUser, hackathons, isAllStatus, searchQuery, selectedType, showBookmarkedOnly, sortOption, statusFilter]);
 
   const totalPages = Math.ceil(filteredHackathons.length / ITEMS_PER_PAGE);
   const paginatedHackathons = filteredHackathons.slice(
@@ -156,7 +180,8 @@ export default function HackathonsPage() {
 
         <div className="flex items-center justify-between text-sm font-medium text-muted-foreground">
           <span>총 {filteredHackathons.length}개</span>
-          <select
+          {!isAllStatus && (
+            <select
             value={sortOption}
             onChange={(e) => {
               setSortOption(e.target.value as typeof sortOption);
@@ -169,7 +194,8 @@ export default function HackathonsPage() {
             <option value="participantsAsc">참가 인원 적은순</option>
             <option value="prizeDesc">상금 높은순</option>
             <option value="prizeAsc">상금 낮은순</option>
-          </select>
+            </select>
+          )}
         </div>
 
         {paginatedHackathons.length > 0 ? (

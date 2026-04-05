@@ -4,6 +4,11 @@ import type { CurrentUser, UserProfile } from '@/types';
 import { generateId } from '@/lib/utils';
 import { currentUser as seedUser, personaPool } from '@/data/seed';
 import { useRankingStore } from '@/store/useRankingStore';
+import {
+  mapLegacyPreferredTypesToInterestDomains,
+  mapLegacyRoleToPrimaryRoles,
+  splitLegacySkills,
+} from '@/lib/match-taxonomy';
 
 interface UserState {
   currentUser: CurrentUser | null;
@@ -12,7 +17,14 @@ interface UserState {
   register: (nickname: string, email: string) => void;
   login: (nickname: string) => void;
   logout: () => void;
-  updateProfile: (data: Partial<Pick<CurrentUser, 'nickname' | 'preferredTypes' | 'skills'>>) => void;
+  updateProfile: (
+    data: Partial<
+      Pick<
+        CurrentUser,
+        'nickname' | 'primaryRoles' | 'interestDomains' | 'techStacks' | 'collaborationStrengths'
+      >
+    >
+  ) => void;
   setAllUsers: (users: UserProfile[]) => void;
   addTeamCode: (teamCode: string) => void;
   removeTeamCode: (teamCode: string) => void;
@@ -21,26 +33,38 @@ interface UserState {
   addVotedTeam: (hackathonSlug: string, teamName: string) => boolean;
 }
 
-const LEGACY_WELCOME_POINT_DESCRIPTIONS = ['?뚯썝媛??湲곕낯 ?쒗깮', '회원가입 기본 지급'];
+const LEGACY_WELCOME_POINT_DESCRIPTIONS = ['웰컴 포인트', '회원가입 기본 지급'];
 
-const normalizeUserProfile = <T extends Partial<UserProfile & CurrentUser>>(profile: T): T =>
-  ({
+const normalizeUserProfile = <T extends Partial<UserProfile & CurrentUser>>(profile: T): T => {
+  const primaryRoles = profile.primaryRoles?.length ? profile.primaryRoles : mapLegacyRoleToPrimaryRoles(profile.role);
+  const mappedDomains = profile.interestDomains?.length
+    ? profile.interestDomains
+    : mapLegacyPreferredTypesToInterestDomains(profile.preferredTypes);
+  const splitSkills = splitLegacySkills(profile.skills);
+  const techStacks = profile.techStacks?.length ? profile.techStacks : splitSkills.techStacks;
+  const collaborationStrengths = profile.collaborationStrengths?.length
+    ? profile.collaborationStrengths
+    : splitSkills.collaborationStrengths;
+  const interestDomains = Array.from(new Set([...(mappedDomains || []), ...splitSkills.interestDomains]));
+
+  return {
     ...profile,
     basePoints: profile.basePoints ?? 100,
     bookmarkedSlugs: profile.bookmarkedSlugs || [],
-    preferredTypes: profile.preferredTypes || [],
-    skills: profile.skills || [],
+    primaryRoles,
+    interestDomains,
+    techStacks,
+    collaborationStrengths,
     pointHistory: (profile.pointHistory || []).filter(
       (log) => !LEGACY_WELCOME_POINT_DESCRIPTIONS.includes(log.description)
     ),
-  }) as T;
+  } as T;
+};
 
 const toCurrentUser = (profile: UserProfile): CurrentUser =>
   normalizeUserProfile({
     ...profile,
     bookmarkedSlugs: profile.bookmarkedSlugs || [],
-    preferredTypes: profile.preferredTypes || [],
-    skills: profile.skills || [],
   });
 
 const upsertUserProfile = (users: UserProfile[], profile: UserProfile) => {
@@ -70,9 +94,10 @@ export const useUserStore = create<UserState>()(
           joinedAt: new Date().toISOString(),
           basePoints: 100,
           bookmarkedSlugs: [],
-          role: '',
-          preferredTypes: [],
-          skills: [],
+          primaryRoles: [],
+          interestDomains: [],
+          techStacks: [],
+          collaborationStrengths: [],
           pointHistory: [],
         });
 
@@ -111,8 +136,10 @@ export const useUserStore = create<UserState>()(
             joinedAt: new Date().toISOString(),
             basePoints: 100,
             bookmarkedSlugs: [],
-            preferredTypes: [],
-            skills: [],
+            primaryRoles: [],
+            interestDomains: [],
+            techStacks: [],
+            collaborationStrengths: [],
             pointHistory: [],
           });
 
@@ -124,7 +151,8 @@ export const useUserStore = create<UserState>()(
         recalculateRankings();
       },
 
-      setAllUsers: (users: UserProfile[]) => set({ allUsers: users.map((user) => normalizeUserProfile(user as UserProfile)) }),
+      setAllUsers: (users: UserProfile[]) =>
+        set({ allUsers: users.map((user) => normalizeUserProfile(user as UserProfile)) }),
 
       logout: () => {
         set({ currentUser: null });
@@ -232,7 +260,7 @@ export const useUserStore = create<UserState>()(
       },
     }),
     {
-      name: 'vibehack-user-storage-v2',
+      name: 'vibehack-user-storage-v3',
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (!state) return;

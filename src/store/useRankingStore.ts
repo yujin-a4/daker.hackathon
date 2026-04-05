@@ -104,9 +104,10 @@ export const useRankingStore = create<RankingState>()(
             hackathonsJoined: joinedCount,
             winsCount,
             lastActiveAt: user.joinedAt || new Date().toISOString(),
-            // 프로필 카드용 — UserProfile에서 직접 매핑
-            role: user.role,
-            skills: user.skills,
+            primaryRoles: user.primaryRoles,
+            interestDomains: user.interestDomains,
+            techStacks: user.techStacks,
+            collaborationStrengths: user.collaborationStrengths,
           };
         });
 

@@ -21,7 +21,7 @@ import {
   teams,
 } from '@/data/seed';
 
-export const SEED_VERSION = 'v5.5';
+export const SEED_VERSION = 'v5.6';
 
 function buildDetailsRecord() {
   return hackathonDetails.reduce(
@@ -142,9 +142,32 @@ export function initializeIfNeeded() {
   const normalizedTeams = enrichTeamsWithContext(useTeamStore.getState().teams, refreshedHackathons, {
     preserveExisting: true,
   });
+  const currentSubmissions = useSubmissionStore.getState().submissions;
+  const currentLeaderboards = useHackathonStore.getState().leaderboards;
+  const normalizedSubmissions = normalizeSeedSubmissions({
+    details: detailsRecord,
+    hackathons: refreshedHackathons,
+    teams: normalizedTeams,
+    submissions: currentSubmissions,
+    leaderboards: Object.keys(currentLeaderboards).length > 0 ? currentLeaderboards : leaderboards,
+    now,
+  });
+  const normalizedLeaderboards = normalizeSeedLeaderboards({
+    details: detailsRecord,
+    hackathons: refreshedHackathons,
+    teams: normalizedTeams,
+    submissions: normalizedSubmissions,
+    leaderboards: Object.keys(currentLeaderboards).length > 0 ? currentLeaderboards : leaderboards,
+    now,
+  });
 
-  useHackathonStore.setState({ hackathons: refreshedHackathons, hackathonDetails: detailsRecord });
+  useHackathonStore.setState({
+    hackathons: refreshedHackathons,
+    hackathonDetails: detailsRecord,
+    leaderboards: normalizedLeaderboards,
+  });
   useTeamStore.setState({ teams: normalizedTeams });
+  useSubmissionStore.setState({ submissions: normalizedSubmissions });
   useRankingStore.getState().recalculateRankings();
   return false;
 }

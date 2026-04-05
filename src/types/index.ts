@@ -133,9 +133,10 @@ export interface RankingUser {
   hackathonsJoined: number;
   winsCount: number;
   lastActiveAt: string;
-  // 프로필 카드용 — UserProfile에서 매핑
-  role?: string;
-  skills?: string[];
+  primaryRoles?: string[];
+  interestDomains?: string[];
+  techStacks?: string[];
+  collaborationStrengths?: string[];
 }
 
 export interface Submission {
@@ -170,6 +171,10 @@ export interface CurrentUser {
   joinedAt: string;
   basePoints?: number;
   bookmarkedSlugs?: string[];
+  primaryRoles?: string[];
+  interestDomains?: string[];
+  techStacks?: string[];
+  collaborationStrengths?: string[];
   role?: string;
   preferredTypes?: string[];
   skills?: string[];

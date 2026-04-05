@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { Info, Lock, Vote } from 'lucide-react';
 
-import type { HackathonDetail, Leaderboard, Submission } from '@/types';
+import type { HackathonDetail, Submission } from '@/types';
 import { useHackathonStore } from '@/store/useHackathonStore';
 import { useRankingStore } from '@/store/useRankingStore';
 import { useTeamStore } from '@/store/useTeamStore';
@@ -16,12 +16,11 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 type GallerySectionProps = {
-  leaderboard?: Leaderboard;
   hackathonDetail: HackathonDetail;
   submissions: Submission[];
 };
 
-export default function GallerySection({ leaderboard, hackathonDetail, submissions }: GallerySectionProps) {
+export default function GallerySection({ hackathonDetail, submissions }: GallerySectionProps) {
   const { teams } = useTeamStore();
   const { currentUser, votedTeamsByHackathon, addPointHistory, addVotedTeam } = useUserStore();
   const { incrementVote, votes } = useHackathonStore();
@@ -46,19 +45,18 @@ export default function GallerySection({ leaderboard, hackathonDetail, submissio
         const artifacts = (submission?.artifacts || []).filter((artifact) =>
           targetItemKey ? artifact.key === targetItemKey : true
         );
-        const entry = leaderboard?.entries.find((item) => item.teamName === team.name);
         return {
           teamCode: team.teamCode,
           name: team.name,
           isSolo: !!team.isSolo,
-          votes: (entry?.votes ?? 0) + (voteState[team.name] || 0),
-          submittedAt: submission?.submittedAt ?? entry?.submittedAt ?? null,
+          votes: isVotingPhase ? (voteState[team.name] || 0) : 0,
+          submittedAt: submission?.submittedAt ?? null,
           artifacts: artifacts.map((artifact) => ({ ...artifact, key: artifact.key || 'unknown' })),
           isMyTeam: currentUser?.teamCodes.includes(team.teamCode) ?? false,
         };
       })
       .filter((entry) => entry.submittedAt && entry.artifacts.length > 0);
-  }, [teams, hackathonDetail.slug, submissions, targetItemKey, leaderboard, voteState, currentUser]);
+  }, [teams, hackathonDetail.slug, submissions, targetItemKey, voteState, currentUser, isVotingPhase]);
 
   const galleryOpenDate = useMemo(() => {
     const milestone = hackathonDetail.sections.schedule.milestones.find(

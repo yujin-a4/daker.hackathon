@@ -8,7 +8,6 @@ import { useUserStore } from '@/store/useUserStore';
 import { useNotificationStore } from '@/store/useNotificationStore';
 import { useHackathonStore } from '@/store/useHackathonStore';
 import type { Team, UserProfile } from '@/types';
-import { users as userPool } from '@/data/seed';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,7 +16,7 @@ interface TeamMemberManagerProps {
 }
 
 export default function TeamMemberManager({ team }: TeamMemberManagerProps) {
-  const { currentUser } = useUserStore();
+  const { currentUser, allUsers } = useUserStore();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [invitedEmails, setInvitedEmails] = useState<string[]>([]);
@@ -26,28 +25,28 @@ export default function TeamMemberManager({ team }: TeamMemberManagerProps) {
   // 팀장 여부 확인
   const isLeader = currentUser?.id === team.leaderId;
 
-  // AI 매칭 로직: team.lookingFor 와 user.role/skills 를 비교
+  // AI 매칭 로직: team.lookingFor 와 user.primaryRoles/techStacks 를 비교
   const recommendedUsers = useMemo(() => {
     if (!team.lookingFor || team.lookingFor.length === 0) return [];
     
-    const recommendations = (userPool || []).map(user => {
+    const recommendations = (allUsers || []).map(user => {
       let score = 0;
       
       // 우리 팀이 찾는 포지션과 유저의 역할이 일치하는가? (부분 일치 허용)
       const roleMatch = team.lookingFor.some(
         req => {
           const targetPos = req.position.toLowerCase();
-          const userRole = (user.role || '').toLowerCase();
-          return userRole.includes(targetPos) || targetPos.includes(userRole);
+          const userRoles = (user.primaryRoles || []).map((role) => role.toLowerCase());
+          return userRoles.some((userRole) => userRole.includes(targetPos) || targetPos.includes(userRole));
         }
       );
       if (roleMatch) score += 50;
 
       // 스킬 매치 (대략적인 확인)
-      if (user.skills && user.skills.length > 0) {
+      if (user.techStacks && user.techStacks.length > 0) {
         // 더미 매칭: 찾는 설명에 유저 스킬 키워드가 있으면 가산점
         team.lookingFor.forEach(req => {
-          user.skills!.forEach(skill => {
+          user.techStacks!.forEach(skill => {
             if (req.description.toLowerCase().includes(skill.toLowerCase())) {
               score += 20;
             }
@@ -68,7 +67,7 @@ export default function TeamMemberManager({ team }: TeamMemberManagerProps) {
       .filter(r => r.score >= 50 && !invitedUsers.includes(r.user.id))
       .sort((a, b) => b.score - a.score)
       .slice(0, 5); // 최대 5명 추천
-  }, [team.lookingFor, invitedUsers]);
+  }, [allUsers, invitedUsers, team.lookingFor]);
 
   const handleInviteEmail = (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,14 +187,14 @@ export default function TeamMemberManager({ team }: TeamMemberManagerProps) {
                         <div className="flex justify-between items-start mb-3">
                           <div className="flex-1 min-w-0">
                             <h5 className="font-bold text-base truncate">{rec.user.nickname}</h5>
-                            <span className="text-xs text-muted-foreground">{rec.user.role}</span>
+                            <span className="text-xs text-muted-foreground">{(rec.user.primaryRoles || []).join(', ')}</span>
                           </div>
                           <div className="bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 shrink-0">
                             {rec.score}% 핏
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-1 mb-2">
-                          {rec.user.skills?.slice(0, 3).map(skill => (
+                          {rec.user.techStacks?.slice(0, 3).map(skill => (
                             <span key={skill} className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] px-1.5 py-0.5 rounded">
                               {skill}
                             </span>

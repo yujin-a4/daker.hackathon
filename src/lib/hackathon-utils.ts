@@ -352,8 +352,17 @@ export function calculateCompetitionStandings(
     });
 
     const leaderboardEntry = leaderboardEntries.find((entry) => entry.teamName === team.name);
-    const teamVotes = (leaderboardEntry?.votes ?? 0) + (votes[team.name] || 0);
-    const judgeScore = leaderboardEntry?.score ?? null;
+    const liveVotes = votes[team.name] || 0;
+    const hasOfficialResult = typeof leaderboardEntry?.rank === 'number' || leaderboardEntry?.score !== null;
+    const teamVotes =
+      phase.votingEnabled || phase.type === 'RESULT'
+        ? liveVotes > 0
+          ? liveVotes
+          : phase.type === 'RESULT' && hasOfficialResult
+            ? (leaderboardEntry?.votes ?? 0)
+            : 0
+        : 0;
+    const judgeScore = phase.judgingEnabled ? (leaderboardEntry?.score ?? null) : null;
 
     let finalScore = null;
     if (phase.judgingEnabled && judgeScore !== null) {

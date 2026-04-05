@@ -14,9 +14,7 @@ export default function TeamCompositionSection({ team, className }: TeamComposit
   const { allUsers, currentUser } = useUserStore();
   const composition = getTeamComposition(team, allUsers, currentUser);
 
-  const roles = composition.members
-    .map((m) => m.role)
-    .filter(Boolean) as string[];
+  const roles = composition.members.flatMap((member) => member.primaryRoles || []);
 
   if (roles.length === 0 && composition.hiddenConfirmedCount === 0) {
     return null;
