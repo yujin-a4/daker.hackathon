@@ -9,7 +9,7 @@ import { getHackathonStatusLabel, isHackathonRecruiting } from '@/lib/hackathon-
 import { hasMatchingProfile } from '@/lib/user-profile';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Sparkles, ArrowRight, Star, Zap } from 'lucide-react';
+import { Sparkles, ArrowRight, Zap } from 'lucide-react';
 
 export default function RecommendedSection() {
   const { hackathons } = useHackathonStore();
@@ -101,9 +101,8 @@ export default function RecommendedSection() {
               {reasons.map((reason, i) => (
                 <span
                   key={i}
-                  className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] text-primary"
+                  className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary"
                 >
-                  <Star className="h-3 w-3" />
                   {reason}
                 </span>
               ))}

@@ -232,6 +232,7 @@ export default function HackathonDetailPage() {
   const recruitmentStatus = computeHackathonRecruitmentStatus(hackathon, details);
   const endMeta = getHackathonEndMeta(hackathon, details);
   const stageMeta = getHackathonStageMeta(hackathon, details);
+  const countdownMeta = stageMeta ?? endMeta;
 
   const schedule = details.sections.schedule;
   const firstMilestone = schedule.milestones?.[0];
@@ -242,16 +243,18 @@ export default function HackathonDetailPage() {
   const displayEndAt = getHackathonEndAt(hackathon, details).toISOString();
 
   const milestones = details.sections.schedule.milestones || [];
-  const deadlineAt = endMeta.targetAt.toISOString();
+  const deadlineAt = countdownMeta.targetAt.toISOString();
 
   // D-Day 계산
   const diffTime = new Date(deadlineAt).getTime() - new Date().getTime();
   const dDay = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   const dDayText = dDay > 0 ? `D-${dDay}` : dDay === 0 ? 'D-Day' : '종료';
+  const countdownStatLabel = hackathon.status === 'ended' ? '종료일' : countdownMeta.countdownLabel;
+  const countdownStatValue = hackathon.status === 'ended' ? formatDate(deadlineAt) : dDayText;
 
   const stats = [
     { label: '총 상금', value: hackathon.prizeTotal || '자세히 보기', icon: Trophy, color: 'text-amber-500' },
-    { label: '마감일', value: dDayText, icon: Clock, color: 'text-rose-500' },
+    { label: countdownStatLabel, value: countdownStatValue, icon: Clock, color: 'text-rose-500' },
     { label: '참가자', value: `${participantCount}명`, icon: Users, color: 'text-blue-500' },
     { label: '분야', value: hackathon.type || '일반', icon: BookOpen, color: 'text-indigo-500' },
   ];

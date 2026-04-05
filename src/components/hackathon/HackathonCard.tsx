@@ -42,6 +42,7 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
   const endMeta = getHackathonEndMeta(hackathon, detail);
   const stageMeta = getHackathonStageMeta(hackathon, detail);
   const recruitmentStatus = computeHackathonRecruitmentStatus(hackathon, detail);
+  const countdownMeta = stageMeta ?? endMeta;
 
   const isBookmarked = currentUser?.bookmarkedSlugs?.includes(hackathon.slug);
   const participantCount = useMemo(() => {
@@ -50,8 +51,8 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
     return matchingTeams.reduce((sum, team) => sum + (team.memberCount || 0), 0);
   }, [teams, hackathon.slug, hackathon.participantCount]);
 
-  const targetAt = endMeta.targetAt.toISOString();
-  const daysLeft = differenceInDays(endMeta.targetAt, new Date());
+  const targetAt = countdownMeta.targetAt.toISOString();
+  const daysLeft = differenceInDays(countdownMeta.targetAt, new Date());
   const isUrgent = !isExpired(targetAt) && daysLeft <= 7;
 
   useEffect(() => {
@@ -59,7 +60,7 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
       setProgress(100);
       return;
     }
-    if (hackathon.status === 'upcoming') {
+    if (hackathon.status === 'upcoming' || hackathon.status === 'recruiting') {
       setProgress(0);
       return;
     }
@@ -78,15 +79,15 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
 
   return (
     <Card
-      className="group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-300 hover:border-indigo-500/30 hover:shadow-[0_20px_40px_-20px_rgba(99,102,241,0.15)] dark:border-white/5 dark:bg-[#0D0D0D] dark:hover:border-indigo-500/30 dark:hover:shadow-[0_0_40px_-20px_rgba(99,102,241,0.3)]"
+      className="group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-300 hover:border-slate-300 hover:shadow-[0_20px_40px_-20px_rgba(15,23,42,0.12)] dark:border-white/5 dark:bg-[#0D0D0D] dark:hover:border-white/10 dark:hover:shadow-[0_0_40px_-20px_rgba(15,23,42,0.35)]"
       onClick={() => router.push(`/hackathons/${hackathon.slug}`)}
     >
-      <div className="absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r from-indigo-500 to-cyan-500" />
+      <div className="absolute inset-x-0 top-0 z-10 h-[3px] bg-slate-200 dark:bg-white/10" />
 
       <div className="flex h-full flex-col gap-4 p-5">
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-4">
-            <h4 className="line-clamp-2 text-base font-bold leading-tight text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-white dark:group-hover:text-indigo-400">
+            <h4 className="line-clamp-2 text-base font-bold leading-tight text-slate-900 transition-colors group-hover:text-slate-700 dark:text-white dark:group-hover:text-slate-100">
               {hackathon.title}
             </h4>
             <motion.button
@@ -108,7 +109,7 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
                 className={cn(
                   'text-[10px] font-bold tracking-wider',
                   recruitmentStatus === 'recruiting'
-                    ? 'border-emerald-200 text-emerald-700 bg-emerald-50'
+                    ? 'border-slate-200 text-slate-600 bg-slate-50'
                     : 'border-slate-200 text-slate-500 bg-slate-50'
                 )}
               >
@@ -123,11 +124,11 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
                 className={cn(
                   'rounded border px-2 py-0.5 text-[10px] font-bold',
                   isUrgent
-                    ? 'border-rose-500/20 bg-rose-500/5 text-rose-500'
+                    ? 'border-slate-300 bg-slate-100 text-slate-700'
                     : 'border-slate-200 bg-slate-50/50 text-muted-foreground dark:border-white/10 dark:bg-transparent'
                 )}
               >
-                {endMeta.label} {getDday(targetAt)}
+                {countdownMeta.countdownLabel} {getDday(targetAt)}
               </div>
             )}
           </div>
@@ -149,14 +150,9 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
         <div className="flex-grow" />
 
         <div className="space-y-1.5">
-          {stageMeta && (
-            <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-              현재 단계: {stageMeta.label} {getDday(stageMeta.targetAt.toISOString())}
-            </div>
-          )}
           <div className="flex justify-between text-[10px] font-bold uppercase tracking-tighter text-slate-400 dark:text-slate-500">
             <span>Progress</span>
-            <span className={cn('font-black', isUrgent ? 'text-rose-500' : 'text-indigo-600 dark:text-indigo-400')}>
+            <span className={cn('font-black', hackathon.status === 'ended' ? 'text-slate-400 dark:text-slate-500' : 'text-primary')}>
               {Math.round(progress)}%
             </span>
           </div>
@@ -165,10 +161,8 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
               className={cn(
                 'h-full rounded-full transition-all duration-1000',
                 hackathon.status === 'ended'
-                  ? 'bg-slate-300 dark:bg-muted-foreground'
-                  : isUrgent
-                    ? 'bg-rose-500'
-                    : 'bg-gradient-to-r from-indigo-500 to-cyan-500'
+                  ? 'bg-slate-300 dark:bg-slate-600'
+                  : 'bg-primary'
               )}
               style={{ width: `${progress}%` }}
             />
@@ -186,7 +180,7 @@ export default function HackathonCard({ hackathon }: HackathonCardProps) {
               <span>{formatDate(startAt)} ~ {formatDate(endAt)}</span>
             </div>
           </div>
-          <ArrowRight className="h-4 w-4 text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:text-indigo-600 dark:text-slate-700 dark:group-hover:text-indigo-400" />
+          <ArrowRight className="h-4 w-4 text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:text-slate-500 dark:text-slate-700 dark:group-hover:text-slate-300" />
         </div>
       </div>
     </Card>

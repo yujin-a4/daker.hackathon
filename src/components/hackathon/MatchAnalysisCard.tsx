@@ -2,7 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { Target, CheckCircle2, AlertCircle, Sparkles, UserCheck } from 'lucide-react';
-import { analyzeHackathonMatch, MatchAnalysisResult } from '@/lib/match-analysis';
+import { analyzeHackathonMatch } from '@/lib/match-analysis';
+import { calculateHackathonMatchScore } from '@/lib/recommend';
 import type { Hackathon, CurrentUser } from '@/types';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
@@ -14,6 +15,8 @@ interface MatchAnalysisCardProps {
 
 export default function MatchAnalysisCard({ hackathon, currentUser }: MatchAnalysisCardProps) {
   const analysis = analyzeHackathonMatch(hackathon, currentUser);
+  // 추천 섹션과 동일한 알고리즘으로 점수 계산
+  const matchRate = calculateHackathonMatchScore(hackathon, currentUser);
 
   if (!analysis) {
     return (
@@ -37,13 +40,13 @@ export default function MatchAnalysisCard({ hackathon, currentUser }: MatchAnaly
           </div>
           <span className={cn(
             "text-lg font-black",
-            analysis.matchRate >= 70 ? "text-emerald-500" : analysis.matchRate >= 40 ? "text-indigo-500" : "text-amber-500"
+            matchRate >= 70 ? "text-emerald-500" : matchRate >= 40 ? "text-indigo-500" : "text-amber-500"
           )}>
-            {analysis.matchRate}%
+            {matchRate}%
           </span>
         </div>
         
-        <Progress value={analysis.matchRate} className="h-2 bg-slate-200 dark:bg-slate-800" />
+        <Progress value={matchRate} className="h-2 bg-slate-200 dark:bg-slate-800" />
         <p className="text-[11px] text-muted-foreground mt-2 font-medium">
           현재 보유하신 스택과 대회 태그를 분석한 결과입니다.
         </p>
@@ -89,7 +92,7 @@ export default function MatchAnalysisCard({ hackathon, currentUser }: MatchAnaly
       <div className="mt-auto p-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 text-center">
         <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
           <Sparkles className="w-3 h-3 inline-block mr-1 text-amber-500" />
-          {analysis.matchRate >= 60 ? "지금 바로 팀 빌딩을 시작해 보세요!" : "함께 프로젝트를 이끌어갈 팀원을 찾아보세요."}
+          {matchRate >= 60 ? "지금 바로 팀 빌딩을 시작해 보세요!" : "함께 프로젝트를 이끌어갈 팀원을 찾아보세요."}
         </p>
       </div>
     </div>

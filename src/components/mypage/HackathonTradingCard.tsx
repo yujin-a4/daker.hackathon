@@ -91,18 +91,9 @@ export default function HackathonTradingCard({ hackathon, team, submission, vari
   const endMeta = getHackathonEndMeta(hackathon, detail);
   const stageMeta = getHackathonStageMeta(hackathon, detail);
   const recruitmentStatus = computeHackathonRecruitmentStatus(hackathon, detail);
-  const deadline = endMeta.targetAt.toISOString();
+  const countdownMeta = stageMeta ?? endMeta;
+  const deadline = countdownMeta.targetAt.toISOString();
   const subStatus = getSubmissionStatus(submission?.status || 'none');
-
-  const gradients = [
-    'from-indigo-700 to-slate-900',
-    'from-purple-700 to-indigo-900',
-    'from-slate-700 to-indigo-900',
-    'from-indigo-800 to-purple-950',
-    'from-violet-700 to-slate-900',
-  ];
-  const stringToId = hackathon.slug.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const bgGradient = gradients[stringToId % gradients.length];
 
   return (
     <div className="perspective-1000">
@@ -125,7 +116,7 @@ export default function HackathonTradingCard({ hackathon, team, submission, vari
           variant === 'default' ? 'max-w-[300px]' : 'max-w-[220px]'
         )}
       >
-        <div className={cn('absolute inset-0 bg-gradient-to-br opacity-90 transition-opacity', bgGradient)} />
+        <div className="absolute inset-0 bg-slate-900 opacity-95 transition-opacity" />
 
         {hackathon.thumbnailUrl && (
           <div
@@ -152,7 +143,7 @@ export default function HackathonTradingCard({ hackathon, team, submission, vari
           )}
           style={{
             backgroundImage:
-              'linear-gradient(135deg, transparent 40%, rgba(255,150,255,0.2) 45%, rgba(150,255,255,0.4) 50%, rgba(255,255,150,0.2) 55%, transparent 60%)',
+              'linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.08) 55%, transparent 60%)',
             backgroundSize: '250% 250%',
             backgroundPosition: isHovered ? `${glarePosition.x}% ${glarePosition.y}%` : '100% 100%',
           }}
@@ -175,7 +166,7 @@ export default function HackathonTradingCard({ hackathon, team, submission, vari
                     className={cn(
                       'border-white/20 font-bold',
                       recruitmentStatus === 'recruiting'
-                        ? 'bg-emerald-500/20 text-emerald-200'
+                        ? 'bg-white/10 text-white'
                         : 'bg-white/10 text-slate-200'
                     )}
                   >
@@ -192,7 +183,7 @@ export default function HackathonTradingCard({ hackathon, team, submission, vari
             >
               <Trophy
                 className={cn(
-                  'text-yellow-300 drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]',
+                  'text-white drop-shadow-[0_0_5px_rgba(255,255,255,0.25)]',
                   variant === 'default' ? 'w-5 h-5' : 'w-4 h-4'
                 )}
               />
@@ -214,7 +205,7 @@ export default function HackathonTradingCard({ hackathon, team, submission, vari
                     variant === 'default' ? 'text-[13px]' : 'text-[11px]'
                   )}
                 >
-                  <Users className="w-3.5 h-3.5 text-pink-300 shrink-0" />
+                  <Users className="w-3.5 h-3.5 text-slate-300 shrink-0" />
                   <span className="truncate max-w-[100px]">{team ? team.name : '참여 팀 없음'}</span>
                 </span>
                 <span
@@ -231,14 +222,14 @@ export default function HackathonTradingCard({ hackathon, team, submission, vari
 
               <div className="flex justify-between items-center opacity-95">
                 <span className={cn('flex items-center gap-1.5 font-medium text-slate-200', variant === 'default' ? 'text-[13px]' : 'text-[11px]')}>
-                  <Calendar className="w-3.5 h-3.5 text-cyan-300 shrink-0" />
-                  {endMeta.label}
+                  <Calendar className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+                  {countdownMeta.countdownLabel}
                 </span>
                 <span
                   className={cn(
                     'font-bold',
                     getDday(deadline).startsWith('D-') && parseInt(getDday(deadline).slice(2), 10) <= 7
-                      ? 'text-rose-400'
+                      ? 'text-white'
                       : 'text-slate-100',
                     variant === 'default' ? 'text-[13px]' : 'text-[11px]'
                   )}
@@ -246,17 +237,6 @@ export default function HackathonTradingCard({ hackathon, team, submission, vari
                   {getDday(deadline)}
                 </span>
               </div>
-
-              {stageMeta && (
-                <div className="flex justify-between items-center opacity-90 text-slate-300">
-                  <span className={cn('truncate', variant === 'default' ? 'text-[12px]' : 'text-[10px]')}>
-                    현재 단계
-                  </span>
-                  <span className={cn('font-medium', variant === 'default' ? 'text-[12px]' : 'text-[10px]')}>
-                    {stageMeta.label} {getDday(stageMeta.targetAt.toISOString())}
-                  </span>
-                </div>
-              )}
             </div>
 
             {variant === 'default' && (

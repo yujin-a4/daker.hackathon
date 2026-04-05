@@ -11,7 +11,7 @@ import { useHackathonStore } from '@/store/useHackathonStore';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { getDday, isExpired } from '@/lib/date';
-import { getStatusColor, getGradientBySlug, cn } from '@/lib/utils';
+import { getStatusColor, cn } from '@/lib/utils';
 import {
   computeHackathonRecruitmentStatus,
   getHackathonEndMeta,
@@ -31,12 +31,12 @@ export default function HackathonListItem({ hackathon }: HackathonListItemProps)
   const { hackathonDetails } = useHackathonStore();
 
   const isBookmarked = currentUser?.bookmarkedSlugs?.includes(hackathon.slug);
-  const [color1, color2] = getGradientBySlug(hackathon.slug);
   const statusText = getHackathonStatusLabel(hackathon.status);
   const detail = hackathonDetails[hackathon.slug];
   const endMeta = getHackathonEndMeta(hackathon, detail);
   const stageMeta = getHackathonStageMeta(hackathon, detail);
   const recruitmentStatus = computeHackathonRecruitmentStatus(hackathon, detail);
+  const countdownMeta = stageMeta ?? endMeta;
 
   const handleBookmarkClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -46,23 +46,18 @@ export default function HackathonListItem({ hackathon }: HackathonListItemProps)
     });
   };
 
-  const targetAt = endMeta.targetAt.toISOString();
+  const targetAt = countdownMeta.targetAt.toISOString();
   const dday = getDday(targetAt);
   const isDdayUrgent =
     !isExpired(targetAt) &&
-    differenceInDays(endMeta.targetAt, new Date()) <= 7;
+    differenceInDays(countdownMeta.targetAt, new Date()) <= 7;
 
   return (
     <div
       onClick={() => router.push(`/hackathons/${hackathon.slug}`)}
       className="group relative flex flex-col sm:flex-row sm:items-center border border-white/5 rounded-xl overflow-hidden bg-[#0A0A0A]/60 backdrop-blur-sm hover:bg-white/[0.03] hover:border-white/10 transition-all duration-300 cursor-pointer p-4 sm:p-5 gap-4"
     >
-      <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
-
-      <div
-        className="absolute left-0 top-0 bottom-0 w-1 opacity-60 group-hover:opacity-100 transition-opacity"
-        style={{ background: `linear-gradient(to bottom, ${color1}, ${color2})` }}
-      />
+      <div className="absolute inset-x-0 bottom-0 h-[1px] bg-white/10 scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
 
       <div className="flex sm:flex-col items-center sm:items-start justify-between sm:justify-center gap-3 sm:gap-2.5 sm:w-28 flex-shrink-0">
         <Badge className={cn('font-bold text-[10px] sm:text-xs px-2 px-1.5', getStatusColor(hackathon.status))}>
@@ -74,7 +69,7 @@ export default function HackathonListItem({ hackathon }: HackathonListItemProps)
             className={cn(
               'font-bold text-[10px] sm:text-xs px-2 py-0.5',
               recruitmentStatus === 'recruiting'
-                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                ? 'border-white/10 bg-white/5 text-gray-300'
                 : 'border-white/10 bg-white/5 text-gray-400'
             )}
           >
@@ -86,18 +81,18 @@ export default function HackathonListItem({ hackathon }: HackathonListItemProps)
             className={cn(
               'text-[10px] sm:text-xs font-bold tracking-wider px-2 py-0.5 rounded-md border',
               isDdayUrgent
-                ? 'text-rose-400 border-rose-500/30 bg-rose-500/10 animate-pulse'
+                ? 'text-gray-200 border-white/15 bg-white/10'
                 : 'text-gray-400 border-white/10 bg-white/5'
             )}
           >
-            {dday}
+            {countdownMeta.countdownLabel} {dday}
           </div>
         )}
       </div>
 
       <div className="flex-1 min-w-0 space-y-2">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-          <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-primary transition-colors line-clamp-1">
+          <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-gray-100 transition-colors line-clamp-1">
             {hackathon.title}
           </h3>
           <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-white/5 px-1.5 py-0.5 rounded">
@@ -120,11 +115,6 @@ export default function HackathonListItem({ hackathon }: HackathonListItemProps)
             </span>
           )}
         </div>
-        {stageMeta && (
-          <p className="text-[10px] sm:text-xs text-gray-500">
-            현재 단계: {stageMeta.label} {getDday(stageMeta.targetAt.toISOString())}
-          </p>
-        )}
       </div>
 
       <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-8 flex-shrink-0 border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0 mt-1 sm:mt-0">
@@ -141,7 +131,7 @@ export default function HackathonListItem({ hackathon }: HackathonListItemProps)
               <span className="flex items-center gap-1 text-[10px] text-gray-600 font-bold uppercase tracking-tighter">
                 <Trophy className="w-2.5 h-2.5" /> Prize
               </span>
-              <p className="text-xs sm:text-sm font-bold text-cyan-400">{hackathon.prizeTotal}</p>
+              <p className="text-xs sm:text-sm font-bold text-white">{hackathon.prizeTotal}</p>
             </div>
           )}
         </div>
@@ -155,11 +145,11 @@ export default function HackathonListItem({ hackathon }: HackathonListItemProps)
             <Heart
               className={cn(
                 'w-4 h-4 text-gray-600 transition-all',
-                isBookmarked ? 'fill-rose-500 text-rose-500' : 'group-hover/heart:text-rose-400'
+                isBookmarked ? 'fill-rose-500 text-rose-500' : 'group-hover/heart:text-gray-300'
               )}
             />
           </motion.button>
-          <ArrowRight className="w-4 h-4 text-gray-700 group-hover:text-primary group-hover:translate-x-1 transition-all hidden sm:block" />
+          <ArrowRight className="w-4 h-4 text-gray-700 group-hover:text-gray-300 group-hover:translate-x-1 transition-all hidden sm:block" />
         </div>
       </div>
     </div>

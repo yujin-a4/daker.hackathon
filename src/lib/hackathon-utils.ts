@@ -12,7 +12,37 @@ export interface HackathonTimeline {
 
 export interface HackathonStageMeta {
   label: string;
+  countdownLabel: string;
   targetAt: Date;
+}
+
+function isPreStartStatus(status: Hackathon['status']) {
+  return status === 'upcoming' || status === 'recruiting';
+}
+
+function buildMilestoneCountdownLabel(
+  milestoneName: string,
+  milestoneType?: HackathonDetail['sections']['schedule']['milestones'][number]['type']
+) {
+  const stageMatch = milestoneName.match(/(\d+\s*(?:단계|차))/);
+
+  if (milestoneType === 'submission' && stageMatch) {
+    return `${stageMatch[1]} 제출까지`;
+  }
+
+  if (milestoneType === 'submission' && milestoneName.includes('최종')) {
+    return '최종 제출까지';
+  }
+
+  if (milestoneName === '시작') {
+    return '시작까지';
+  }
+
+  if (milestoneName === '종료') {
+    return '종료까지';
+  }
+
+  return `${milestoneName}까지`;
 }
 
 export function getHackathonStartAt(
@@ -82,7 +112,8 @@ export function getHackathonEndMeta(
   detail?: HackathonDetail
 ): HackathonStageMeta {
   return {
-    label: '종료까지',
+    label: '종료',
+    countdownLabel: '종료까지',
     targetAt: getHackathonEndAt(hackathon, detail),
   };
 }
@@ -94,8 +125,12 @@ export function getHackathonStageMeta(
 ): HackathonStageMeta | null {
   const timeline = getHackathonTimeline(hackathon, detail);
 
-  if (hackathon.status === 'upcoming') {
-    return { label: '대회 시작', targetAt: timeline.startAt };
+  if (isPreStartStatus(hackathon.status)) {
+    return {
+      label: '시작',
+      countdownLabel: '시작까지',
+      targetAt: timeline.startAt,
+    };
   }
 
   if (hackathon.status === 'ended') {
@@ -103,15 +138,27 @@ export function getHackathonStageMeta(
   }
 
   if (now < timeline.recruitingDeadline) {
-    return { label: '팀 모집 마감', targetAt: timeline.recruitingDeadline };
+    return {
+      label: '팀 모집 마감',
+      countdownLabel: '팀 모집 마감까지',
+      targetAt: timeline.recruitingDeadline,
+    };
   }
 
   const nextMilestone = detail?.sections.schedule.milestones?.find((milestone) => new Date(milestone.at) > now);
   if (nextMilestone) {
-    return { label: nextMilestone.name, targetAt: new Date(nextMilestone.at) };
+    return {
+      label: nextMilestone.name,
+      countdownLabel: buildMilestoneCountdownLabel(nextMilestone.name, nextMilestone.type),
+      targetAt: new Date(nextMilestone.at),
+    };
   }
 
-  return { label: '대회 종료', targetAt: timeline.endAt };
+  return {
+    label: '종료',
+    countdownLabel: '종료까지',
+    targetAt: timeline.endAt,
+  };
 }
 
 export function isHackathonRecruiting(
