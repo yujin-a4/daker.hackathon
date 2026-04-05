@@ -49,11 +49,10 @@ import LeaderboardSection from '@/components/hackathon/LeaderboardSection';
 import DeadlineWidget from '@/components/hackathon/DeadlineWidget';
 import ApplyModal from '@/components/hackathon/ApplyModal';
 import DocumentModal from '@/components/hackathon/DocumentModal';
-import MatchAnalysisCard from '@/components/hackathon/MatchAnalysisCard';
+import MatchStatusTag from '@/components/hackathon/MatchStatusTag';
 import { getHackathonPhase } from '@/lib/hackathon-utils';
 import { useTeamStore } from '@/store/useTeamStore';
 import { useSubmissionStore } from '@/store/useSubmissionStore';
-import MatchStatusTag from '@/components/hackathon/MatchStatusTag';
 
 const sections = [
   { id: 'info', label: '안내', icon: Info },
@@ -106,6 +105,7 @@ export default function HackathonDetailPage() {
 
   // ── Tab State ──
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'info');
+  const [activeSection, setActiveSection] = useState('overview');
 
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -114,6 +114,49 @@ export default function HackathonDetailPage() {
       setActiveTab(tab);
     }
   }, [searchParams]);
+
+  // ── Scroll 이벤트 기반 섹션 추적 ──
+  useEffect(() => {
+    if (activeTab !== 'info') return;
+
+    const sectionIds = ['overview', 'info', 'eval', 'schedule', 'prize'];
+    const OFFSET = 140; // 헤더/탭 바 높이 보정
+
+    const updateSection = () => {
+      // 페이지 맨 아래 도달 시 마지막 섹션(상금) 강제 활성화
+      const nearBottom =
+        window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 80;
+      if (nearBottom) {
+        setActiveSection('prize');
+        return;
+      }
+
+      // 각 섹션의 뷰포트 기준 top 계산
+      const positions = sectionIds.map((id) => {
+        const el = document.getElementById(id);
+        if (!el) return { id, top: Infinity };
+        return { id, top: el.getBoundingClientRect().top };
+      });
+
+      // 뷰포트 상단 기준 OFFSET 이하에서 가장 마지막(아래)으로 지나간 섹션
+      const passed = positions.filter((p) => p.top <= OFFSET);
+      if (passed.length > 0) {
+        setActiveSection(passed[passed.length - 1].id);
+      } else {
+        setActiveSection('overview');
+      }
+    };
+
+    // 마운트 직후 + DOM 렌더 후 초기화
+    const timer = setTimeout(updateSection, 100);
+    window.addEventListener('scroll', updateSection, { passive: true });
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', updateSection);
+    };
+  }, [activeTab]);
+
 
   // ── Nav 클릭 시 스크롤 (Info 탭 내에서만 작동) ──
   const handleNavClick = useCallback((id: string) => {
@@ -221,29 +264,40 @@ export default function HackathonDetailPage() {
               </Button>
 
               {/* Ultra-compact Phase Indicator */}
-              <div className="flex items-center gap-2 md:gap-4 bg-slate-50 dark:bg-slate-900 px-4 py-2 rounded-full border border-slate-200/60 dark:border-slate-800/60 w-fit shadow-sm">
+              <div className="flex items-center gap-1.5 md:gap-2 bg-slate-50 dark:bg-slate-900 px-3 py-2 rounded-full border border-slate-200/60 dark:border-slate-800/60 w-fit shadow-sm">
                 {phases.map((p, i) => {
                   const isActive = currentPhase.type === p.key;
                   const isDone = phases.findIndex(ph => ph.key === currentPhase.type) > i;
                   
                   return (
-                    <div key={p.key} className="flex items-center gap-2 md:gap-3">
-                       <div className={cn(
-                        "w-2 h-2 rounded-full transition-all duration-300",
-                        isActive ? "bg-indigo-600 ring-4 ring-indigo-100 dark:ring-indigo-900/30 scale-110" : 
-                        isDone ? "bg-indigo-500" : 
-                        "bg-slate-200 dark:border-slate-800"
-                      )} />
-                      <span className={cn(
-                        "text-[11px] font-bold uppercase tracking-wider transition-colors duration-300",
-                        isActive ? "text-indigo-600 dark:text-indigo-400" : 
-                        isDone ? "text-slate-600 dark:text-slate-400" : 
-                        "text-slate-400 dark:text-slate-700"
-                      )}>
-                        {p.label}
-                      </span>
+                    <div key={p.key} className="flex items-center gap-1.5 md:gap-2">
+                      {isActive ? (
+                        <span className="flex items-center gap-1.5 bg-indigo-600 text-white text-[11px] font-black uppercase tracking-wide px-2.5 py-1 rounded-full shadow-sm shadow-indigo-600/30">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-60"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                          </span>
+                          {p.label}
+                        </span>
+                      ) : (
+                        <div className="flex items-center gap-1.5">
+                          <div className={cn(
+                            "w-2 h-2 rounded-full transition-all duration-300",
+                            isDone ? "bg-indigo-400" : "bg-slate-200 dark:bg-slate-700"
+                          )} />
+                          <span className={cn(
+                            "text-[11px] font-semibold uppercase tracking-wide transition-colors duration-300",
+                            isDone ? "text-slate-500 dark:text-slate-400" : "text-slate-400 dark:text-slate-600"
+                          )}>
+                            {p.label}
+                          </span>
+                        </div>
+                      )}
                       {i < phases.length - 1 && (
-                        <div className="w-2 md:w-6 h-[1px] bg-slate-200 dark:bg-slate-800" />
+                        <div className={cn(
+                          "w-2 md:w-5 h-[1.5px] rounded-full",
+                          isDone ? "bg-indigo-300 dark:bg-indigo-700" : "bg-slate-200 dark:bg-slate-800"
+                        )} />
                       )}
                     </div>
                   );
@@ -274,7 +328,17 @@ export default function HackathonDetailPage() {
                   {currentUser && (
                     <MatchStatusTag 
                       hackathon={hackathon} 
-                      currentUser={currentUser} 
+                      currentUser={currentUser}
+                      isParticipating={isParticipating}
+                      basecampUrl={myTeam ? `/basecamp/${myTeam.teamCode}` : undefined}
+                      onGoToTeamBuilding={() => {
+                        setActiveTab('teams');
+                        router.replace(`/hackathons/${slug}?tab=teams`, { scroll: false });
+                        setTimeout(() => {
+                          const el = document.getElementById('teams');
+                          if (el) el.scrollIntoView({ behavior: 'smooth' });
+                        }, 100);
+                      }}
                     />
                   )}
 
@@ -333,71 +397,55 @@ export default function HackathonDetailPage() {
               <TabsTrigger value="info" className="h-12 px-6 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-sm md:text-base whitespace-nowrap">홈 / 정보</TabsTrigger>
               <TabsTrigger value="teams" className="h-12 px-6 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-sm md:text-base whitespace-nowrap">팀 빌딩</TabsTrigger>
               <TabsTrigger value="submit" className="h-12 px-6 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-sm md:text-base whitespace-nowrap">제출</TabsTrigger>
-              <TabsTrigger value="gallery" className="h-12 px-6 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-sm md:text-base whitespace-nowrap text-indigo-600 dark:text-indigo-400">갤러리/투표</TabsTrigger>
+              <TabsTrigger value="gallery" className="h-12 px-6 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-sm md:text-base whitespace-nowrap">갤러리/투표</TabsTrigger>
               <TabsTrigger value="leaderboard" className="h-12 px-6 rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:border-primary data-[state=active]:shadow-none font-bold text-sm md:text-base whitespace-nowrap font-mono">RANKING</TabsTrigger>
             </TabsList>
           </div>
 
           <div className="flex flex-col md:flex-row md:gap-12 lg:gap-16">
             {!isMobile && activeTab === 'info' && (
-              <div className="w-52 flex-shrink-0 sticky top-24 h-fit hidden md:flex flex-col gap-6">
-                <SectionNav
-                  sections={infoSections}
-                  activeSection={activeTab === 'info' ? 'overview' : ''} // simple mock
-                  onNavClick={handleNavClick}
-                />
-                <DeadlineWidget
-                  deadlineAt={deadlineAt}
-                  milestones={milestones}
-                  timezone={details.sections.schedule.timezone}
-                />
-                
-                {/* AI Matcher Section */}
-                <MatchAnalysisCard
-                  hackathon={hackathon}
-                  currentUser={currentUser}
-                />
-
-                {/* Desktop Apply Card */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Participation</p>
-                    <h4 className="font-bold text-slate-800 dark:text-slate-200">
-                      {isParticipating ? "이미 참가 중인 대회입니다" : "지금 바로 도전하세요!"}
-                    </h4>
-                  </div>
-                  
+              <div className="w-56 flex-shrink-0 sticky top-6 h-fit hidden md:flex flex-col gap-4">
+                {/* 참가 버튼 — 최상단 */}
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3">
+                  <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                    {isParticipating ? '참가 중' : 'Participation'}
+                  </p>
                   {isParticipating ? (
-                    <Button asChild className="w-full bg-indigo-600 hover:bg-indigo-700 h-11 font-bold shadow-lg shadow-indigo-600/20">
+                    <Button asChild className="w-full bg-indigo-600 hover:bg-indigo-700 h-10 font-bold shadow-lg shadow-indigo-600/20">
                       <Link href={`/basecamp/${myTeam.teamCode}`}>나의 베이스캠프 가기</Link>
                     </Button>
                   ) : (
                     <Button 
                       onClick={() => setIsApplyModalOpen(true)} 
                       disabled={hackathon.status === 'ended'}
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 h-11 font-bold shadow-lg shadow-indigo-600/20"
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 h-10 font-bold shadow-lg shadow-indigo-600/20"
                     >
                       참가 신청하기
                     </Button>
                   )}
-                  
                   <p className="text-[11px] text-slate-400 text-center">
-                    {hackathon.status === 'ended' ? "이 대회는 종료되었습니다." : "현재 많은 분석가들이 참여하고 있습니다."}
+                    {hackathon.status === 'ended' ? '이 대회는 종료되었습니다.' : isParticipating ? '이미 참가 중인 대회입니다.' : '현재 많은 분석가들이 참여하고 있습니다.'}
                   </p>
                 </div>
+
+                {/* 앵커 내비게이션 — 카운트다운 위에 */}
+                <SectionNav
+                  sections={infoSections}
+                  activeSection={activeSection}
+                  onNavClick={handleNavClick}
+                />
+
+                {/* 카운트다운 위젯 */}
+                <DeadlineWidget
+                  deadlineAt={deadlineAt}
+                  milestones={milestones}
+                  timezone={details.sections.schedule.timezone}
+                />
               </div>
             )}
 
             <div className="flex-1 min-w-0">
-              {/* Mobile Match Analysis (Only on Home/Info tab) */}
-              {isMobile && activeTab === 'info' && (
-                <div className="mb-8">
-                  <MatchAnalysisCard
-                    hackathon={hackathon}
-                    currentUser={currentUser}
-                  />
-                </div>
-              )}
+              {/* Mobile Match Analysis card removed — clean header → stats → tabs → content flow */}
               <TabsContent value="info" className="mt-0 space-y-0">
                 <SectionWrapper id="overview" title="개요" icon={BookOpen}><OverviewSection overview={details.sections.overview} /></SectionWrapper>
                 <SectionWrapper id="info" title="안내" icon={Info}><InfoSection info={details.sections.info} onOpenDoc={(type) => setDocModalState({isOpen: true, type})} /></SectionWrapper>

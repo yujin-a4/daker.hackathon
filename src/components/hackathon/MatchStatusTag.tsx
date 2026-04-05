@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { 
   Sparkles, 
@@ -6,7 +7,9 @@ import {
   ChevronRight, 
   CheckCircle2, 
   AlertCircle,
-  BrainCircuit
+  BrainCircuit,
+  UserCheck,
+  Rocket,
 } from 'lucide-react';
 import {
   Popover,
@@ -22,9 +25,18 @@ import { cn } from '@/lib/utils';
 interface MatchStatusTagProps {
   hackathon: Hackathon;
   currentUser: CurrentUser | null;
+  isParticipating?: boolean;
+  basecampUrl?: string;
+  onGoToTeamBuilding?: () => void;
 }
 
-export default function MatchStatusTag({ hackathon, currentUser }: MatchStatusTagProps) {
+export default function MatchStatusTag({ 
+  hackathon, 
+  currentUser,
+  isParticipating = false,
+  basecampUrl,
+  onGoToTeamBuilding,
+}: MatchStatusTagProps) {
   const [isOpen, setIsOpen] = useState(false);
   const analysis = analyzeHackathonMatch(hackathon, currentUser);
 
@@ -64,10 +76,11 @@ export default function MatchStatusTag({ hackathon, currentUser }: MatchStatusTa
       </PopoverTrigger>
       
       <PopoverContent 
-        className="w-[320px] p-0 overflow-hidden border-slate-200 dark:border-slate-800 shadow-2xl rounded-2xl" 
+        className="w-[340px] p-0 overflow-hidden border-slate-200 dark:border-slate-800 shadow-2xl rounded-2xl" 
         sideOffset={12}
         onMouseLeave={() => setIsOpen(false)}
       >
+        {/* Header — 매칭 점수 */}
         <div className="bg-gradient-to-br from-indigo-600 to-violet-700 p-5 text-white">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -83,13 +96,29 @@ export default function MatchStatusTag({ hackathon, currentUser }: MatchStatusTa
           
           <Progress value={matchRate} className="h-1.5 bg-white/20" />
           <p className="text-[11px] mt-3 font-medium opacity-90 leading-relaxed min-h-[32px]">
-            "{currentUser.nickname}님은 이 대회에서 <span className="font-bold underline decoration-indigo-300 underline-offset-2">{suggestedRole}</span> 역할로 가장 빛날 수 있습니다."
+            현재 보유 스택과 대회 태그를 분석한 결과입니다.
           </p>
         </div>
 
-        <div className="p-5 space-y-6 bg-white dark:bg-slate-950">
-          {/* Skills Breakdown */}
-          <div className="space-y-3">
+        <div className="bg-white dark:bg-slate-950">
+          {/* 추천 역할 섹션 */}
+          <div className="px-5 pt-4 pb-3">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-2">추천 역할</span>
+            <div className="flex items-start gap-3 p-3 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl border border-indigo-100 dark:border-indigo-500/20">
+              <div className="p-1.5 bg-indigo-500 rounded-lg shrink-0 mt-0.5">
+                <UserCheck className="w-3.5 h-3.5 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-black text-slate-900 dark:text-slate-100">{suggestedRole}</p>
+                <p className="text-[11px] text-indigo-600/80 dark:text-indigo-400/80 mt-0.5 leading-relaxed">{roleDescription}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mx-5 border-t border-slate-100 dark:border-slate-800" />
+
+          {/* Skill Alignment 섹션 */}
+          <div className="px-5 py-3 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Skill Alignment</span>
               <span className="text-[10px] font-bold text-indigo-500">{matchedSkills.length} Matched</span>
@@ -110,32 +139,50 @@ export default function MatchStatusTag({ hackathon, currentUser }: MatchStatusTa
             </div>
           </div>
 
-          {/* Needed Partners */}
-          <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2 mb-2">
-              <UserPlus className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-              <span className="text-[10px] font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest">추천 파트너</span>
+          <div className="mx-5 border-t border-slate-100 dark:border-slate-800" />
+
+          {/* 추천 파트너 섹션 */}
+          <div className="px-5 py-3">
+            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2 mb-2">
+                <UserPlus className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                <span className="text-[10px] font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest">추천 파트너</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {neededTeamRoles.map(role => (
+                  <Badge key={role} variant="outline" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold text-[10px]">
+                    {role}
+                  </Badge>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 leading-relaxed">
+                부족한 스택을 채워줄 위 포지션의 팀원을 찾아보세요!
+              </p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {neededTeamRoles.map(role => (
-                <Badge key={role} variant="outline" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold text-[10px]">
-                  {role}
-                </Badge>
-              ))}
-            </div>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 leading-relaxed">
-              부족한 스택을 채워줄 위 포지션의 팀원을 찾아보세요!
-            </p>
           </div>
 
-          <button className="w-full flex items-center justify-between p-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors group">
-            <span className="text-xs font-bold">팀 빌딩 시작하기</span>
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
+          {/* 조건부 CTA 버튼 */}
+          <div className="px-5 pb-4">
+            {isParticipating && basecampUrl ? (
+              <Link
+                href={basecampUrl}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors group"
+              >
+                <span className="text-xs font-bold">나의 베이스캠프 가기</span>
+                <Rocket className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            ) : (
+              <button 
+                onClick={() => { setIsOpen(false); onGoToTeamBuilding?.(); }}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-colors group"
+              >
+                <span className="text-xs font-bold">팀 빌딩 시작하기</span>
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            )}
+          </div>
         </div>
       </PopoverContent>
     </Popover>
   );
 }
-
-

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Clock, CalendarClock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Milestone {
@@ -78,7 +78,7 @@ export default function DeadlineWidget({ deadlineAt, milestones, timezone }: Dea
           <Clock className="w-3.5 h-3.5" />
           현재 시간
         </div>
-        <div className="text-3xl font-mono font-bold tracking-wider tabular-nums">
+        <div className="text-xl font-mono font-semibold tracking-widest tabular-nums text-slate-700 dark:text-slate-300">
           {hours}
           <span className="animate-pulse">:</span>
           {minutes}
@@ -124,41 +124,7 @@ export default function DeadlineWidget({ deadlineAt, milestones, timezone }: Dea
         </div>
       </div>
 
-      {/* Milestones */}
-      {milestones.length > 0 && (
-        <div className="p-4">
-          <div className="space-y-0">
-            {milestones.map((milestone, idx) => {
-              const { date, time } = formatMilestoneDate(milestone.at);
-              const isPast = isPastDate(milestone.at);
-              const isNext = idx === nextMilestoneIdx;
 
-              return (
-                <div
-                  key={idx}
-                  className={cn(
-                    "flex items-center justify-between py-2.5 text-sm border-b last:border-b-0",
-                    isPast && 'opacity-40',
-                    isNext && 'font-bold text-indigo-600 dark:text-indigo-400'
-                  )}
-                >
-                  <span className={cn(
-                    "truncate mr-2",
-                    isNext && 'text-indigo-600 dark:text-indigo-400'
-                  )}>
-                    {milestone.name}
-                  </span>
-                  <span className="flex-shrink-0 font-mono tabular-nums text-xs">
-                    <span className={cn(isNext && 'font-bold')}>{date}</span>
-                    {' '}
-                    <span className="text-muted-foreground">{time}</span>
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
