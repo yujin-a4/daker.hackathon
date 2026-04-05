@@ -1,22 +1,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import {
-  Sparkles,
-  UserPlus,
-  ChevronRight,
-  CheckCircle2,
-  AlertCircle,
-  BrainCircuit,
-  UserCheck,
-  Rocket,
-} from 'lucide-react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Progress } from '@/components/ui/progress';
+import { Sparkles } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { analyzeHackathonMatch } from '@/lib/match-analysis';
 import { calculateHackathonMatchScore } from '@/lib/recommend';
@@ -95,107 +81,82 @@ export default function MatchStatusTag({
         sideOffset={12}
         onMouseLeave={() => setIsOpen(false)}
       >
-        <div className="bg-gradient-to-br from-indigo-600 to-violet-700 p-5 text-white">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="rounded-lg bg-white/20 p-1.5 backdrop-blur-md">
-                <BrainCircuit className="h-4 w-4 text-white" />
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-widest opacity-80">AI Match Analysis</span>
-            </div>
-            <div className="flex flex-col items-end">
-              <span className="text-2xl font-black">{matchRate}%</span>
-            </div>
+        <div className="bg-[#615AFA] p-6 text-white">
+          <div className="text-[12px] font-bold uppercase tracking-wider mb-2 opacity-90">
+            AI MATCH
           </div>
-
-          <Progress value={matchRate} className="h-1.5 bg-white/20" />
-          <p className="mt-3 min-h-[32px] text-[11px] font-medium leading-relaxed opacity-90">{fitHeadline}</p>
+          <div className="text-4xl font-extrabold mb-4">
+            {matchRate}%
+          </div>
+          <div className="w-full h-1.5 bg-white/30 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-white rounded-full" 
+              style={{ width: `${matchRate}%` }} 
+            />
+          </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-950">
-          <div className="px-5 pb-3 pt-4">
-            <span className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+        <div className="bg-[#F9F9F6] dark:bg-slate-950 flex flex-col">
+          <div className="px-6 py-5">
+            <span className="mb-3 block text-[13px] font-bold text-gray-500 dark:text-slate-400">
               추천 역할
             </span>
-            <div className="flex items-start gap-3 rounded-xl border border-indigo-100 bg-indigo-50 p-3 dark:border-indigo-500/20 dark:bg-indigo-500/10">
-              <div className="mt-0.5 shrink-0 rounded-lg bg-indigo-500 p-1.5">
-                <UserCheck className="h-3.5 w-3.5 text-white" />
-              </div>
-              <div>
-                <p className="text-sm font-black text-slate-900 dark:text-slate-100">{suggestedRole}</p>
-                <p className="mt-0.5 text-[11px] leading-relaxed text-indigo-600/80 dark:text-indigo-400/80">
-                  {roleDescription}
-                </p>
-              </div>
+            <div className="flex items-center gap-3">
+              <Badge className="bg-[#E7E4F9] text-[#615AFA] hover:bg-[#E7E4F9] dark:bg-indigo-900/50 dark:text-indigo-300 font-bold px-3 py-1.5 text-[13px] shadow-none rounded-lg border-none">
+                {suggestedRole}
+              </Badge>
+              <span className="text-[14px] font-medium text-gray-700 dark:text-slate-300">
+                {roleDescription}
+              </span>
             </div>
-            <p className="mt-2 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-              {contributionGuide}
-            </p>
           </div>
 
-          <div className="mx-5 border-t border-slate-100 dark:border-slate-800" />
+          <div className="w-full h-px bg-gray-200/60 dark:bg-slate-800" />
 
-          <div className="space-y-2 px-5 py-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                Match Signals
-              </span>
-              <span className="text-[10px] font-bold text-indigo-500">{matchedSkills.length} Found</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {matchedSkills.slice(0, 4).map((skill) => (
-                <div
-                  key={skill}
-                  className="flex items-center gap-1 rounded-md border border-indigo-100 bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-600 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400"
-                >
-                  <CheckCircle2 className="h-2.5 w-2.5" />
-                  {skill}
-                </div>
-              ))}
-              {missingSkills.length > 0 && (
-                <div className="flex items-center gap-1 rounded-md border border-slate-100 bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-500">
-                  <AlertCircle className="h-2.5 w-2.5" />
-                  +{missingSkills.length} more
-                </div>
+          <div className="px-6 py-5">
+            <span className="mb-3 block text-[13px] font-bold text-gray-500 dark:text-slate-400">
+              보유 스킬
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {matchedSkills.length > 0 ? (
+                matchedSkills.slice(0, 5).map((skill) => (
+                  <Badge
+                    key={skill}
+                    variant="outline"
+                    className="bg-[#E7E4F9]/50 text-[#615AFA] border border-gray-200 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-400 shadow-sm font-medium px-3 py-1.5 text-[13px] rounded-lg"
+                  >
+                    {skill}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-[13px] text-gray-500">등록된 스킬이 없습니다.</span>
               )}
             </div>
           </div>
 
-          <div className="mx-5 border-t border-slate-100 dark:border-slate-800" />
+          <div className="w-full h-px bg-gray-200/60 dark:bg-slate-800" />
 
-          <div className="px-5 py-3">
-            <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
-              <div className="mb-2 flex items-center gap-2">
-                <UserPlus className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-slate-100">
-                  팀 기여 포인트
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {neededTeamRoles.map((role) => (
-                  <Badge
-                    key={role}
-                    variant="outline"
-                    className="border-slate-200 bg-white text-[10px] font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
-                  >
-                    {role}
-                  </Badge>
-                ))}
-              </div>
-              <p className="mt-2 text-[10px] leading-relaxed text-slate-400 dark:text-slate-500">
-                부족한 역할을 채우는 보완형 팀원으로 접근해도 충분히 경쟁력이 있습니다.
+          <div className="px-6 py-5">
+            <span className="mb-3 block text-[13px] font-bold text-gray-500 dark:text-slate-400">
+              함께하면 좋은 팀원
+            </span>
+            <div className="flex flex-col gap-1.5">
+              <p className="text-[15px] font-bold text-gray-900 dark:text-slate-200">
+                {neededTeamRoles.length > 0 ? neededTeamRoles[0] : 'AI/ML 개발자'}
+              </p>
+              <p className="text-[13px] font-medium text-gray-500 dark:text-slate-400">
+                부족한 역할을 채워줄 보완형 파트너
               </p>
             </div>
           </div>
 
-          <div className="px-5 pb-4">
+          <div className="px-6 pb-6 pt-2">
             {isParticipating && basecampUrl ? (
               <Link
                 href={basecampUrl}
-                className="group flex w-full items-center justify-between rounded-xl bg-indigo-600 p-3 text-white transition-colors hover:bg-indigo-700"
+                className="flex w-full items-center justify-center rounded-xl bg-[#615AFA] py-3.5 text-white transition-colors hover:bg-[#504ada] shadow-sm"
               >
-                <span className="text-xs font-bold">내 베이스캠프로 가기</span>
-                <Rocket className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                <span className="text-[14px] font-bold">내 베이스캠프로 가기</span>
               </Link>
             ) : (
               <button
@@ -203,10 +164,9 @@ export default function MatchStatusTag({
                   setIsOpen(false);
                   onGoToTeamBuilding?.();
                 }}
-                className="group flex w-full items-center justify-between rounded-xl bg-indigo-50 p-3 text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-900/20 dark:text-indigo-400 dark:hover:bg-indigo-900/30"
+                className="flex w-full items-center justify-center rounded-xl bg-[#615AFA] py-3.5 text-white transition-colors hover:bg-[#504ada] shadow-sm"
               >
-                <span className="text-xs font-bold">팀 빌딩 시작하기</span>
-                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <span className="text-[14px] font-bold">팀 빌딩 시작하기</span>
               </button>
             )}
           </div>

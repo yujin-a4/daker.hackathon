@@ -122,11 +122,13 @@ export default function RankingsPage() {
             </Button>
           </CollapsibleTrigger>
         </div>
-        <CollapsibleContent className="space-y-2 px-4 py-3.5 border border-t-0 rounded-b-lg text-sm text-muted-foreground">
-          <p>• 기본 포인트: 활동 내역에 따라 부여</p>
-          <p>• 해커톤 참가: 참가 1회당 +100점</p>
-          <p>• 우승: 우승 1회당 +350점</p>
-          <p>• 기간 필터: 해당 기간 내 활동한 유저만 표시</p>
+        <CollapsibleContent className="space-y-2 px-4 py-4 border border-t-0 rounded-b-lg text-sm text-muted-foreground">
+          <p>• <strong className="font-medium">기본 가입:</strong> +100 P</p>
+          <p>• <strong className="font-medium">대회 참여 (결선 진출):</strong> +50 P</p>
+          <p>• <strong className="font-medium">산출물 제출:</strong> 건당 +100 P</p>
+          <p>• <strong className="font-medium">해커톤 입상:</strong> 1위 +500 P / 2위 +400 P / 3위 +300 P</p>
+          <p>• <strong className="font-medium">기타 활동:</strong> 투표 +5 P / 팀 개설 +30 P / 멤버 합류 +10 P</p>
+          <p className="text-xs pt-3 mt-3 border-t">* 실시간 리더보드의 순위 갱신 시 입상 포인트가 즉각 반영되며, 작전실 활동 및 투표 시에도 포인트가 실시간으로 누적됩니다.</p>
         </CollapsibleContent>
       </Collapsible>
     </div>

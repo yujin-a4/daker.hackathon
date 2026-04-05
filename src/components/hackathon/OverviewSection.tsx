@@ -13,7 +13,7 @@ export default function OverviewSection({ overview }: OverviewSectionProps) {
     <div className="space-y-10">
       <div className="relative p-6 md:p-10 rounded-3xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 overflow-hidden group hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-500">
         <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
-        <p className="relative z-10 text-lg md:text-xl text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+        <p className="relative z-10 text-base md:text-[17px] text-slate-700 dark:text-slate-300 leading-relaxed">
           {overview.summary}
         </p>
       </div>

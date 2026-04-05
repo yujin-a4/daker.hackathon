@@ -241,8 +241,8 @@ export const hackathonDetails: HackathonDetail[] = [
     slug: 'gen-ai-startup-challenge',
     title: '제1회 생성형 AI 스타트업 챌린지',
     sections: {
-      overview: { summary: 'AI 스타트업 기획', teamPolicy: { allowSolo: true, maxTeamSize: 4 } },
-      info: { notice: ['창업 지원'], links: { rules: '#', faq: '#' } },
+      overview: { summary: '생성형 AI 기술을 활용하여 시장의 문제를 해결하는 혁신적인 스타트업 비즈니스 모델을 기획합니다. 실제 창업으로 이어질 수 있는 실현 가능성을 중점적으로 평가합니다.', teamPolicy: { allowSolo: true, maxTeamSize: 4 } },
+      info: { notice: ['대상 수상 시 창업 지원금 및 인큐베이팅 제공', 'AWS 크레딧 지원', '결선 진출 팀 대상 멘토링 진행'], links: { rules: '#', faq: '#' } },
       eval: { metricName: '혁신성', description: 'AI 비즈니스 모델', scoreSource: 'auto' },
       schedule: {
         timezone: 'Asia/Seoul',
@@ -276,8 +276,8 @@ export const hackathonDetails: HackathonDetail[] = [
     slug: 'cloud-native-modernization',
     title: '2026 클라우드 네이티브 현대화 대회',
     sections: {
-      overview: { summary: '클라우드 전환', teamPolicy: { allowSolo: true, maxTeamSize: 3 } },
-      info: { notice: ['AWS 활용'], links: { rules: '#', faq: '#' } },
+      overview: { summary: '기존 레거시 시스템을 클라우드 네이티브 아키텍처로 성공적으로 전환하는 방법을 제안하고 구현합니다. 마이크로서비스 아키텍처(MSA) 및 컨테이너 기술 활용 능력이 중요합니다.', teamPolicy: { allowSolo: true, maxTeamSize: 3 } },
+      info: { notice: ['AWS 환경 기반 인프라 구축 필수', '무중단 배포(CI/CD) 파이프라인 구성 우대', '최종 제출물에 아키텍처 다이어그램 포함'], links: { rules: '#', faq: '#' } },
       eval: { metricName: '기술력', description: '인프라 현대화', scoreSource: 'auto' },
       schedule: {
         timezone: 'Asia/Seoul',
@@ -309,8 +309,8 @@ export const hackathonDetails: HackathonDetail[] = [
     slug: 'daker-handover-2026-03',
     title: '제1회 데이커 긴급 인수인계 해커톤',
     sections: {
-      overview: { summary: '인수인계 실습', teamPolicy: { allowSolo: true, maxTeamSize: 5 } },
-      info: { notice: ['명세서 구현'], links: { rules: '#', faq: '#' } },
+      overview: { summary: '갑작스러운 인수인계 상황을 가정하여, 제한된 시간 내에 기존 코드를 분석하고 요구사항에 맞게 기능을 성공적으로 추가 및 수정하는 실무형 해커톤입니다.', teamPolicy: { allowSolo: true, maxTeamSize: 5 } },
+      info: { notice: ['주어진 제품 명세서의 100% 구현 목표', 'VibeCoding을 활용한 신속한 개발 권장', '코드 리뷰 및 문서화 품질 평가 포함'], links: { rules: '#', faq: '#' } },
       eval: { metricName: '완성도', description: 'VibeCoding 결과', scoreSource: 'vote' },
       schedule: {
         timezone: 'Asia/Seoul',
@@ -344,8 +344,8 @@ export const hackathonDetails: HackathonDetail[] = [
     slug: 'ux-ui-redesign-2026',
     title: '2026 사용자 경험 리디자인 챌린지',
     sections: {
-      overview: { summary: 'UX 개선', teamPolicy: { allowSolo: true, maxTeamSize: 3 } },
-      info: { notice: ['피그마 사용'], links: { rules: '#', faq: '#' } },
+      overview: { summary: '대중적으로 사용되는 기존 서비스의 불편한 점을 발굴하여 사용자 경험(UX)과 인터페이스(UI)를 획기적으로 개선하는 리디자인 프로젝트입니다.', teamPolicy: { allowSolo: true, maxTeamSize: 3 } },
+      info: { notice: ['Figma를 활용한 프로토타이핑 필수', '사용자 리서치 데이터 기반의 논리 전개 요구', '디자인 시스템 적용 시 가산점 부여'], links: { rules: '#', faq: '#' } },
       eval: { metricName: '사용성', description: 'UX 리서치 기반', scoreSource: 'auto' },
       schedule: {
         timezone: 'Asia/Seoul',
@@ -374,8 +374,8 @@ export const hackathonDetails: HackathonDetail[] = [
     slug: 'fintech-security-hack',
     title: '핀테크 보안 강화 해커톤',
     sections: {
-      overview: { summary: '금융 보안', teamPolicy: { allowSolo: true, maxTeamSize: 4 } },
-      info: { notice: ['보안 취약점'], links: { rules: '#', faq: '#' } },
+      overview: { summary: '최신 핀테크 서비스에서 발생할 수 있는 보안 취약점을 선제적으로 도출하고, 이를 방어하기 위한 견고한 보안 패치 로직을 구현하는 화이트햇 해커톤입니다.', teamPolicy: { allowSolo: true, maxTeamSize: 4 } },
+      info: { notice: ['웹 및 앱 보안 취약점 점검 체계 포함', '실제 금융사 보안 규제 가이드라인 준수 우대', '방어 시나리오 테스트 결과 필수 제출'], links: { rules: '#', faq: '#' } },
       eval: { metricName: '방어율', description: '보안 시나리오 테스트', scoreSource: 'auto' },
       schedule: {
         timezone: 'Asia/Seoul',
@@ -404,8 +404,8 @@ export const hackathonDetails: HackathonDetail[] = [
     slug: 'metabolism-healthcare-2026',
     title: '건강 수명 연장 프로젝트: 헬스케어 AI',
     sections: {
-      overview: { summary: '바이오 헬스 AI', teamPolicy: { allowSolo: true, maxTeamSize: 4 } },
-      info: { notice: ['데이터 준수'], links: { rules: '#', faq: '#' } },
+      overview: { summary: '의료 및 바이오 건강 데이터를 활용하여 현대인의 대사 질환 예측 모델이나 맞춤형 건강 관리 AI 솔루션을 개발하는 생명 연장 헬스케어 프로젝트입니다.', teamPolicy: { allowSolo: true, maxTeamSize: 4 } },
+      info: { notice: ['개인정보 비식별화 등 의료 데이터 규제 엄수', '머신러닝(ML) 모델의 성능과 설명 가능성(XAI) 평가', '전문 의료인 멘토 구성 및 자문 세션 제공'], links: { rules: '#', faq: '#' } },
       eval: { metricName: '예측 정확도', description: 'ML 모델 성능', scoreSource: 'auto' },
       schedule: {
         timezone: 'Asia/Seoul',
@@ -573,8 +573,8 @@ export const hackathonDetails: HackathonDetail[] = [
     slug: 'aimers-8-model-lite',
     title: 'LG Aimers 8기: 모델 경량화 챌린지',
     sections: {
-      overview: { summary: '모델 압축', teamPolicy: { allowSolo: true, maxTeamSize: 3 } },
-      info: { notice: ['경쟁 우대'], links: { rules: '#', faq: '#' } },
+      overview: { summary: '거대 AI 모델의 성능 저하를 최소화하면서 파라미터 크기와 추론 시간을 획기적으로 줄이는 모델 경량화(Quantization, Pruning 등) 기술 경진대회입니다.', teamPolicy: { allowSolo: true, maxTeamSize: 3 } },
+      info: { notice: ['우수팀 대상 LG 계열사 채용 서류전형 면제 우대', '제공되는 제한된 컴퓨팅 자원 내에서 추론해야 함', '정확도와 에너지 효율(속도) 간의 트레이드오프 심사'], links: { rules: '#', faq: '#' } },
       eval: { metricName: '에너지 효율', description: '추론 속도', scoreSource: 'auto' },
       schedule: {
         timezone: 'Asia/Seoul',
@@ -602,8 +602,8 @@ export const hackathonDetails: HackathonDetail[] = [
     slug: 'public-data-2025-final',
     title: '2025 공공데이터 활용 성과 공유 대회',
     sections: {
-      overview: { summary: '데이터 분석 성과', teamPolicy: { allowSolo: true, maxTeamSize: 5 } },
-      info: { notice: ['성과 홍보'], links: { rules: '#', faq: '#' } },
+      overview: { summary: '대한민국 정부 부처에서 개방된 광범위한 공공데이터를 융합·분석하여, 실제 사회 문제 해결에 기여한 성과를 발표하고 공유하는 종합 대회입니다.', teamPolicy: { allowSolo: true, maxTeamSize: 5 } },
+      info: { notice: ['데이터 활용의 독창성과 사회적 파급력 중심 홍보', '공공데이터포털(data.go.kr) API 2개 이상 연동 필수', '우수 사례는 정부 정책 및 지자체 시범 사업 검토'], links: { rules: '#', faq: '#' } },
       eval: { metricName: '사회적 가치', description: '데이터 활용도', scoreSource: 'auto' },
       schedule: {
         timezone: 'Asia/Seoul',
@@ -629,8 +629,8 @@ export const hackathonDetails: HackathonDetail[] = [
     slug: 'university-sw-challenge-2025',
     title: '제10회 대학연합 SW 창작 챌린지',
     sections: {
-      overview: { summary: '학생 창작물', teamPolicy: { allowSolo: true, maxTeamSize: 5 } },
-      info: { notice: ['연합 활동'], links: { rules: '#', faq: '#' } },
+      overview: { summary: '전국 대학생들이 창의적인 아이디어를 구체화하여, 모바일/웹 등 실생활에 유용한 혁신적인 소프트웨어를 직접 설계하고 개발하는 대학 간 교류 챌린지입니다.', teamPolicy: { allowSolo: true, maxTeamSize: 5 } },
+      info: { notice: ['타 대학 학생과 연합 팀 구성 시 심사 가점 부여', '오픈소스 활용 및 자체 기여도 명확히 명시', '결선 진출 팀 대상 창업 컨설팅 지원'], links: { rules: '#', faq: '#' } },
       eval: { metricName: '창의성', description: '새로운 시각', scoreSource: 'auto' },
       schedule: {
         timezone: 'Asia/Seoul',
@@ -658,8 +658,8 @@ export const hackathonDetails: HackathonDetail[] = [
     slug: 'metaverse-camp-2025',
     title: '2025 메타버스 서비스 기획 캠프',
     sections: {
-      overview: { summary: '메타버스 기획', teamPolicy: { allowSolo: true, maxTeamSize: 5 } },
-      info: { notice: ['가상 공간'], links: { rules: '#', faq: '#' } },
+      overview: { summary: '차세대 3D 가상 공간 내에서 사용자들에게 새로운 인지적, 사회적 경험을 제공할 수 있는 메타버스 특화 비즈니스 모델이나 커뮤니티 서비스를 기획합니다.', teamPolicy: { allowSolo: true, maxTeamSize: 5 } },
+      info: { notice: ['Roblox, ZEPETO, Unity 등 활용 가능한 가상 공간 엔진 제한 없음', '경제 시스템(Tokenomics) 설계 반영 권장', '단순 맵 제작이 아닌 서비스 흐름 중심 기획 요구'], links: { rules: '#', faq: '#' } },
       eval: { metricName: '몰입감', description: '공간 구성력', scoreSource: 'auto' },
       schedule: {
         timezone: 'Asia/Seoul',
@@ -685,8 +685,8 @@ export const hackathonDetails: HackathonDetail[] = [
     slug: 'opensource-mentoring-2025',
     title: '오픈소스 컨트리뷰션 멘토링 챌린지',
     sections: {
-      overview: { summary: '커뮤니티 기여', teamPolicy: { allowSolo: true, maxTeamSize: 1 } },
-      info: { notice: ['PR/Issue'], links: { rules: '#', faq: '#' } },
+      overview: { summary: '주요 글로벌 오픈소스 프로젝트에 학생들이 직접 참여하여 버그 픽스, 기능 추가, 문서화 등의 기여(Contribution) 과정을 시니어 개발자에게 멘토링 받습니다.', teamPolicy: { allowSolo: true, maxTeamSize: 1 } },
+      info: { notice: ['실제 프로젝트 저장소에 병합(Merged)된 PR/Issue만 성과로 인정', '멘토의 코드 리뷰 피드백 수용 및 개선 과정 평가', '개인 참가만 가능(팀 단위 불가)'], links: { rules: '#', faq: '#' } },
       eval: { metricName: '기여도', description: '코드 품질 및 활동', scoreSource: 'auto' },
       schedule: {
         timezone: 'Asia/Seoul',
@@ -712,8 +712,8 @@ export const hackathonDetails: HackathonDetail[] = [
     slug: 'iot-smart-home-2025',
     title: '2025 IoT 스마트홈 보안 경진대회',
     sections: {
-      overview: { summary: 'IoT 보안', teamPolicy: { allowSolo: true, maxTeamSize: 3 } },
-      info: { notice: ['기기 테스트'], links: { rules: '#', faq: '#' } },
+      overview: { summary: '일상 속 스마트홈 환경에 구축된 다양한 IoT 기기 간 통신 프로토콜을 분석하고, 인가되지 않은 접근이나 제어 권한 탈취 등을 방어하는 실무 보안 대회입니다.', teamPolicy: { allowSolo: true, maxTeamSize: 3 } },
+      info: { notice: ['제공된 모의 스마트홈 디바이스 펌웨어 환경에서 테스트 진행', '네트워크 패킷 분석 및 취약점 검증 보고서 필수', '우수 취약점 제보 로직은 제조사 패치 반영'], links: { rules: '#', faq: '#' } },
       eval: { metricName: '취약점 탐지', description: '보안 안정성', scoreSource: 'auto' },
       schedule: {
         timezone: 'Asia/Seoul',
@@ -739,8 +739,8 @@ export const hackathonDetails: HackathonDetail[] = [
     slug: 'dos-operation-hack-2025',
     title: 'DOS(Daker Operation System) 고안 해커톤',
     sections: {
-      overview: { summary: '운영 체계 기획', teamPolicy: { allowSolo: true, maxTeamSize: 5 } },
-      info: { notice: ['전략 수립'], links: { rules: '#', faq: '#' } },
+      overview: { summary: '조직 내 파편화된 도구들을 하나로 통합하고 업무 프로세스를 획기적으로 개선할 수 있는 데이커(Daker) 커스텀 운영 체제 및 워크플로우 전략을 고안합니다.', teamPolicy: { allowSolo: true, maxTeamSize: 5 } },
+      info: { notice: ['부서 간 협업 병목 현상을 해소하는 실질적 전략 수립', 'API 연동 기반의 반복 업무 자동화 시나리오 포함', '도입 시 예상되는 정량적 효율성 지표 제시'], links: { rules: '#', faq: '#' } },
       eval: { metricName: '효율성', description: '조직 최적화', scoreSource: 'auto' },
       schedule: {
         timezone: 'Asia/Seoul',
@@ -766,8 +766,8 @@ export const hackathonDetails: HackathonDetail[] = [
     slug: 'cyber-security-grand-2025',
     title: '2025 사이버 보안 그랜드 챌린지: 디펜스',
     sections: {
-      overview: { summary: '국가 보안', teamPolicy: { allowSolo: true, maxTeamSize: 5 } },
-      info: { notice: ['CTF 방식'], links: { rules: '#', faq: '#' } },
+      overview: { summary: '고도화된 지능형 지속 위협(APT)으로부터 국가 핵심 기간망 및 시뮬레이션 기반 기업 인프라를 안전하게 방어하는 실전형 사이버 공격 방어 대회입니다.', teamPolicy: { allowSolo: true, maxTeamSize: 5 } },
+      info: { notice: ['Jeopardy가 아닌 실시간 공방(Attack & Defense) CTF 방식 적용', '방어 로그 분석 및 침해 지표(IoC) 탐지 능력 평가', '우승팀 대상 국가 보안 기관 표창 수여'], links: { rules: '#', faq: '#' } },
       eval: { metricName: '방어 성과', description: '실시간 관제', scoreSource: 'auto' },
       schedule: {
         timezone: 'Asia/Seoul',
