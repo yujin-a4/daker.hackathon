@@ -48,6 +48,7 @@ import GallerySection from '@/components/hackathon/GallerySection';
 import LeaderboardSection from '@/components/hackathon/LeaderboardSection';
 import DeadlineWidget from '@/components/hackathon/DeadlineWidget';
 import ApplyModal from '@/components/hackathon/ApplyModal';
+import DocumentModal from '@/components/hackathon/DocumentModal';
 import MatchAnalysisCard from '@/components/hackathon/MatchAnalysisCard';
 import { getHackathonPhase } from '@/lib/hackathon-utils';
 import { useTeamStore } from '@/store/useTeamStore';
@@ -99,6 +100,9 @@ export default function HackathonDetailPage() {
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const teamsSectionRef = useRef<HTMLDivElement>(null);
+
+  // ── Document Modal State ──
+  const [docModalState, setDocModalState] = useState<{isOpen: boolean, type: 'rules'|'faq'}>({ isOpen: false, type: 'rules' });
 
   // ── Tab State ──
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'info');
@@ -294,11 +298,11 @@ export default function HackathonDetailPage() {
               </div>
 
               <div className="flex gap-3">
-                <Button asChild variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800">
-                  <Link href={details.sections.info.links.rules} target="_blank"><FileText className="w-4 h-4 mr-1.5" /> 규정</Link>
+                <Button onClick={() => setDocModalState({isOpen: true, type: 'rules'})} variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800">
+                  <FileText className="w-4 h-4 mr-1.5" /> 규정
                 </Button>
-                <Button asChild variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800">
-                  <Link href={details.sections.info.links.faq} target="_blank"><HelpCircle className="w-4 h-4 mr-1.5" /> FAQ</Link>
+                <Button onClick={() => setDocModalState({isOpen: true, type: 'faq'})} variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800">
+                  <HelpCircle className="w-4 h-4 mr-1.5" /> FAQ
                 </Button>
               </div>
             </div>
@@ -396,7 +400,7 @@ export default function HackathonDetailPage() {
               )}
               <TabsContent value="info" className="mt-0 space-y-0">
                 <SectionWrapper id="overview" title="개요" icon={BookOpen}><OverviewSection overview={details.sections.overview} /></SectionWrapper>
-                <SectionWrapper id="info" title="안내" icon={Info}><InfoSection info={details.sections.info} /></SectionWrapper>
+                <SectionWrapper id="info" title="안내" icon={Info}><InfoSection info={details.sections.info} onOpenDoc={(type) => setDocModalState({isOpen: true, type})} /></SectionWrapper>
                 <SectionWrapper id="eval" title="평가" icon={BarChart}><EvalSection evalData={details.sections.eval} /></SectionWrapper>
                 <SectionWrapper id="schedule" title="일정" icon={CalendarIcon}><ScheduleSection schedule={details.sections.schedule} /></SectionWrapper>
                 <SectionWrapper id="prize" title="상금" icon={Trophy}><PrizeSection prize={details.sections.prize} /></SectionWrapper>
@@ -494,6 +498,14 @@ export default function HackathonDetailPage() {
             if (el) el.scrollIntoView({ behavior: 'smooth' });
           }, 100);
         }}
+      />
+
+      {/* Document Modal */}
+      <DocumentModal
+        isOpen={docModalState.isOpen}
+        onOpenChange={(isOpen) => setDocModalState(prev => ({ ...prev, isOpen }))}
+        type={docModalState.type}
+        hackathonTitle={details.title}
       />
 
       {/* Padding for mobile fixed bar */}

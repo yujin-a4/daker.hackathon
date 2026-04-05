@@ -7,9 +7,10 @@ import Link from 'next/link';
 
 type InfoSectionProps = {
   info: HackathonDetail['sections']['info'];
+  onOpenDoc?: (type: 'rules' | 'faq') => void;
 };
 
-export default function InfoSection({ info }: InfoSectionProps) {
+export default function InfoSection({ info, onOpenDoc }: InfoSectionProps) {
   return (
     <>
       <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-6 mb-8">
@@ -23,18 +24,33 @@ export default function InfoSection({ info }: InfoSectionProps) {
         </ul>
       </div>
       <div className="flex gap-4">
-        <Button asChild variant="outline" className="bg-white">
-          <Link href={info.links.rules} target="_blank" rel="noopener noreferrer">
-            <FileText className="mr-2 h-4 w-4" />
-            규정 보기
-          </Link>
-        </Button>
-        <Button asChild variant="outline" className="bg-white">
-          <Link href={info.links.faq} target="_blank" rel="noopener noreferrer">
-            <HelpCircle className="mr-2 h-4 w-4" />
-            FAQ 보기
-          </Link>
-        </Button>
+        {onOpenDoc ? (
+          <>
+            <Button onClick={() => onOpenDoc('rules')} variant="outline" className="bg-white">
+              <FileText className="mr-2 h-4 w-4" />
+              규정 보기
+            </Button>
+            <Button onClick={() => onOpenDoc('faq')} variant="outline" className="bg-white">
+              <HelpCircle className="mr-2 h-4 w-4" />
+              FAQ 보기
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button asChild variant="outline" className="bg-white">
+              <Link href={info.links.rules} target="_blank" rel="noopener noreferrer">
+                <FileText className="mr-2 h-4 w-4" />
+                규정 보기
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="bg-white">
+              <Link href={info.links.faq} target="_blank" rel="noopener noreferrer">
+                <HelpCircle className="mr-2 h-4 w-4" />
+                FAQ 보기
+              </Link>
+            </Button>
+          </>
+        )}
       </div>
     </>
   );

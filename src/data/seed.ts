@@ -255,7 +255,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '최종 심사 및 결과', at: '2026-05-05T15:00:00+09:00', type: 'result', step: 5 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 10000000 }] },
+      prize: { items: [{ place: '1등', amountKRW: 5000000 }, { place: '2등', amountKRW: 3000000 }, { place: '3등', amountKRW: 2000000 }] },
       teams: { campEnabled: true, listUrl: '#' },
       submit: {
         allowedArtifactTypes: ['pdf', 'url'],
@@ -289,7 +289,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '최종 심사 결과', at: '2026-04-01T10:00:00+09:00', type: 'result', step: 4 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 5000000 }] },
+      prize: { items: [{ place: '1등', amountKRW: 2500000 }, { place: '2등', amountKRW: 1500000 }, { place: '3등', amountKRW: 1000000 }] },
       teams: { campEnabled: true, listUrl: '#' },
       submit: {
         allowedArtifactTypes: ['pdf', 'url'],
@@ -323,7 +323,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '최종 결과 발표', at: '2026-04-15T10:00:00+09:00', type: 'result', step: 5 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 1000000 }] },
+      prize: { items: [{ place: '1등', amountKRW: 500000 }, { place: '2등', amountKRW: 300000 }, { place: '3등', amountKRW: 200000 }] },
       teams: { campEnabled: true, listUrl: '#' },
       submit: {
         allowedArtifactTypes: ['url', 'pdf'],
@@ -356,7 +356,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '결과 발표', at: '2026-05-05T18:00:00+09:00', type: 'result', step: 3 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 3000000 }] },
+      prize: { items: [{ place: '1등', amountKRW: 1500000 }, { place: '2등', amountKRW: 900000 }, { place: '3등', amountKRW: 600000 }] },
       teams: { campEnabled: true, listUrl: '#' },
       submit: {
         allowedArtifactTypes: ['url', 'pdf'],
@@ -386,7 +386,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '최종 결과 발표', at: '2026-04-30T10:00:00+09:00', type: 'result', step: 3 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 4000000 }] },
+      prize: { items: [{ place: '1등', amountKRW: 2000000 }, { place: '2등', amountKRW: 1200000 }, { place: '3등', amountKRW: 800000 }] },
       teams: { campEnabled: true, listUrl: '#' },
       submit: {
         allowedArtifactTypes: ['pdf', 'url'],
@@ -416,7 +416,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '최종 시상', at: '2026-05-15T18:00:00+09:00', type: 'result', step: 3 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 10000000 }] },
+      prize: { items: [{ place: '1등', amountKRW: 5000000 }, { place: '2등', amountKRW: 3000000 }, { place: '3등', amountKRW: 2000000 }] },
       teams: { campEnabled: true, listUrl: '#' },
       submit: {
         allowedArtifactTypes: ['url'],
@@ -445,7 +445,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '시작', at: '2026-05-01T10:00:00+09:00', type: 'submission', step: 1 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 3000000 }] },
+      prize: { items: [{ place: '1등', amountKRW: 1500000 }, { place: '2등', amountKRW: 900000 }, { place: '3등', amountKRW: 600000 }] },
       teams: { campEnabled: true, listUrl: '#' },
       submit: { allowedArtifactTypes: ['url'], submissionUrl: '#', guide: ['웹3 앱'] },
       leaderboard: { publicLeaderboardUrl: '#', note: '예정' },
@@ -464,7 +464,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '시작', at: '2026-05-15T10:00:00+09:00', type: 'submission', step: 1 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 2000000 }] },
+      prize: { items: [{ place: '1등', amountKRW: 1000000 }, { place: '2등', amountKRW: 600000 }, { place: '3등', amountKRW: 400000 }] },
       teams: { campEnabled: true, listUrl: '#' },
       submit: { allowedArtifactTypes: ['url'], submissionUrl: '#', guide: ['솔루션 링크'] },
       leaderboard: { publicLeaderboardUrl: '#', note: '예정' },
@@ -483,7 +483,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '시작', at: '2026-06-01T10:00:00+09:00', type: 'submission', step: 1 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 5000000 }] },
+      prize: { items: [{ place: '1등', amountKRW: 2500000 }, { place: '2등', amountKRW: 1500000 }, { place: '3등', amountKRW: 1000000 }] },
       teams: { campEnabled: true, listUrl: '#' },
       submit: { allowedArtifactTypes: ['pdf'], submissionUrl: '#', guide: ['기획안'] },
       leaderboard: { publicLeaderboardUrl: '#', note: '예정' },
@@ -502,7 +502,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '시작', at: '2026-06-15T10:00:00+09:00', type: 'submission', step: 1 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 6000000 }] },
+      prize: { items: [{ place: '1등', amountKRW: 3000000 }, { place: '2등', amountKRW: 1800000 }, { place: '3등', amountKRW: 1200000 }] },
       teams: { campEnabled: true, listUrl: '#' },
       submit: { allowedArtifactTypes: ['url'], submissionUrl: '#', guide: ['데모 링크'] },
       leaderboard: { publicLeaderboardUrl: '#', note: '예정' },
@@ -525,7 +525,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '최종 결과', at: '2026-03-15T18:00:00+09:00', type: 'result', step: 3 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 0 }] },
+      prize: { items: [{ place: '1등', amountKRW: 0 }, { place: '2등', amountKRW: 0 }, { place: '3등', amountKRW: 0 }] },
       teams: { campEnabled: true, listUrl: '#' },
       submit: {
         allowedArtifactTypes: ['url'],
@@ -553,7 +553,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '종료', at: '2025-12-28T18:00:00+09:00', type: 'result', step: 2 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 10000000 }] },
+      prize: { items: [{ place: '1등', amountKRW: 5000000 }, { place: '2등', amountKRW: 3000000 }, { place: '3등', amountKRW: 2000000 }] },
       teams: { campEnabled: false, listUrl: '#' },
       submit: {
         allowedArtifactTypes: ['pdf'],
@@ -581,7 +581,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '종료', at: '2025-12-05T18:00:00+09:00', type: 'result', step: 3 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 20000000 }] },
+      prize: { items: [{ place: '1등', amountKRW: 10000000 }, { place: '2등', amountKRW: 6000000 }, { place: '3등', amountKRW: 4000000 }] },
       teams: { campEnabled: false, listUrl: '#' },
       submit: {
         allowedArtifactTypes: ['url'],
@@ -609,7 +609,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '종료', at: '2025-10-15T18:00:00+09:00', type: 'result', step: 2 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 0 }] },
+      prize: { items: [{ place: '1등', amountKRW: 0 }, { place: '2등', amountKRW: 0 }, { place: '3등', amountKRW: 0 }] },
       teams: { campEnabled: false, listUrl: '#' },
       submit: {
         allowedArtifactTypes: ['url'],
@@ -636,7 +636,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '종료', at: '2025-09-30T18:00:00+09:00', type: 'result', step: 2 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 0 }] },
+      prize: { items: [{ place: '1등', amountKRW: 0 }, { place: '2등', amountKRW: 0 }, { place: '3등', amountKRW: 0 }] },
       teams: { campEnabled: false, listUrl: '#' },
       submit: {
         allowedArtifactTypes: ['url'],
@@ -663,7 +663,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '종료', at: '2025-08-25T18:00:00+09:00', type: 'result', step: 2 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 0 }] },
+      prize: { items: [{ place: '1등', amountKRW: 0 }, { place: '2등', amountKRW: 0 }, { place: '3등', amountKRW: 0 }] },
       teams: { campEnabled: false, listUrl: '#' },
       submit: {
         allowedArtifactTypes: ['pdf'],
@@ -690,7 +690,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '종료', at: '2025-07-20T18:00:00+09:00', type: 'result', step: 2 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 0 }] },
+      prize: { items: [{ place: '1등', amountKRW: 0 }, { place: '2등', amountKRW: 0 }, { place: '3등', amountKRW: 0 }] },
       teams: { campEnabled: false, listUrl: '#' },
       submit: {
         allowedArtifactTypes: ['pdf'],
@@ -717,7 +717,7 @@ export const hackathonDetails: HackathonDetail[] = [
           { name: '종료', at: '2025-06-25T18:00:00+09:00', type: 'result', step: 2 },
         ],
       },
-      prize: { items: [{ place: '대상', amountKRW: 0 }] },
+      prize: { items: [{ place: '1등', amountKRW: 0 }, { place: '2등', amountKRW: 0 }, { place: '3등', amountKRW: 0 }] },
       teams: { campEnabled: false, listUrl: '#' },
       submit: {
         allowedArtifactTypes: ['url'],
