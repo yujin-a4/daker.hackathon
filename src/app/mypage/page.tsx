@@ -40,6 +40,7 @@ import { useSubmissionStore } from '@/store/useSubmissionStore';
 import { useRankingStore } from '@/store/useRankingStore';
 import { formatDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
+import { isTeamRecruiting } from '@/lib/team-recruiting';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -470,6 +471,7 @@ export default function MyPage() {
                     const linkedHackathon = hackathons.find(
                       (h) => h.slug === team.hackathonSlug,
                     );
+                    const isRecruiting = isTeamRecruiting(team, linkedHackathon || null);
                     return (
                       <div
                         key={team.teamCode}
@@ -477,8 +479,8 @@ export default function MyPage() {
                       >
                         <div className="flex items-center justify-between mb-2">
                           <h3 className="font-semibold text-sm">{team.name}</h3>
-                          <Badge variant={team.isOpen ? 'default' : 'secondary'}>
-                            {team.isOpen ? '모집 중' : '모집 마감'}
+                          <Badge variant={isRecruiting ? 'default' : 'secondary'}>
+                            {isRecruiting ? '모집 중' : '모집 마감'}
                           </Badge>
                         </div>
                         <div className="space-y-1 text-xs text-muted-foreground">

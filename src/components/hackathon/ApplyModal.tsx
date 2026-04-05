@@ -35,6 +35,7 @@ interface ApplyModalProps {
   };
   onSwitchToTeams: () => void;
   onCreateTeam: () => void;
+  onRequireAuth: () => boolean;
 }
 
 export default function ApplyModal({
@@ -45,6 +46,7 @@ export default function ApplyModal({
   teamPolicy,
   onSwitchToTeams,
   onCreateTeam,
+  onRequireAuth,
 }: ApplyModalProps) {
   const { addTeam } = useTeamStore();
   const { currentUser, addTeamCode } = useUserStore();
@@ -52,7 +54,7 @@ export default function ApplyModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleJoinSolo = async () => {
-    if (!currentUser) return;
+    if (!onRequireAuth() || !currentUser) return;
     
     setIsSubmitting(true);
     try {
@@ -162,6 +164,7 @@ export default function ApplyModal({
             {/* Team Find Option */}
             <button
               onClick={() => {
+                if (!onRequireAuth()) return;
                 onSwitchToTeams();
                 onOpenChange(false);
               }}
@@ -180,6 +183,7 @@ export default function ApplyModal({
             {/* Team Create Option */}
             <button
               onClick={() => {
+                if (!onRequireAuth()) return;
                 onCreateTeam();
                 onOpenChange(false);
               }}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -20,7 +20,10 @@ import CreateTeamModal from '@/components/camp/CreateTeamModal';
 import TeamDetailModal from '@/components/camp/TeamDetailModal';
 import EmptyState from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import AuthModal from '@/components/auth/AuthModal';
+import { useToast } from '@/hooks/use-toast';
+import { hasMatchingProfile } from '@/lib/user-profile';
+import { isTeamRecruiting } from '@/lib/team-recruiting';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -35,10 +38,12 @@ const containerVariants = {
 function CampContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
 
   const { teams } = useTeamStore();
   const { hackathons } = useHackathonStore();
   const { currentUser } = useUserStore();
+  const canUseMatching = hasMatchingProfile(currentUser);
   
   const [hackathonFilter, setHackathonFilter] = useState(searchParams.get('hackathon') || 'all');
   const [showOpenOnly, setShowOpenOnly] = useState(false);
@@ -50,6 +55,7 @@ function CampContent() {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
 
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -57,12 +63,13 @@ function CampContent() {
 
   // 추천: ended 해커톤 팀 제외, 내 팀 제외, isSolo 제외, isOpen 팀 우선 → 상위 3개
   const recommendedTeams = useMemo(() => {
-    if (!currentUser) return [];
+    if (!currentUser || !canUseMatching) return [];
     const activeHackathonSlugs = new Set(
       hackathons.filter(isHackathonRecruiting).map(h => h.slug)
     );
     const eligibleTeams = teams.filter(t =>
       !t.isSolo &&
+      isTeamRecruiting(t, hackathons.find((h) => h.slug === t.hackathonSlug) || null) &&
       !currentUser.teamCodes.includes(t.teamCode) &&
       t.hackathonSlug &&
       activeHackathonSlugs.has(t.hackathonSlug)
@@ -70,11 +77,13 @@ function CampContent() {
     return eligibleTeams
       .map(t => calculateMatchScore(currentUser, t))
       .sort((a, b) => {
-        if (a.team.isOpen !== b.team.isOpen) return b.team.isOpen ? 1 : -1;
+        const aOpen = isTeamRecruiting(a.team, hackathons.find((h) => h.slug === a.team.hackathonSlug) || null);
+        const bOpen = isTeamRecruiting(b.team, hackathons.find((h) => h.slug === b.team.hackathonSlug) || null);
+        if (aOpen !== bOpen) return bOpen ? 1 : -1;
         return b.score - a.score;
       })
       .slice(0, 3);
-  }, [currentUser, teams, hackathons]);
+  }, [currentUser, teams, hackathons, canUseMatching]);
 
   const toggleSection = (slug: string) => {
     setExpandedSections(prev => {
@@ -85,15 +94,30 @@ function CampContent() {
     });
   };
   
+  const requireAuth = useCallback(() => {
+    if (currentUser) return true;
+
+    toast({
+      title: '로그인이 필요합니다.',
+      description: '팀 모집글 작성은 로그인한 사용자만 가능합니다.',
+      variant: 'destructive',
+    });
+    setIsAuthOpen(true);
+    return false;
+  }, [currentUser, toast]);
+
   useEffect(() => {
     const createParam = searchParams.get('create');
     if (createParam === 'true') {
-      setIsModalOpen(true);
+      if (requireAuth()) {
+        setIsModalOpen(true);
+      }
       router.replace('/camp', undefined);
     }
-  }, [searchParams, router]);
+  }, [searchParams, router, requireAuth]);
   
   const handleCreateNew = () => {
+    if (!requireAuth()) return;
     setEditingTeam(null);
     setIsModalOpen(true);
   };
@@ -121,7 +145,7 @@ function CampContent() {
       if (team.isSolo) return false;
       // ended 해커톤 팀은 숨김
       if (team.hackathonSlug && !activeHackathonSlugs.has(team.hackathonSlug)) return false;
-      const openMatch = !showOpenOnly || team.isOpen;
+      const openMatch = !showOpenOnly || isTeamRecruiting(team, hackathons.find((h) => h.slug === team.hackathonSlug) || null);
       const publicMatch = !showPublicOnly || !team.isPrivate;
       const searchMatch = searchQuery === '' ||
                           team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -135,7 +159,7 @@ function CampContent() {
       const slug = team.hackathonSlug || 'general';
       if (!groups[slug]) groups[slug] = [];
       groups[slug].push(
-        currentUser
+        currentUser && canUseMatching
           ? calculateMatchScore(currentUser, team)
           : { team, score: 0, matchReasons: [] }
       );
@@ -143,7 +167,7 @@ function CampContent() {
 
     Object.values(groups).forEach(group => {
       group.sort((a, b) => {
-        if (currentUser) return b.score - a.score;
+        if (currentUser && canUseMatching) return b.score - a.score;
         return new Date(b.team.createdAt).getTime() - new Date(a.team.createdAt).getTime();
       });
     });
@@ -153,7 +177,7 @@ function CampContent() {
     }
 
     return groups;
-  }, [teams, hackathonFilter, showOpenOnly, showPublicOnly, searchQuery, positionFilter, activeHackathonSlugs, currentUser]);
+  }, [teams, hackathonFilter, showOpenOnly, showPublicOnly, searchQuery, positionFilter, activeHackathonSlugs, currentUser, canUseMatching, hackathons]);
 
   const activeGroups = Object.keys(groupedTeams).filter(slug => groupedTeams[slug].length > 0);
 
@@ -166,13 +190,27 @@ function CampContent() {
 
       <div className="space-y-10">
         {/* ✨ AI 추천 섹션 (Premium Upgrade) */}
-        {!searchQuery && (
+        {!searchQuery && canUseMatching && (
           <RecommendedTeamSection 
             recommendations={recommendedTeams} 
             onEdit={handleEdit} 
             handleCardClick={handleCardClick}
             userNickname={currentUser?.nickname}
           />
+        )}
+
+        {!searchQuery && currentUser && !canUseMatching && (
+          <div className="rounded-2xl border-2 border-dashed border-amber-200 bg-amber-50/70 p-6 text-center dark:border-amber-800 dark:bg-amber-950/20">
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+              프로필을 설정하면 추천 팀과 매칭 점수를 볼 수 있습니다.
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              선호 유형이나 보유 스킬을 등록하면 팀 빌딩 추천이 활성화됩니다.
+            </p>
+            <Button className="mt-4" variant="outline" onClick={() => router.push('/mypage/profile')}>
+              프로필 설정하기
+            </Button>
+          </div>
         )}
 
         {/* 🔍 필터 바 (Sticky & Minimal) */}
@@ -233,7 +271,7 @@ function CampContent() {
                         team={match.team} 
                         onEdit={handleEdit} 
                         onCardClick={handleCardClick}
-                        matchScore={match.score}
+                        matchScore={canUseMatching ? match.score : undefined}
                       />
                     ))}
                   </motion.div>
@@ -280,6 +318,8 @@ function CampContent() {
         team={selectedTeam}
         onEdit={handleEdit}
       />
+
+      <AuthModal open={isAuthOpen} onOpenChange={setIsAuthOpen} />
     </div>
   );
 }

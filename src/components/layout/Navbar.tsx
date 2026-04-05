@@ -13,6 +13,7 @@ import { useThemeStore } from '@/store/useThemeStore';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { isHackathonRecruiting } from '@/lib/hackathon-utils';
+import { isTeamRecruiting } from '@/lib/team-recruiting';
 
 import AuthModal from '@/components/auth/AuthModal';
 import UserDropdown from '@/components/auth/UserDropdown';
@@ -86,7 +87,10 @@ export default function Navbar() {
       });
     }
 
-    const openTeamCount = teams.filter(t => t.isOpen).length;
+    const openTeamCount = teams.filter((team) => {
+      const hackathon = team.hackathonSlug ? hackathons.find((item) => item.slug === team.hackathonSlug) || null : null;
+      return isTeamRecruiting(team, hackathon);
+    }).length;
     
     dynamicNotices.push({
       id: 'ranking',

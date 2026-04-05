@@ -50,9 +50,11 @@ import DeadlineWidget from '@/components/hackathon/DeadlineWidget';
 import ApplyModal from '@/components/hackathon/ApplyModal';
 import DocumentModal from '@/components/hackathon/DocumentModal';
 import MatchStatusTag from '@/components/hackathon/MatchStatusTag';
+import AuthModal from '@/components/auth/AuthModal';
 import { getHackathonPhase, getHackathonStatusLabel, isHackathonRecruiting } from '@/lib/hackathon-utils';
 import { useTeamStore } from '@/store/useTeamStore';
 import { useSubmissionStore } from '@/store/useSubmissionStore';
+import { hasMatchingProfile } from '@/lib/user-profile';
 
 const sections = [
   { id: 'info', label: '안내', icon: Info },
@@ -78,6 +80,7 @@ export default function HackathonDetailPage() {
   const details = hackathonDetails[slug];
   const leaderboard = leaderboards[slug];
   const isBookmarked = currentUser?.bookmarkedSlugs?.includes(slug);
+  const canShowMatching = hasMatchingProfile(currentUser);
 
   const isMobile = useIsMobile();
   const searchParams = useSearchParams();
@@ -98,6 +101,7 @@ export default function HackathonDetailPage() {
   // ── Apply Modal State ──
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const teamsSectionRef = useRef<HTMLDivElement>(null);
 
   // ── Document Modal State ──
@@ -178,6 +182,23 @@ export default function HackathonDetailPage() {
       title: isBookmarked ? '북마크를 제거했습니다.' : '북마크에 추가했습니다.',
     });
   };
+
+  const requireAuth = useCallback(() => {
+    if (currentUser) return true;
+
+    toast({
+      title: '로그인이 필요합니다.',
+      description: '참가 신청은 로그인한 사용자만 진행할 수 있습니다.',
+      variant: 'destructive',
+    });
+    setIsAuthOpen(true);
+    return false;
+  }, [currentUser, toast]);
+
+  const handleApplyClick = useCallback(() => {
+    if (!requireAuth()) return;
+    setIsApplyModalOpen(true);
+  }, [requireAuth]);
 
   // ── Loading / Error ──
   if (!slug) return <LoadingState variant="detail" />;
@@ -315,7 +336,7 @@ export default function HackathonDetailPage() {
                     {details.title}
                   </h1>
                   
-                  {currentUser && (
+                  {currentUser && canShowMatching && (
                     <MatchStatusTag 
                       hackathon={hackathon} 
                       currentUser={currentUser}
@@ -406,7 +427,7 @@ export default function HackathonDetailPage() {
                     </Button>
                   ) : (
                     <Button 
-                      onClick={() => setIsApplyModalOpen(true)} 
+                      onClick={handleApplyClick}
                       disabled={!isRecruiting}
                       className="w-full bg-indigo-600 hover:bg-indigo-700 h-10 font-bold shadow-lg shadow-indigo-600/20"
                     >
@@ -498,7 +519,7 @@ export default function HackathonDetailPage() {
               </Button>
             ) : (
               <Button 
-                onClick={() => setIsApplyModalOpen(true)}
+                onClick={handleApplyClick}
                 disabled={!isRecruiting}
                 className="flex-1 bg-indigo-600 hover:bg-indigo-700 h-12 rounded-xl font-bold text-base shadow-lg shadow-indigo-600/20"
               >
@@ -526,6 +547,7 @@ export default function HackathonDetailPage() {
         hackathonSlug={slug}
         hackathonTitle={hackathon.title}
         teamPolicy={details.sections.overview.teamPolicy}
+        onRequireAuth={requireAuth}
         onSwitchToTeams={() => {
           setActiveTab('teams');
           router.replace(`/hackathons/${slug}?tab=teams`, { scroll: false });
@@ -551,6 +573,8 @@ export default function HackathonDetailPage() {
         type={docModalState.type}
         hackathonTitle={details.title}
       />
+
+      <AuthModal open={isAuthOpen} onOpenChange={setIsAuthOpen} />
 
       {/* Padding for mobile fixed bar */}
       {isMobile && <div className="h-20" />}

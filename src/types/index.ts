@@ -165,6 +165,7 @@ export interface CurrentUser {
   email: string;
   teamCodes: string[];
   joinedAt: string;
+  basePoints?: number;
   bookmarkedSlugs?: string[];
   role?: string;
   preferredTypes?: string[];

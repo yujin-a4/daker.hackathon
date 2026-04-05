@@ -5,6 +5,8 @@ import { useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, ExternalLink, MessageCircle, Users, Hash, ShieldCheck } from 'lucide-react';
 import { useTeamStore } from '@/store/useTeamStore';
+import { useHackathonStore } from '@/store/useHackathonStore';
+import { isTeamRecruiting } from '@/lib/team-recruiting';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,11 +14,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 export default function TeamContactDemoPage() {
   const params = useParams<{ teamCode: string }>();
   const { teams } = useTeamStore();
+  const { hackathons } = useHackathonStore();
 
   const team = useMemo(
     () => teams.find((item) => item.teamCode === params.teamCode),
     [params.teamCode, teams]
   );
+  const hackathon = useMemo(
+    () => (team?.hackathonSlug ? hackathons.find((item) => item.slug === team.hackathonSlug) || null : null),
+    [hackathons, team]
+  );
+  const isRecruiting = team ? isTeamRecruiting(team, hackathon) : false;
 
   if (!team) {
     return (
@@ -109,7 +117,7 @@ export default function TeamContactDemoPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-wrap gap-2">
-                <Badge variant="secondary">{team.isOpen ? '모집 중' : '모집 마감'}</Badge>
+                <Badge variant="secondary">{isRecruiting ? '모집 중' : '모집 마감'}</Badge>
                 <Badge variant="secondary">{team.isPrivate ? '초대 전용' : '공개 팀'}</Badge>
               </div>
 

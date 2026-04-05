@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { formatDate } from '@/lib/date';
 import { getTeamAvailabilitySummary, getTeamProjectStatusDetail } from '@/lib/team-context';
 import { getTeamComposition } from '@/lib/teamComposition';
+import { isTeamRecruiting } from '@/lib/team-recruiting';
 import {
   Dialog,
   DialogContent,
@@ -61,6 +62,7 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
   if (!team) return null;
 
   const hackathon = team.hackathonSlug ? hackathons.find((item) => item.slug === team.hackathonSlug) : null;
+  const isRecruiting = isTeamRecruiting(team, hackathon);
   const composition = getTeamComposition(team, allUsers, currentUser);
   const isMyTeam = currentUser?.teamCodes.includes(team.teamCode);
   const hasPendingInvitation = Boolean(invitation);
@@ -87,20 +89,20 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">{team.name}</DialogTitle>
-          <DialogDescription className="sr-only">{team.name} 팀의 상세 정보와 모집 현황입니다.</DialogDescription>
+          <DialogDescription className="sr-only">{team.name} 팀 상세 정보와 모집 현황입니다.</DialogDescription>
           <div className="flex flex-wrap items-center gap-2 pt-1 text-sm text-muted-foreground">
             {hasPendingInvitation && (
               <Badge className="border-indigo-100 bg-indigo-50 font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300">
-                이 팀에서 초대가 와 있습니다
+                초대 제안이 와 있습니다
               </Badge>
             )}
             <Badge
               className={cn(
-                team.isOpen ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' : 'bg-muted text-muted-foreground',
+                isRecruiting ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' : 'bg-muted text-muted-foreground',
                 'font-medium'
               )}
             >
-              {team.isOpen ? '모집 중' : '모집 마감'}
+              {isRecruiting ? '모집 중' : '모집 마감'}
             </Badge>
             <div className="flex items-center gap-1.5">
               <Users className="h-4 w-4" />
@@ -114,7 +116,7 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
         <div className="max-h-[60vh] space-y-6 overflow-y-auto py-4 pr-2">
           {hasPendingInvitation && (
             <div className="rounded-xl border border-indigo-200 bg-indigo-50/80 p-4 dark:border-indigo-800 dark:bg-indigo-950/30">
-              <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">이 팀이 합류 제안을 보냈습니다.</p>
+              <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">이 팀에서 합류 제안을 보냈습니다.</p>
               <p className="mt-1 text-sm text-indigo-700/80 dark:text-indigo-300/80">
                 알림 센터에서 초대 내용을 확인하고 수락하거나 거절할 수 있습니다.
               </p>
@@ -127,7 +129,7 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
               <span className="font-medium">{hackathon.title}</span>
             </button>
           ) : (
-            <p className="text-sm text-muted-foreground">자율 모집</p>
+            <p className="text-sm text-muted-foreground">자유 모집</p>
           )}
 
           <div>
@@ -143,7 +145,7 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
                 <Clock className="h-4 w-4 text-primary" />
                 <h4 className="text-sm font-medium text-foreground">작업 가능 시간</h4>
               </div>
-              <p className="pl-6 whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">
+              <p className="whitespace-pre-wrap pl-6 text-sm leading-relaxed text-foreground/80">
                 {getTeamAvailabilitySummary(team)}
               </p>
             </div>
@@ -153,13 +155,13 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
                 <Target className="h-4 w-4 text-amber-500" />
                 <h4 className="text-sm font-medium text-foreground">상세 진행 상태 / 비전</h4>
               </div>
-              <p className="pl-6 whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">
+              <p className="whitespace-pre-wrap pl-6 text-sm leading-relaxed text-foreground/80">
                 {getTeamProjectStatusDetail(team)}
               </p>
             </div>
           </div>
 
-          {team.isOpen && team.lookingFor.length > 0 && (
+          {isRecruiting && team.lookingFor.length > 0 && (
             <div>
               <h4 className="mb-2 text-sm font-medium text-muted-foreground">찾는 포지션</h4>
               <div className="space-y-2">
@@ -189,7 +191,7 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
                 <Link href={`/basecamp/${team.teamCode}`} className="w-full" onClick={() => onOpenChange(false)}>
                   <Button className="group h-12 w-full bg-indigo-600 text-base font-bold text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 dark:shadow-none">
                     <ExternalLink className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
-                    팀 워룸 바로가기
+                    팀 룸 바로가기
                   </Button>
                 </Link>
 
@@ -200,7 +202,7 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
                         <Edit className="mr-1.5 h-4 w-4" />
                         정보 수정
                       </Button>
-                      {team.isOpen && (
+                      {isRecruiting && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
@@ -216,7 +218,7 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
                             <AlertDialogHeader>
                               <AlertDialogTitle>모집을 마감하시겠습니까?</AlertDialogTitle>
                               <AlertDialogDescription>
-                                더 이상 새로운 지원자를 받지 않습니다. 필요하면 팀 정보 수정에서 다시 공개 상태로 바꿀 수 있습니다.
+                                더 이상 새로운 지원자를 받을 수 없습니다. 필요하면 팀 정보를 수정해서 다시 공개 상태로 바꿀 수 있습니다.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -232,7 +234,7 @@ export default function TeamDetailModal({ team, isOpen, onOpenChange, onEdit }: 
                   )}
                 </div>
               </>
-            ) : team.isOpen ? (
+            ) : isRecruiting ? (
               team.isPrivate ? (
                 <div className="space-y-4">
                   <p className="flex items-start gap-2 rounded-xl border border-amber-100 bg-amber-50 p-3 text-sm leading-relaxed text-amber-700 dark:border-amber-800 dark:bg-amber-900/30">

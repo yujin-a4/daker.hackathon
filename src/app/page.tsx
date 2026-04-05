@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import EmptyState from '@/components/shared/EmptyState';
 import RecommendedSection from '@/components/hackathon/RecommendedSection';
 import { isHackathonRecruiting } from '@/lib/hackathon-utils';
+import { isTeamRecruiting } from '@/lib/team-recruiting';
 
 function QuickCard({ icon: Icon, title, desc, link }: { icon: React.ElementType; title: string; desc: string; link: string }) {
   return (
@@ -38,7 +39,10 @@ export default function Home() {
   const { teams } = useTeamStore();
 
   const recruitingHackathons = hackathons.filter(isHackathonRecruiting);
-  const openTeamsCount = teams.filter((t) => t.isOpen).length;
+  const openTeamsCount = teams.filter((team) => {
+    const hackathon = team.hackathonSlug ? hackathons.find((item) => item.slug === team.hackathonSlug) || null : null;
+    return isTeamRecruiting(team, hackathon);
+  }).length;
 
   const myTeams = currentUser ? teams.filter((t) => currentUser.teamCodes.includes(t.teamCode)) : [];
   const myHackathons = myTeams

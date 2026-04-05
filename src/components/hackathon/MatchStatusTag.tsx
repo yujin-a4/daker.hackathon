@@ -120,8 +120,8 @@ export default function MatchStatusTag({
           {/* Skill Alignment 섹션 */}
           <div className="px-5 py-3 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Skill Alignment</span>
-              <span className="text-[10px] font-bold text-indigo-500">{matchedSkills.length} Matched</span>
+              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Match Signals</span>
+              <span className="text-[10px] font-bold text-indigo-500">{matchedSkills.length} Found</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {matchedSkills.slice(0, 4).map(skill => (

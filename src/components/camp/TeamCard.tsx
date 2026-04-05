@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/lib/date';
 import { getTeamComposition } from '@/lib/teamComposition';
+import { isTeamRecruiting } from '@/lib/team-recruiting';
 import { Button } from '../ui/button';
 import {
   AlertDialog,
@@ -48,6 +49,7 @@ export default function TeamCard({ team, onEdit, onCardClick, className, matchSc
   );
 
   const hackathon = team.hackathonSlug ? hackathons.find((item) => item.slug === team.hackathonSlug) : null;
+  const isRecruiting = isTeamRecruiting(team, hackathon);
   const composition = getTeamComposition(team, allUsers, currentUser);
   const isMyTeam = currentUser?.teamCodes.includes(team.teamCode);
   const hasPendingInvitation = Boolean(invitation);
@@ -81,7 +83,7 @@ export default function TeamCard({ team, onEdit, onCardClick, className, matchSc
       className={cn(
         'flex h-full cursor-pointer flex-col overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-200',
         'hover:border-slate-300 hover:shadow-md dark:hover:border-slate-700',
-        !team.isOpen && 'opacity-70',
+        !isRecruiting && 'opacity-70',
         className
       )}
     >
@@ -107,7 +109,7 @@ export default function TeamCard({ team, onEdit, onCardClick, className, matchSc
             )}
             {hasPendingInvitation && (
               <Badge className="border-indigo-100 bg-indigo-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:border-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300">
-                초대 도착
+                초대 대기
               </Badge>
             )}
             {team.isPrivate && (
@@ -118,13 +120,13 @@ export default function TeamCard({ team, onEdit, onCardClick, className, matchSc
             )}
             <Badge
               className={cn(
-                team.isOpen
+                isRecruiting
                   ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
                   : 'bg-muted text-muted-foreground',
                 'px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider'
               )}
             >
-              {team.isOpen ? '모집 중' : '모집 마감'}
+              {isRecruiting ? '모집 중' : '모집 마감'}
             </Badge>
           </div>
         </div>
@@ -154,8 +156,7 @@ export default function TeamCard({ team, onEdit, onCardClick, className, matchSc
 
         <p className="line-clamp-3 flex-grow text-xs leading-relaxed text-secondary-foreground/80">{team.intro}</p>
 
-
-        {team.isOpen && team.lookingFor.length > 0 && (
+        {isRecruiting && team.lookingFor.length > 0 && (
           <div className="mt-3">
             <h5 className="mb-1.5 text-[11px] font-semibold text-muted-foreground">찾는 포지션</h5>
             <TooltipProvider>
@@ -210,7 +211,7 @@ export default function TeamCard({ team, onEdit, onCardClick, className, matchSc
                   <Edit className="mr-1 h-3 w-3" />
                   수정
                 </Button>
-                {team.isOpen && (
+                {isRecruiting && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={handleActionClick}>
@@ -222,7 +223,7 @@ export default function TeamCard({ team, onEdit, onCardClick, className, matchSc
                       <AlertDialogHeader>
                         <AlertDialogTitle>모집을 마감하시겠습니까?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          더 이상 새로운 지원자를 받을 수 없습니다. 필요하면 팀 정보를 다시 수정해 열 수 있습니다.
+                          더 이상 새로운 지원자를 받을 수 없습니다. 필요하면 팀 정보를 다시 수정해 공개 상태로 변경할 수 있습니다.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -234,7 +235,7 @@ export default function TeamCard({ team, onEdit, onCardClick, className, matchSc
                 )}
               </>
             ) : (
-              team.isOpen && (
+              isRecruiting && (
                 <Link href={`/camp/contact/${team.teamCode}`} onClick={handleActionClick}>
                   <Button size="sm" variant="secondary" className="h-7 px-2 text-xs">
                     오픈채팅 보기

@@ -1,6 +1,7 @@
 import { differenceInDays, isFuture } from 'date-fns';
 import type { Hackathon, CurrentUser } from '@/types';
 import { analyzeHackathonMatch } from './match-analysis';
+import { getHackathonMatchContext, includesKeyword, resolveBuckets } from './match-taxonomy';
 
 interface RecommendResult {
   hackathon: Hackathon;
@@ -15,25 +16,32 @@ export function getRecommendations(
 ): RecommendResult[] {
   if (!user) return [];
 
-  const scored: RecommendResult[] = hackathons
-    .filter((h) => h.status !== 'ended')
-    .map((h) => {
+  return hackathons
+    .filter((hackathon) => hackathon.status === 'recruiting')
+    .map((hackathon) => {
       const reasons: string[] = [];
-      const analysis = analyzeHackathonMatch(h, user);
+      const analysis = analyzeHackathonMatch(hackathon, user);
 
-      if (!analysis) return { hackathon: h, score: 0, reasons: [] };
+      if (!analysis) {
+        return { hackathon, score: 0, reasons: [] };
+      }
 
       let score = analysis.matchRate;
+      const hackathonContext = getHackathonMatchContext(hackathon);
+      const preferredTypeBuckets = resolveBuckets(user.preferredTypes || []);
+      const preferredOverlap = [...preferredTypeBuckets].some((bucket) => hackathonContext.buckets.has(bucket));
 
-      if (user?.role && h.type && analysis.matchRate >= 40) {
-        reasons.push(`${h.type} 분야 & ${user.role} 역할 매칭`);
+      if (preferredOverlap || (user.preferredTypes || []).some((item) => includesKeyword(hackathonContext.texts, item))) {
+        reasons.push(`${hackathon.type} 분야 선호와 잘 맞아요`);
       }
 
       if (analysis.matchedSkills.length > 0) {
-        reasons.push(`보유 스킬 일치: ${analysis.matchedSkills.slice(0, 2).join(', ')}`);
+        reasons.push(`보유 스킬 활용: ${analysis.matchedSkills.slice(0, 2).join(', ')}`);
+      } else if (analysis.matchRate >= 40) {
+        reasons.push('기술 성향이 해커톤 주제와 잘 맞아요');
       }
 
-      const deadline = new Date(h.period.submissionDeadlineAt);
+      const deadline = new Date(hackathon.period.submissionDeadlineAt);
       if (isFuture(deadline)) {
         const daysLeft = differenceInDays(deadline, new Date());
         if (daysLeft <= 7) {
@@ -42,24 +50,22 @@ export function getRecommendations(
         }
       }
 
-      if (h.status === 'recruiting') {
-        score += 8;
+      if (hackathon.status === 'recruiting') {
+        score += 5;
         reasons.push('지금 바로 참가 가능');
       }
 
-      if (h.status === 'ongoing') {
+      if (hackathon.status === 'ongoing' && reasons.length < 3) {
         reasons.push('현재 진행 중');
       }
 
       return {
-        hackathon: h,
+        hackathon,
         score: Math.min(100, score),
         reasons: reasons.slice(0, 3),
       };
     })
-    .filter((r) => r.score > 10)
+    .filter((result) => result.score >= 20)
     .sort((a, b) => b.score - a.score)
     .slice(0, maxCount);
-
-  return scored;
 }

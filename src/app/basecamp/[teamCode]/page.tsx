@@ -8,6 +8,7 @@ import { useHackathonStore } from '@/store/useHackathonStore';
 import { ArrowLeft, BookOpen, StickyNote, Activity, Target } from 'lucide-react';
 import { getTeamComposition } from '@/lib/teamComposition';
 import { getHackathonStatusLabel } from '@/lib/hackathon-utils';
+import { isTeamRecruiting } from '@/lib/team-recruiting';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +38,7 @@ export default function BasecampPage() {
   const team = teams.find((t) => t.teamCode === teamCode);
   const isMember = currentUser && currentUser.teamCodes.includes(teamCode);
   const hackathon = team ? hackathons.find((h) => h.slug === team.hackathonSlug) : null;
+  const isRecruiting = team ? isTeamRecruiting(team, hackathon) : false;
   const composition = team ? getTeamComposition(team, allUsers, currentUser) : null;
 
   useEffect(() => {
@@ -115,8 +117,8 @@ export default function BasecampPage() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">팀 모집</span>
-                <Badge variant={team.isOpen ? 'default' : 'secondary'} className="text-[10px] px-1.5">
-                  {team.isOpen ? '모집중' : '마감'}
+                <Badge variant={isRecruiting ? 'default' : 'secondary'} className="text-[10px] px-1.5">
+                  {isRecruiting ? '모집중' : '마감'}
                 </Badge>
               </div>
             </div>
