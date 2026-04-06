@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
+  AlertTriangle,
   Users,
   Plus,
   Sparkles,
@@ -24,6 +25,7 @@ import { calculateMatchScore, MatchingResult } from '@/lib/matching';
 import { isHackathonRecruiting } from '@/lib/hackathon-utils';
 import { isTeamRecruiting } from '@/lib/team-recruiting';
 import { hasMatchingProfile } from '@/lib/user-profile';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import EmptyState from '@/components/shared/EmptyState';
@@ -53,6 +55,7 @@ export default function TeamsSection({ hackathonSlug, teamPolicy }: TeamsSection
     [hackathonSlug, hackathons]
   );
   const canRecruitInThisHackathon = currentHackathon ? isHackathonRecruiting(currentHackathon) : false;
+  const isEnded = currentHackathon?.status === 'ended';
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -63,6 +66,7 @@ export default function TeamsSection({ hackathonSlug, teamPolicy }: TeamsSection
   const [showPublicOnly, setShowPublicOnly] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState('');
   const [positionDropdownOpen, setPositionDropdownOpen] = useState(false);
+  const [isFilterExpanded, setIsFilterExpanded] = useState(false);
 
   const requireAuth = useCallback(() => {
     if (currentUser) return true;
@@ -237,6 +241,16 @@ export default function TeamsSection({ hackathonSlug, teamPolicy }: TeamsSection
 
   return (
     <div className="space-y-10">
+      {isEnded && (
+        <Alert className="bg-slate-100 border-slate-200 dark:bg-slate-800 dark:border-slate-700">
+          <AlertTriangle className="h-4 w-4 text-slate-500" />
+          <AlertTitle className="text-slate-700 dark:text-slate-300">종료된 해커톤</AlertTitle>
+          <AlertDescription className="text-slate-500 dark:text-slate-400">
+            이 해커톤은 종료되었습니다. 더 이상 팀을 생성하거나 수정할 수 없습니다.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex flex-col justify-between gap-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900/50 md:flex-row md:items-center">
         <div className="space-y-1">
           <h3 className="text-lg font-bold uppercase tracking-tight text-slate-900 dark:text-slate-100">
@@ -333,97 +347,119 @@ export default function TeamsSection({ hackathonSlug, teamPolicy }: TeamsSection
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/40">
-          <Filter className="h-4 w-4 flex-shrink-0 text-slate-400" />
-
+        <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/40 md:flex-row md:flex-wrap md:items-center md:p-4">
           <button
-            onClick={() => setShowOpenOnly((prev) => !prev)}
-            className={cn(
-              'flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all',
-              showOpenOnly
-                ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
-            )}
+            onClick={() => setIsFilterExpanded((prev) => !prev)}
+            className="flex w-full items-center justify-between md:hidden"
           >
-            {showOpenOnly ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
-            모집중만 보기
+            <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <Filter className="h-4 w-4 text-slate-500" />
+              <span className="font-bold">팀 필터</span>
+              {(showOpenOnly || showPublicOnly || selectedPosition) && (
+                <span className="ml-1 rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400">
+                  적용됨
+                </span>
+              )}
+            </div>
+            <ChevronDown className={cn('h-4 w-4 text-slate-500 transition-transform', isFilterExpanded && 'rotate-180')} />
           </button>
 
-          <button
-            onClick={() => setShowPublicOnly((prev) => !prev)}
-            className={cn(
-              'flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all',
-              showPublicOnly
-                ? 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'
-                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
-            )}
+          <div
+            className={`w-full flex-col gap-3 md:flex md:w-auto md:flex-1 md:flex-row md:flex-wrap md:items-center ${isFilterExpanded ? 'flex' : 'hidden'}`}
           >
-            {showPublicOnly ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
-            공개 팀만 보기
-          </button>
+            <Filter className="hidden h-4 w-4 flex-shrink-0 text-slate-400 md:block" />
 
-          {availablePositions.length > 0 && (
-            <div className="relative">
-              <button
-                onClick={() => setPositionDropdownOpen((prev) => !prev)}
-                className={cn(
-                  'flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all',
-                  selectedPosition
-                    ? 'border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
-                )}
-              >
-                <Users className="h-3.5 w-3.5" />
-                {selectedPosition ? `포지션 ${selectedPosition}` : '필요 포지션'}
-                <ChevronDown className={cn('h-3 w-3 transition-transform', positionDropdownOpen && 'rotate-180')} />
-              </button>
+            <button
+              onClick={() => setShowOpenOnly((prev) => !prev)}
+              className={cn(
+                'flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all',
+                showOpenOnly
+                  ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
+              )}
+            >
+              {showOpenOnly ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+              모집중만 보기
+            </button>
 
-              {positionDropdownOpen && (
-                <div className="absolute left-0 top-full z-50 mt-1 min-w-[160px] rounded-xl border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
-                  <button
-                    onClick={() => {
-                      setSelectedPosition('');
-                      setPositionDropdownOpen(false);
-                    }}
-                    className={cn(
-                      'w-full px-3 py-2 text-left text-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-700',
-                      !selectedPosition && 'font-semibold text-primary'
-                    )}
-                  >
-                    전체 포지션
-                  </button>
-                  {availablePositions.map((position) => (
+            <button
+              onClick={() => setShowPublicOnly((prev) => !prev)}
+              className={cn(
+                'flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all',
+                showPublicOnly
+                  ? 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
+              )}
+            >
+              {showPublicOnly ? <CheckSquare className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
+              공개 팀만 보기
+            </button>
+
+            {availablePositions.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setPositionDropdownOpen((prev) => !prev)}
+                  className={cn(
+                    'flex w-full items-center justify-between gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all md:w-auto',
+                    selectedPosition
+                      ? 'border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
+                  )}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5" />
+                    {selectedPosition ? `포지션 ${selectedPosition}` : '필요 포지션'}
+                  </div>
+                  <ChevronDown className={cn('h-3 w-3 transition-transform', positionDropdownOpen && 'rotate-180')} />
+                </button>
+
+                {positionDropdownOpen && (
+                  <div className="absolute left-0 top-full z-50 mt-1 min-w-[160px] w-full rounded-xl border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-800 md:w-auto">
                     <button
-                      key={position}
                       onClick={() => {
-                        setSelectedPosition(position);
+                        setSelectedPosition('');
                         setPositionDropdownOpen(false);
                       }}
                       className={cn(
                         'w-full px-3 py-2 text-left text-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-700',
-                        selectedPosition === position && 'bg-purple-50 font-semibold text-primary dark:bg-purple-900/20'
+                        !selectedPosition && 'font-semibold text-primary'
                       )}
                     >
-                      {position}
+                      전체 포지션
                     </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                    {availablePositions.map((position) => (
+                      <button
+                        key={position}
+                        onClick={() => {
+                          setSelectedPosition(position);
+                          setPositionDropdownOpen(false);
+                        }}
+                        className={cn(
+                          'w-full px-3 py-2 text-left text-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-700',
+                          selectedPosition === position && 'bg-purple-50 font-semibold text-primary dark:bg-purple-900/20'
+                        )}
+                      >
+                        {position}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
-          {(showOpenOnly || showPublicOnly || selectedPosition) && (
-            <button
-              onClick={() => {
-                setShowOpenOnly(false);
-                setShowPublicOnly(false);
-                setSelectedPosition('');
-              }}
-              className="ml-auto text-xs font-medium text-rose-500 underline underline-offset-2 hover:text-rose-600 dark:text-rose-400"
-            >
-              필터 초기화
-            </button>
-          )}
+            {(showOpenOnly || showPublicOnly || selectedPosition) && (
+              <button
+                onClick={() => {
+                  setShowOpenOnly(false);
+                  setShowPublicOnly(false);
+                  setSelectedPosition('');
+                }}
+                className="mt-2 text-xs font-medium text-rose-500 underline underline-offset-2 hover:text-rose-600 dark:text-rose-400 md:mt-0 md:ml-auto"
+              >
+                필터 초기화
+              </button>
+            )}
+          </div>
         </div>
 
         {filteredTeamsWithScores.length > 0 ? (

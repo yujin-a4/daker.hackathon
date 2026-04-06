@@ -48,8 +48,9 @@ export default function RankingsPage() {
           <h1 className="text-3xl font-bold font-headline">글로벌 랭킹</h1>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50">
-                <Info className="h-5 w-5" />
+              <Button variant="ghost" size="sm" className="h-8 rounded-full text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 px-3 text-xs font-medium gap-1.5 border border-indigo-100 dark:border-indigo-500/30">
+                <Info className="h-4 w-4" />
+                랭킹 포인트 산정 기준
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-80 text-sm">

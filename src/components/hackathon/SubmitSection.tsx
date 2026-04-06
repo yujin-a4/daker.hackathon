@@ -230,6 +230,16 @@ export default function SubmitSection({ hackathonSlug, hackathonDetail }: Submit
 
   return (
     <div className="space-y-8">
+      {isEnded && (
+        <Alert className="bg-slate-100 border-slate-200 dark:bg-slate-800 dark:border-slate-700">
+          <AlertTriangle className="h-4 w-4 text-slate-500" />
+          <AlertTitle className="text-slate-700 dark:text-slate-300">종료된 해커톤</AlertTitle>
+          <AlertDescription className="text-slate-500 dark:text-slate-400">
+            이 해커톤은 제출이 마감되었습니다. 더 이상 결과물을 제출하거나 수정할 수 없습니다.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="bg-indigo-600 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between text-white shadow-lg gap-4 mt-2">
         <div>
           <h3 className="font-bold text-lg flex items-center gap-2">
