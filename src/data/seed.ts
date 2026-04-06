@@ -38,7 +38,7 @@ export const hackathons: Hackathon[] = [
   },
   {
     slug: 'daker-handover-2026-03',
-    title: '제1회 닥커 긴급 인수인계 해커톤',
+    title: '제1회 데이커 긴급 인수인계 해커톤',
     status: 'ongoing',
     type: 'SW개발',
     tags: ['VibeCoding', 'Web', 'Vercel', 'Handover'],
@@ -304,7 +304,7 @@ export const hackathonDetails: HackathonDetail[] = [
     },
   },
 
-  // 🌟 (3) 현재 날짜(2026-04-03) 기준, "투표 중(Voting)"인 대회 (닥커 팀)
+  // 🌟 (3) 현재 날짜(2026-04-03) 기준, "투표 중(Voting)"인 대회 (데이커 팀)
   {
     slug: 'daker-handover-2026-03',
     title: '제1회 데이커 긴급 인수인계 해커톤',

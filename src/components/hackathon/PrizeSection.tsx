@@ -13,15 +13,15 @@ type PrizeSectionProps = {
 const getPlaceInfo = (place: string) => {
   const p = place.toLowerCase();
   if (p.includes('1') || p.includes('대상') || p.includes('최우수') || p.includes('top 1') || p.includes('1st')) {
-    return { emoji: '🥇', rank: 1, styles: 'bg-white border-amber-200 shadow-sm' };
+    return { emoji: '🥇', rank: 1, styles: 'bg-white border-amber-200 shadow-sm dark:bg-slate-800 dark:border-amber-700' };
   }
   if (p.includes('2') || p.includes('우수') || p.includes('2nd')) {
-    return { emoji: '🥈', rank: 2, styles: 'bg-white border-slate-200 shadow-sm' };
+    return { emoji: '🥈', rank: 2, styles: 'bg-white border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700' };
   }
   if (p.includes('3') || p.includes('장려') || p.includes('3rd')) {
-    return { emoji: '🥉', rank: 3, styles: 'bg-white border-slate-200 shadow-sm' };
+    return { emoji: '🥉', rank: 3, styles: 'bg-white border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700' };
   }
-  return { emoji: '🏆', rank: 4, styles: 'bg-slate-50 border-dashed border-slate-200 shadow-none' };
+  return { emoji: '🏆', rank: 4, styles: 'bg-slate-50 border-dashed border-slate-200 shadow-none dark:bg-slate-900 dark:border-slate-800' };
 };
 
 export default function PrizeSection({ prize }: PrizeSectionProps) {

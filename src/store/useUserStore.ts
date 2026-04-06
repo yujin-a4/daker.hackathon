@@ -264,11 +264,19 @@ export const useUserStore = create<UserState>()(
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (!state) return;
-        state.currentUser = state.currentUser ? normalizeUserProfile(state.currentUser as CurrentUser) : null;
-        state.allUsers = (state.allUsers || []).map((user) => normalizeUserProfile(user as UserProfile));
-        if (state.currentUser) {
-          state.allUsers = upsertUserProfile(state.allUsers, state.currentUser as UserProfile);
-        }
+        queueMicrotask(() => {
+          useUserStore.setState((prev) => {
+            const nextCurrentUser = prev.currentUser ? normalizeUserProfile(prev.currentUser as CurrentUser) : null;
+            let nextAllUsers = (prev.allUsers || []).map((user) => normalizeUserProfile(user as UserProfile));
+            if (nextCurrentUser) {
+              nextAllUsers = upsertUserProfile(nextAllUsers, nextCurrentUser as UserProfile);
+            }
+            return {
+              currentUser: nextCurrentUser,
+              allUsers: nextAllUsers,
+            };
+          });
+        });
       },
     }
   )
