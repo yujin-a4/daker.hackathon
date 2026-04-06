@@ -15,6 +15,7 @@ import {
   Lock,
   CheckSquare,
   Square,
+  Info,
 } from 'lucide-react';
 import type { HackathonDetail, Team } from '@/types';
 import { useHackathonStore } from '@/store/useHackathonStore';
@@ -25,6 +26,7 @@ import { calculateMatchScore, MatchingResult } from '@/lib/matching';
 import { isHackathonRecruiting } from '@/lib/hackathon-utils';
 import { isTeamRecruiting } from '@/lib/team-recruiting';
 import { hasMatchingProfile } from '@/lib/user-profile';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -253,9 +255,35 @@ export default function TeamsSection({ hackathonSlug, teamPolicy }: TeamsSection
 
       <div className="flex flex-col justify-between gap-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900/50 md:flex-row md:items-center">
         <div className="space-y-1">
-          <h3 className="text-lg font-bold uppercase tracking-tight text-slate-900 dark:text-slate-100">
-            팀 빌딩 <span className="text-primary">Status</span>
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-bold uppercase tracking-tight text-slate-900 dark:text-slate-100">
+              팀 빌딩 <span className="text-primary">Status</span>
+            </h3>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="text-slate-400 hover:text-indigo-500 transition-colors">
+                  <Info className="h-4 w-4" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 text-sm">
+                <div className="space-y-2">
+                  <h4 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                    <Sparkles className="h-4 w-4 text-amber-500" />
+                    추천 매칭 점수 산정 방식
+                  </h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                    프로필에 등록된 정보를 바탕으로 AI가 최적의 팀을 추천합니다.
+                  </p>
+                  <ul className="text-xs space-y-1.5 text-slate-600 dark:text-slate-300 list-disc list-inside mt-2">
+                    <li><strong>포지션 및 역할</strong>: 유저의 역할과 찾는 포지션이 일치하면 대폭 점수가 부여됩니다.</li>
+                    <li><strong>기술 스택 & 분야</strong>: 유저의 스택 및 도메인 관심사와 팀의 요건이 겹칠수록 가산점이 부여됩니다.</li>
+                    <li><strong>마감 임박</strong>: 팀의 정원 대비 현재 멤버가 가득 찰수록 가산점이 부여됩니다.</li>
+                    <li><strong>신규 모집</strong>: 가장 최근(3일 내)에 생성되어 활성화 된 팀에게 가산점이 부여됩니다.</li>
+                  </ul>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
           <p className="text-sm text-muted-foreground">
             {myTeam ? `이미 '${myTeam.name}' 팀에 소속되어 있습니다.` : '아직 소속된 팀이 없습니다. 팀을 찾거나 직접 만들어보세요.'}
           </p>

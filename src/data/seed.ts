@@ -1060,16 +1060,26 @@ export const teams: Team[] = [
       const name = teamNameLibrary[(i + sIdx + 5) % teamNameLibrary.length] + (i >= teamNameLibrary.length ? ` #${Math.floor(i / teamNameLibrary.length) + 1}` : '');
       if (existingNames.includes(name)) return null;
       const personaIdx = (i + sIdx * 7 + 3) % personaPool.length;
+      const isOpen = i % 3 === 0;
+      const isPrivate = i % 5 === 0;
+      // 특별 페르소나 부여: i가 9의 배수일 때마다 신규 + 마감 임박 팀 생성
+      const isUrgentAndNew = isOpen && (i % 9 === 0);
+      
+      let memberCount = 4;
+      if (isOpen) {
+        memberCount = isUrgentAndNew ? 3 : ((i % 2) + 1); // Urgent는 3명, 일반 모집은 1명 or 2명
+      }
+
       return {
         teamCode: `T-${slug.slice(0, 3).toUpperCase()}-${i + 1}`,
         hackathonSlug: slug,
         name,
-        isOpen: i % 3 === 0,
-        isPrivate: i % 5 === 0,
+        isOpen,
+        isPrivate,
         leaderId: personaPool[personaIdx].id,
-        memberCount: (i % 3) + 2,
+        memberCount,
         maxTeamSize: 4,
-        lookingFor: i % 3 === 0 ? (() => {
+        lookingFor: isOpen ? (() => {
           const positionPool = [
             { position: 'Designer', description: 'UX/UI 디자인 담당' },
             { position: 'Frontend', description: 'React/Next.js 개발' },
@@ -1084,7 +1094,7 @@ export const teams: Team[] = [
         })() : [],
         intro: introLibrary[(i + sIdx) % introLibrary.length],
         contact: { type: 'link' as const, url: '#' },
-        createdAt: '2026-03-10T10:00:00Z',
+        createdAt: isUrgentAndNew ? '2026-04-05T10:00:00Z' : '2026-03-10T10:00:00Z',
         progressStatus: (i % 4 === 0 ? 'developing' : i % 4 === 1 ? 'designing' : 'planning') as any,
         progressPercent: (i % 4) * 25,
       };

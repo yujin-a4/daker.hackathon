@@ -77,6 +77,32 @@ export function calculateMatchScore(user: CurrentUser, team: Team): MatchingResu
     score += 5;
   }
 
+  if (team.maxTeamSize > 0) {
+    const fillRatio = team.memberCount / team.maxTeamSize;
+    if (fillRatio > 0 && fillRatio < 1) {
+      score += Math.floor(fillRatio * 5);
+      if (fillRatio >= 0.6) {
+        matchReasons.push("팀 빌딩 마감 임박");
+      }
+    }
+  }
+
+  if (team.createdAt) {
+    const createdDate = new Date(team.createdAt);
+    const now = new Date();
+    const diffTime = Math.max(0, now.getTime() - createdDate.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays <= 3) {
+      score += 3;
+      if (!matchReasons.includes("팀 빌딩 마감 임박")) {
+        matchReasons.push("신규 모집팀");
+      }
+    } else if (diffDays <= 7) {
+      score += 1;
+    }
+  }
+
   if (recruiting && score > 0) {
     score += 5;
   }

@@ -2,8 +2,9 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, ChevronRight, Zap } from 'lucide-react';
+import { Sparkles, ChevronRight, Zap, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import TeamCard from '@/components/camp/TeamCard';
 import type { Team } from '@/types';
 import type { MatchingResult } from '@/lib/matching';
@@ -38,6 +39,30 @@ export default function RecommendedTeamSection({
             <h2 className="text-xl font-black tracking-tight text-slate-900 dark:text-slate-50 italic">
               AI 전술 매칭 추천
             </h2>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="text-slate-400 hover:text-amber-500 transition-colors ml-1">
+                  <Info className="h-4 w-4" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 text-sm">
+                <div className="space-y-2">
+                  <h4 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                    <Sparkles className="h-4 w-4 text-amber-500" />
+                    추천 매칭 점수 산정 방식
+                  </h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                    프로필에 등록된 정보를 바탕으로 AI가 최적의 팀을 추천합니다.
+                  </p>
+                  <ul className="text-xs space-y-1.5 text-slate-600 dark:text-slate-300 list-disc list-inside mt-2">
+                    <li><strong>포지션 및 역할</strong>: 유저의 역할과 찾는 포지션이 일치하면 대폭 점수가 부여됩니다.</li>
+                    <li><strong>기술 스택 & 분야</strong>: 유저의 스택 및 도메인 관심사와 팀의 요건이 겹칠수록 가산점이 부여됩니다.</li>
+                    <li><strong>마감 임박</strong>: 팀의 정원 대비 현재 멤버가 가득 찰수록 가산점이 부여됩니다.</li>
+                    <li><strong>신규 모집</strong>: 가장 최근(3일 내)에 생성되어 활성화 된 팀에게 가산점이 부여됩니다.</li>
+                  </ul>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 font-medium ml-1">
             {userNickname}님의 프로필을 분석하여 <span className="text-amber-600 dark:text-amber-400 font-bold">최적의 시너지를 낼 팀</span>을 선별했습니다.
